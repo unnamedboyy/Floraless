@@ -3,9 +3,9 @@
 import { useState } from "react";
 
 const navItems = [
-  { label: "Home", href: "/" },
-  { label: "Packages", href: "/#packages" },
-  { label: "Schedule", href: "/#schedule" },
+  { label: "Beranda", href: "/" },
+  { label: "Layanan", href: "/#packages" },
+  { label: "Jadwal", href: "/#schedule" },
   { label: "Tentang", href: "/tentang" },
   { label: "Kontak", href: "/kontak" },
 ];
