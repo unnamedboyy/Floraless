@@ -1,0 +1,11 @@
+# database
+cd C:\MongoDB\bin
+mongod --dbpath C:\MongoDB\data
+
+# backend
+cd server
+npm run dev
+
+# frontend
+cd client
+npm run dev
