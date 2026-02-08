@@ -1,0 +1,3 @@
+POST   /api/chat/room        → get / create room pelanggan
+POST   /api/chat/message     → kirim chat
+GET    /api/chat/:roomId     → ambil chat per room
