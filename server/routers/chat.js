@@ -1,9 +1,11 @@
 const express = require("express");
 const router = express.Router();
 
+const auth = require("../middlewares/auth");
+
 const Chat = require("../models/Chat");
 const RoomChat = require("../models/RoomChat");
-const { createChat } = require("../services/chat.service");
+const { createChat } = require("../services/chat");
 
 /**
  * =========================
@@ -11,27 +13,21 @@ const { createChat } = require("../services/chat.service");
  * Create chat (pelanggan / admin)
  * =========================
  */
-router.post("/", async (req, res) => {
+router.post("/", auth, async (req, res) => {
   try {
-    const {
-      roomId,
-      sender_role,
-      adminId,
-      pelangganId,
-      isi_chat,
-    } = req.body || {};
+    const { isi_chat, roomId } = req.body;
+    const user = req.user;
 
     const result = await createChat({
       roomId,
-      sender_role,
-      adminId,
-      pelangganId,
       isi_chat,
+      sender_role: user.role,
+      adminId: user.role === "admin" ? user.id : undefined,
+      pelangganId: user.role === "pelanggan" ? user.id : undefined,
     });
 
     res.status(201).json(result);
   } catch (err) {
-    console.error("❌ create chat:", err.message);
     res.status(400).json({ message: err.message });
   }
 });

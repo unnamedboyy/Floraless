@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 
 const pelangganSchema = new mongoose.Schema(
   {
@@ -10,5 +11,16 @@ const pelangganSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+pelangganSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
+
+
+pelangganSchema.methods.comparePassword = function (plainPassword) {
+  return bcrypt.compare(plainPassword, this.password);
+};
 
 module.exports = mongoose.model("Pelanggan", pelangganSchema);

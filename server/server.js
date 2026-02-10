@@ -6,6 +6,9 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const { Server } = require("socket.io");
 const { seedOnce } = require("./seed");
+const { verifyToken } = require("./utils/jwt");
+const cookieParser = require("cookie-parser");
+
 
 const app = express();
 const server = http.createServer(app);
@@ -28,19 +31,24 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(cookieParser());
 
 // =======================
 // ROUTES
 // =======================
 const chatRoutes = require("./routers/chat");
 const pelangganRoutes = require("./routers/pelanggan");
-const layananRoutes = require("./routers/layanan");
-const ticketRoutes = require("./routers/ticket");
+const adminRoutes = require("./routers/admin");
+const authRoutes = require("./routers/auth");
+// const layananRoutes = require("./routers/layanan");
+// const ticketRoutes = require("./routers/ticket");
 
 app.use("/api/chat", chatRoutes);
 app.use("/api/pelanggan", pelangganRoutes);
-app.use("/api/layanan", layananRoutes);
-app.use("/api/tickets", ticketRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/auth", authRoutes);
+// app.use("/api/layanan", layananRoutes);
+// app.use("/api/tickets", ticketRoutes);
 
 // =======================
 // MONGODB
@@ -83,6 +91,19 @@ io.on("connection", (socket) => {
   socket.on("disconnect", (reason) => {
     console.log("❌ Socket disconnected:", socket.id, "reason:", reason);
   });
+});
+
+io.use((socket, next) => {
+  try {
+    const token = socket.handshake.auth?.token;
+    if (!token) return next(new Error("No token"));
+
+    const payload = verifyToken(token);
+    socket.user = payload; // 🔥
+    next();
+  } catch (err) {
+    next(new Error("Invalid token"));
+  }
 });
 
 // =======================
