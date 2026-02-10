@@ -31,7 +31,19 @@ app.use(
     credentials: true,
   })
 );
+
 app.use(express.json());
+
+// ===== ROUTERS =====
+app.use("/api/admin", require("./routers/admin"));
+app.use("/api/pelanggan", require("./routers/pelanggan"));
+app.use("/api/layanan", require("./routers/layanan"));
+app.use("/api/ticket", require("./routers/ticket_pemesanan"));
+app.use("/api/jadwal", require("./routers/jadwal"));
+app.use("/api/log", require("./routers/log_aktivitas"));
+app.use("/api/room-chat", require("./routers/room_chat"));
+app.use("/api/chat", require("./routers/chat"));
+
 
 // ===== MongoDB Connection =====
 mongoose
