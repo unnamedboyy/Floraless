@@ -3,6 +3,14 @@ const router = express.Router();
 const Jadwal = require("../models/Jadwal");
 const LogAktivitas = require("../models/LogAktivitas");
 
+function getDayRange(date) {
+  const d = new Date(date);
+  const start = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const end = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+  return { start, end };
+}
+
+
 /**
  * =========================
  * GET ALL JADWAL
@@ -71,6 +79,25 @@ router.patch("/:id", async (req, res) => {
     if (!jadwal) {
       return res.status(404).json({ message: "Jadwal tidak ditemukan" });
     }
+
+    if (req.body.tanggal_acara) {
+      const { start, end } = getDayRange(req.body.tanggal_acara);
+
+      const conflict = await Jadwal.findOne({
+        _id: { $ne: req.params.id }, // kecuali dirinya sendiri
+        tanggal_acara: { $gte: start, $lt: end },
+        status_tanggal: { $ne: "cancelled" },
+      });
+
+      if (conflict) {
+        return res.status(409).json({
+          message: "Tanggal sudah dibooking",
+        });
+      }
+
+      jadwal.tanggal_acara = req.body.tanggal_acara;
+    }
+
 
     if (status_tanggal) jadwal.status_tanggal = status_tanggal;
     if (info !== undefined) jadwal.info = info;
