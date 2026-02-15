@@ -40,10 +40,17 @@ router.post("/login", async (req, res) => {
       role,
     });
 
+    // res.cookie("token", token, {
+    //   httpOnly: true,
+    //   secure: false, // true kalau HTTPS
+    //   sameSite: "lax",
+    // });
+
+    // untuk dev
     res.cookie("token", token, {
-      httpOnly: true,
-      secure: false, // true kalau HTTPS
+      httpOnly: false,
       sameSite: "lax",
+      secure: false,
     });
 
     res.json({

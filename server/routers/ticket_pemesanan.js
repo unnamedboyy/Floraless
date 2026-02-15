@@ -15,19 +15,12 @@ function getDayRange(date) {
 
 /**
  * =========================
- * CREATE TICKET + JADWAL
- * POST /api/ticket
+ * CREATE TICKET
  * =========================
  */
 router.post("/", protect, async (req, res) => {
   try {
-    const {
-      pelanggan,
-      admin,
-      layanan,
-      info_acara,
-      tanggal_acara, 
-    } = req.body || {};
+    const { pelanggan, admin, layanan, info_acara, tanggal_acara } = req.body || {};
 
     if (!pelanggan || !layanan || !tanggal_acara) {
       return res.status(400).json({
@@ -35,14 +28,7 @@ router.post("/", protect, async (req, res) => {
       });
     }
 
-    // 1 validasi wajib
-    if (!pelanggan || !layanan || !tanggal_acara) {
-      return res.status(400).json({
-        message: "pelanggan, layanan, tanggal_acara wajib",
-      });
-    }
-
-    // 2 CEK BENTROK TANGGAL (DI SINI)
+    // CEK BENTROK
     const { start, end } = getDayRange(tanggal_acara);
 
     const conflict = await Jadwal.findOne({
@@ -53,12 +39,9 @@ router.post("/", protect, async (req, res) => {
     if (conflict) {
       return res.status(409).json({
         message: "Tanggal sudah dibooking",
-        conflict_jadwal_id: conflict._id,
-        ticket_id: conflict.ticket,
       });
     }
 
-    // 3 create ticket
     const ticket = await TicketPemesanan.create({
       pelanggan,
       admin,
@@ -67,14 +50,12 @@ router.post("/", protect, async (req, res) => {
       status: "pending",
     });
 
-    // 4 create jadwal (collection terpisah)
-    const jadwal = await Jadwal.create({
+    await Jadwal.create({
       ticket: ticket._id,
       tanggal_acara,
       status_tanggal: "booked",
     });
 
-    // 5 log aktivitas
     await LogAktivitas.create({
       ticket: ticket._id,
       actor: {
@@ -83,30 +64,15 @@ router.post("/", protect, async (req, res) => {
       },
       action: "create",
       message: "Ticket created",
-      changes: [
-        {
-          field: "status",
-          before: null,
-          after: "pending",
-        },
-        {
-          field: "tanggal_acara",
-          before: null,
-          after: tanggal_acara,
-        }
-      ]
     });
 
-    req.app.get("io").to("calendar_room").emit("calendar_update", {
-      type: "created",
-      ticketId: ticket._id,
-      tanggal_acara,
-    });
+    // 🔥 UNIVERSAL REALTIME
+    req.app.get("io").to("calendar_room").emit("calendar_refresh", {
+    action: "create"
+  });
 
-    res.status(201).json({
-      ticket,
-      jadwal,
-    });
+    res.status(201).json({ ticket });
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -115,7 +81,6 @@ router.post("/", protect, async (req, res) => {
 /**
  * =========================
  * GET ALL TICKET
- * GET /api/ticket
  * =========================
  */
 router.get("/", async (req, res) => {
@@ -134,8 +99,7 @@ router.get("/", async (req, res) => {
 
 /**
  * =========================
- * GET TICKET BY ID
- * GET /api/ticket/:id
+ * GET BY ID
  * =========================
  */
 router.get("/:id", async (req, res) => {
@@ -149,11 +113,11 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ message: "Ticket tidak ditemukan" });
     }
 
-    const jadwal = await Jadwal.find({ ticket: ticket._id }).sort({
-      tanggal_acara: 1,
-    });
+    const jadwal = await Jadwal.find({ ticket: ticket._id })
+      .sort({ tanggal_acara: 1 });
 
     res.json({ ticket, jadwal });
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -161,28 +125,56 @@ router.get("/:id", async (req, res) => {
 
 /**
  * =========================
- * UPDATE STATUS TICKET
- * PATCH /api/ticket/:id/status
+ * UPDATE (ADMIN ONLY)
  * =========================
  */
-router.patch("/:id/status", async (req, res) => {
+router.patch("/:id", protect, authorize("admin"), async (req, res) => {
   try {
-    const { status } = req.body || {};
-
     const ticket = await TicketPemesanan.findById(req.params.id);
     if (!ticket) {
       return res.status(404).json({ message: "Ticket tidak ditemukan" });
     }
 
-    ticket.status = status;
-    await ticket.save();
+    const allowedFields = ["status", "admin", "info_acara", "layanan"];
+    const changes = [];
 
-    await LogAktivitas.create({
-      ticket: ticket._id,
-      info: `Status ticket diubah menjadi ${status}`,
+    allowedFields.forEach(field => {
+      if (
+        req.body[field] !== undefined &&
+        ticket[field]?.toString() !== req.body[field]?.toString()
+      ) {
+        changes.push({
+          field,
+          before: ticket[field],
+          after: req.body[field],
+        });
+
+        ticket[field] = req.body[field];
+      }
     });
 
-    res.json(ticket);
+    await ticket.save();
+
+    if (changes.length > 0) {
+      await LogAktivitas.create({
+        ticket: ticket._id,
+        actor: {
+          id: req.user.id,
+          role: req.user.role,
+        },
+        action: "update",
+        changes,
+        message: "Ticket updated",
+      });
+    }
+
+    // 🔥 UNIVERSAL REALTIME
+    req.app.get("io").to("calendar_room").emit("calendar_refresh", {
+      action: "update"
+    });
+
+    res.json({ message: "Ticket berhasil diupdate", ticket });
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -191,7 +183,6 @@ router.patch("/:id/status", async (req, res) => {
 /**
  * =========================
  * CANCEL TICKET
- * PATCH /api/ticket/:id/cancel
  * =========================
  */
 router.patch("/:id/cancel", protect, async (req, res) => {
@@ -204,7 +195,6 @@ router.patch("/:id/cancel", protect, async (req, res) => {
     ticket.status = "rejected";
     await ticket.save();
 
-    // cancel semua jadwal terkait
     await Jadwal.updateMany(
       { ticket: ticket._id },
       { status_tanggal: "cancelled" }
@@ -218,19 +208,11 @@ router.patch("/:id/cancel", protect, async (req, res) => {
       },
       action: "cancel",
       message: "Ticket cancelled",
-      changes: [
-        {
-          field: "status",
-          before: "approved",
-          after: "rejected",
-        },
-      ],
     });
 
-    // 🔥 REALTIME EMIT
-    req.app.get("io").to("calendar_room").emit("calendar_update", {
-      type: "cancelled",
-      ticketId: ticket._id,
+    // 🔥 UNIVERSAL REALTIME
+    req.app.get("io").to("calendar_room").emit("calendar_refresh", {
+      action: "cancel"
     });
 
     res.json({ message: "Ticket berhasil dibatalkan", ticket });
@@ -240,83 +222,12 @@ router.patch("/:id/cancel", protect, async (req, res) => {
   }
 });
 
-
-// UPDATE TICKET (GENERAL - ADMIN ONLY)
-// PATCH /api/ticket/:id
-router.patch("/:id",
-  protect,
-  authorize("admin"),
-  async (req, res) => {
-    try {
-      const ticket = await TicketPemesanan.findById(req.params.id);
-
-      if (!ticket) {
-        return res.status(404).json({ message: "Ticket tidak ditemukan" });
-      }
-
-      if (
-        req.body.status &&
-        !["pending", "approved", "rejected", "done"].includes(req.body.status)
-      ) {
-        return res.status(400).json({ message: "Status tidak valid" });
-      }
-
-      const changes = [];
-      const allowedFields = ["status", "admin", "info_acara", "layanan"];
-
-      allowedFields.forEach(field => {
-        if (
-          req.body[field] !== undefined &&
-          ticket[field]?.toString() !== req.body[field]?.toString()
-        ) {
-          changes.push({
-            field,
-            before: ticket[field],
-            after: req.body[field],
-          });
-
-          ticket[field] = req.body[field];
-        }
-      });
-
-      io.to("calendar_room").emit("calendar_update", {
-        type: "updated",
-        ticketId: ticket._id,
-        status: ticket.status,
-      });
-
-      if (changes.length > 0) {
-        await LogAktivitas.create({
-          ticket: ticket._id,
-          actor: {
-            id: req.user.id,
-            role: req.user.role,
-          },
-          action: "update",
-          changes,
-          message: "Ticket updated",
-        });
-      }
-
-      return res.json({
-        message: "Ticket berhasil diupdate",
-        ticket,
-      });
-
-    } catch (err) {
-      return res.status(500).json({ message: err.message });
-    }
-  }
-);
-
-
 /**
  * =========================
- * DELETE TICKET (HARD DELETE)
- * DELETE /api/ticket/:id
+ * DELETE TICKET
  * =========================
  */
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", protect, authorize("admin"), async (req, res) => {
   try {
     const ticket = await TicketPemesanan.findByIdAndDelete(req.params.id);
     if (!ticket) {
@@ -326,39 +237,16 @@ router.delete("/:id", async (req, res) => {
     await Jadwal.deleteMany({ ticket: ticket._id });
     await LogAktivitas.deleteMany({ ticket: ticket._id });
 
+    // 🔥 UNIVERSAL REALTIME
+    req.app.get("io").to("calendar_room").emit("calendar_refresh", {
+      action: "cdelete"
+    });
+
     res.json({ message: "Ticket dan relasi berhasil dihapus" });
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
-
-// APPROVE TICKET (ADMIN ONLY)
-// router.patch("/:id/approve",
-//   protect,
-//   authorize("admin"),
-//   async (req, res) => {
-//     try {
-//       const ticket = await TicketPemesanan.findById(req.params.id);
-
-//       if (!ticket) {
-//         return res.status(404).json({ message: "Ticket tidak ditemukan" });
-//       }
-
-//       ticket.status = "approved";
-//       await ticket.save();
-
-//       await LogAktivitas.create({
-//         ticket: ticket._id,
-//         info: "Ticket disetujui oleh admin",
-//       });
-
-//       res.json({ message: "Ticket berhasil di-approve", ticket });
-
-//     } catch (err) {
-//       res.status(500).json({ message: err.message });
-//     }
-//   }
-// );
-
 
 module.exports = router;
