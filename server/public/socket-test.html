@@ -2,14 +2,14 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Floraless Socket Test</title>
+  <title>Floraless Real-time Test</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
     }
-    button {
-      margin: 5px 0;
+    button, input {
+      margin: 5px 5px 5px 0;
       padding: 8px 12px;
       cursor: pointer;
     }
@@ -17,7 +17,7 @@
       margin-top: 20px;
       padding: 10px;
       border: 1px solid #ccc;
-      height: 300px;
+      height: 350px;
       overflow-y: auto;
       background: #f9f9f9;
       font-size: 14px;
@@ -28,14 +28,22 @@
 
   <h2>🔥 Floraless Real-time Socket Test</h2>
 
-  <button onclick="joinCalendar()">Join Calendar Room</button>
-  <button onclick="joinChat()">Join Chat Room (Manual ID)</button>
+  <div>
+    <button onclick="joinCalendar()">Join Calendar Room</button>
+    <input type="month" id="monthPicker" value="2026-06">
+    <button onclick="loadSnapshot()">Load Snapshot</button>
+  </div>
+
+  <div>
+    <button onclick="joinChat()">Join Chat Room (Manual ID)</button>
+  </div>
 
   <div class="log" id="log"></div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const logDiv = document.getElementById("log");
+    const monthPicker = document.getElementById("monthPicker");
 
     function log(message) {
       const p = document.createElement("div");
@@ -44,13 +52,13 @@
       logDiv.scrollTop = logDiv.scrollHeight;
     }
 
+    // =========================
+    // CONNECT SOCKET
+    // =========================
     const socket = io({
       withCredentials: true
     });
 
-    // =========================
-    // CONNECTION EVENTS
-    // =========================
     socket.on("connect", () => {
       log("✅ Connected: " + socket.id);
     });
@@ -64,27 +72,45 @@
     });
 
     // =========================
-    // CALENDAR REALTIME
+    // UNIVERSAL CALENDAR EVENT
     // =========================
-    socket.on("calendar_update", (data) => {
-      log("📅 Calendar Update: " + JSON.stringify(data));
-      console.log("Calendar Update:", data);
+    socket.on("calendar_refresh", (data) => {
+        log("📅 Calendar change detected: " + (data?.action || "unknown"));
+        loadSnapshot();
     });
 
     // =========================
-    // CHAT REALTIME
+    // CHAT EVENT
     // =========================
     socket.on("chat_new", (data) => {
-      log("💬 New Chat: " + JSON.stringify(data));
-      console.log("Chat Update:", data);
+      log("💬 Chat: " + data.isi_chat);
     });
 
     // =========================
-    // BUTTON ACTIONS
+    // FUNCTIONS
     // =========================
+
     function joinCalendar() {
       socket.emit("join_calendar");
       log("📡 Joined calendar_room");
+      loadSnapshot();
+    }
+
+    function loadSnapshot() {
+      const month = monthPicker.value;
+      if (!month) return;
+
+      fetch(`/api/jadwal/calendar?month=${month}`, {
+        credentials: "include"
+      })
+      .then(res => res.json())
+      .then(data => {
+        log("📆 Snapshot loaded for " + month);
+        log(JSON.stringify(data));
+      })
+      .catch(err => {
+        log("❌ Snapshot error: " + err.message);
+      });
     }
 
     function joinChat() {
@@ -94,6 +120,7 @@
       socket.emit("join_room", { roomId });
       log("📡 Joined chat room: " + roomId);
     }
+
   </script>
 
 </body>

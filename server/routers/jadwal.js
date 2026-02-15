@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Jadwal = require("../models/Jadwal");
 const LogAktivitas = require("../models/LogAktivitas");
+const { protect, authorize } = require("../middlewares/auth");
 
 function getDayRange(date) {
   const d = new Date(date);
@@ -10,25 +11,11 @@ function getDayRange(date) {
   return { start, end };
 }
 
-
 /**
  * =========================
  * GET ALL JADWAL
- * GET /api/jadwal
  * =========================
  */
-router.get("/", async (req, res) => {
-  try {
-    const jadwal = await Jadwal.find()
-      .populate("ticket")
-      .sort({ tanggal_acara: 1 });
-
-    res.json(jadwal);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
 router.get("/", async (req, res) => {
   try {
     const jadwal = await Jadwal.find()
@@ -44,7 +31,6 @@ router.get("/", async (req, res) => {
 /**
  * =========================
  * CALENDAR SNAPSHOT
- * GET /api/jadwal/calendar?month=YYYY-MM
  * =========================
  */
 router.get("/calendar", async (req, res) => {
@@ -88,7 +74,6 @@ router.get("/calendar", async (req, res) => {
 /**
  * =========================
  * GET JADWAL BY ID
- * GET /api/jadwal/:id
  * =========================
  */
 router.get("/:id", async (req, res) => {
@@ -111,24 +96,24 @@ router.get("/:id", async (req, res) => {
 
 /**
  * =========================
- * UPDATE STATUS JADWAL
- * PATCH /api/jadwal/:id
+ * UPDATE JADWAL
  * =========================
  */
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", protect, authorize("admin"), async (req, res) => {
   try {
-    const { status_tanggal, info } = req.body || {};
+    const { status_tanggal, info, tanggal_acara } = req.body || {};
 
     const jadwal = await Jadwal.findById(req.params.id);
     if (!jadwal) {
       return res.status(404).json({ message: "Jadwal tidak ditemukan" });
     }
 
-    if (req.body.tanggal_acara) {
-      const { start, end } = getDayRange(req.body.tanggal_acara);
+    // CEK BENTROK JIKA UBAH TANGGAL
+    if (tanggal_acara) {
+      const { start, end } = getDayRange(tanggal_acara);
 
       const conflict = await Jadwal.findOne({
-        _id: { $ne: req.params.id }, // kecuali dirinya sendiri
+        _id: { $ne: req.params.id },
         tanggal_acara: { $gte: start, $lt: end },
         status_tanggal: { $ne: "cancelled" },
       });
@@ -139,9 +124,8 @@ router.patch("/:id", async (req, res) => {
         });
       }
 
-      jadwal.tanggal_acara = req.body.tanggal_acara;
+      jadwal.tanggal_acara = tanggal_acara;
     }
-
 
     if (status_tanggal) jadwal.status_tanggal = status_tanggal;
     if (info !== undefined) jadwal.info = info;
@@ -150,10 +134,19 @@ router.patch("/:id", async (req, res) => {
 
     await LogAktivitas.create({
       ticket: jadwal.ticket,
-      info: `Status jadwal ${jadwal._id} diubah menjadi ${jadwal.status_tanggal}`,
+      actor: {
+        id: req.user.id,
+        role: req.user.role,
+      },
+      action: "update_jadwal",
+      message: "Jadwal updated",
     });
 
+    // 🔥 UNIVERSAL REALTIME
+    req.app.get("io").to("calendar_room").emit("calendar_refresh");
+
     res.json(jadwal);
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
