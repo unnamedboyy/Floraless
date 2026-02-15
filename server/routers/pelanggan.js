@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const bcrypt = require("bcrypt");
 const Pelanggan = require("../models/Pelanggan");
 
 /**
@@ -28,12 +29,14 @@ router.post("/", async (req, res) => {
       });
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const pelanggan = await Pelanggan.create({
       nama,
       email,
       no_telepon,
       username,
-      password,
+      password: hashedPassword,
     });
 
     res.status(201).json(pelanggan);

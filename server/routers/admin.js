@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const bcrypt = require("bcrypt");
 const Admin = require("../models/Admin");
 
 /**
@@ -28,12 +29,14 @@ router.post("/", async (req, res) => {
       });
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const admin = await Admin.create({
       nama,
       email,
       no_telepon,
       username,
-      password,
+      password:hashedPassword,
       role: role || "admin",
     });
 

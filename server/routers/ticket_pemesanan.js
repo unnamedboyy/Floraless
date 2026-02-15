@@ -4,6 +4,7 @@ const router = express.Router();
 const TicketPemesanan = require("../models/TicketPemesanan");
 const Jadwal = require("../models/Jadwal");
 const LogAktivitas = require("../models/LogAktivitas");
+const { protect, authorize } = require("../middlewares/auth");
 
 function getDayRange(date) {
   const d = new Date(date);
@@ -18,7 +19,7 @@ function getDayRange(date) {
  * POST /api/ticket
  * =========================
  */
-router.post("/", async (req, res) => {
+router.post("/", protect, async (req, res) => {
   try {
     const {
       pelanggan,
@@ -164,6 +165,71 @@ router.patch("/:id/status", async (req, res) => {
   }
 });
 
+// UPDATE TICKET (GENERAL - ADMIN ONLY)
+// PATCH /api/ticket/:id
+router.patch("/:id",
+  protect,
+  authorize("admin"),
+  async (req, res) => {
+    try {
+      const ticket = await TicketPemesanan.findById(req.params.id);
+
+      if (!ticket) {
+        return res.status(404).json({ message: "Ticket tidak ditemukan" });
+      }
+
+      if (
+        req.body.status &&
+        !["pending", "approved", "rejected", "done"].includes(req.body.status)
+      ) {
+        return res.status(400).json({ message: "Status tidak valid" });
+      }
+
+      const changes = [];
+      const allowedFields = ["status", "admin", "info_acara", "layanan"];
+
+      allowedFields.forEach(field => {
+        if (
+          req.body[field] !== undefined &&
+          ticket[field]?.toString() !== req.body[field]?.toString()
+        ) {
+          changes.push({
+            field,
+            before: ticket[field],
+            after: req.body[field],
+          });
+
+          ticket[field] = req.body[field];
+        }
+      });
+
+      await ticket.save();
+
+      if (changes.length > 0) {
+        await LogAktivitas.create({
+          ticket: ticket._id,
+          actor: {
+            id: req.user.id,
+            role: req.user.role,
+          },
+          action: "update",
+          changes,
+          message: "Ticket updated",
+        });
+      }
+
+      return res.json({
+        message: "Ticket berhasil diupdate",
+        ticket,
+      });
+
+    } catch (err) {
+      return res.status(500).json({ message: err.message });
+    }
+  }
+);
+
+
 /**
  * =========================
  * DELETE TICKET (HARD DELETE)
@@ -185,5 +251,34 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+// APPROVE TICKET (ADMIN ONLY)
+// router.patch("/:id/approve",
+//   protect,
+//   authorize("admin"),
+//   async (req, res) => {
+//     try {
+//       const ticket = await TicketPemesanan.findById(req.params.id);
+
+//       if (!ticket) {
+//         return res.status(404).json({ message: "Ticket tidak ditemukan" });
+//       }
+
+//       ticket.status = "approved";
+//       await ticket.save();
+
+//       await LogAktivitas.create({
+//         ticket: ticket._id,
+//         info: "Ticket disetujui oleh admin",
+//       });
+
+//       res.json({ message: "Ticket berhasil di-approve", ticket });
+
+//     } catch (err) {
+//       res.status(500).json({ message: err.message });
+//     }
+//   }
+// );
+
 
 module.exports = router;

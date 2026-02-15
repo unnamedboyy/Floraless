@@ -17,6 +17,7 @@ const LogAktivitas = require("./models/LogAktivitas");
 
 const app = express();
 const server = http.createServer(app);
+const cookieParser = require("cookie-parser");
 
 // ENV
 const PORT = process.env.PORT || 5000;
@@ -32,7 +33,11 @@ app.use(
   })
 );
 
+
 app.use(express.json());
+app.use(cookieParser());
+
+app.use("/api/auth", require("./routers/auth"));
 
 // ===== ROUTERS =====
 app.use("/api/admin", require("./routers/admin"));
