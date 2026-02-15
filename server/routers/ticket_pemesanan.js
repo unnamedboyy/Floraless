@@ -77,7 +77,30 @@ router.post("/", protect, async (req, res) => {
     // 5 log aktivitas
     await LogAktivitas.create({
       ticket: ticket._id,
-      info: `Ticket dibuat dengan tanggal ${new Date(tanggal_acara).toISOString()}`,
+      actor: {
+        id: req.user.id,
+        role: req.user.role,
+      },
+      action: "create",
+      message: "Ticket created",
+      changes: [
+        {
+          field: "status",
+          before: null,
+          after: "pending",
+        },
+        {
+          field: "tanggal_acara",
+          before: null,
+          after: tanggal_acara,
+        }
+      ]
+    });
+
+    req.app.get("io").to("calendar_room").emit("calendar_update", {
+      type: "created",
+      ticketId: ticket._id,
+      tanggal_acara,
     });
 
     res.status(201).json({
@@ -165,6 +188,59 @@ router.patch("/:id/status", async (req, res) => {
   }
 });
 
+/**
+ * =========================
+ * CANCEL TICKET
+ * PATCH /api/ticket/:id/cancel
+ * =========================
+ */
+router.patch("/:id/cancel", protect, async (req, res) => {
+  try {
+    const ticket = await TicketPemesanan.findById(req.params.id);
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket tidak ditemukan" });
+    }
+
+    ticket.status = "rejected";
+    await ticket.save();
+
+    // cancel semua jadwal terkait
+    await Jadwal.updateMany(
+      { ticket: ticket._id },
+      { status_tanggal: "cancelled" }
+    );
+
+    await LogAktivitas.create({
+      ticket: ticket._id,
+      actor: {
+        id: req.user.id,
+        role: req.user.role,
+      },
+      action: "cancel",
+      message: "Ticket cancelled",
+      changes: [
+        {
+          field: "status",
+          before: "approved",
+          after: "rejected",
+        },
+      ],
+    });
+
+    // 🔥 REALTIME EMIT
+    req.app.get("io").to("calendar_room").emit("calendar_update", {
+      type: "cancelled",
+      ticketId: ticket._id,
+    });
+
+    res.json({ message: "Ticket berhasil dibatalkan", ticket });
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
 // UPDATE TICKET (GENERAL - ADMIN ONLY)
 // PATCH /api/ticket/:id
 router.patch("/:id",
@@ -203,7 +279,11 @@ router.patch("/:id",
         }
       });
 
-      await ticket.save();
+      io.to("calendar_room").emit("calendar_update", {
+        type: "updated",
+        ticketId: ticket._id,
+        status: ticket.status,
+      });
 
       if (changes.length > 0) {
         await LogAktivitas.create({

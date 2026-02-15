@@ -33,9 +33,9 @@ app.use(
   })
 );
 
-
 app.use(express.json());
 app.use(cookieParser());
+app.use(express.static("public"));
 
 app.use("/api/auth", require("./routers/auth"));
 
@@ -62,6 +62,9 @@ mongoose
   );
 
 // ===== Socket.IO Setup =====
+const cookie = require("cookie");
+const jwt = require("jsonwebtoken");
+
 const io = new Server(server, {
   cors: {
     origin: CLIENT_URL,
@@ -70,36 +73,92 @@ const io = new Server(server, {
   },
 });
 
-function getDayRange(date) {
-  const d = new Date(date);
-  if (Number.isNaN(d.getTime())) return { start: null, end: null };
-  const start = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  const end = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
-  return { start, end };
-}
+app.set("io", io);
 
+
+/**
+ * =========================
+ * SOCKET AUTH MIDDLEWARE
+ * =========================
+ */
+io.use((socket, next) => {
+  try {
+    const rawCookie = socket.handshake.headers.cookie;
+
+    if (!rawCookie) {
+      return next(new Error("Unauthorized: No cookie"));
+    }
+
+    const parsed = cookie.parse(rawCookie);
+    const token = parsed.token;
+
+    if (!token) {
+      return next(new Error("Unauthorized: No token"));
+    }
+
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "supersecretkey"
+    );
+
+    socket.user = decoded; // attach user ke socket
+
+    next();
+  } catch (err) {
+    next(new Error("Unauthorized: Invalid token"));
+  }
+});
+
+
+/**
+ * =========================
+ * SOCKET CONNECTION
+ * =========================
+ */
 io.on("connection", (socket) => {
   console.log("🔌 Socket connected:", socket.id);
+  console.log("👤 User:", socket.user);
 
+  /**
+   * JOIN CALENDAR ROOM
+   */
   socket.on("join_calendar", () => {
     socket.join("calendar_room");
   });
 
-  socket.on("join_room", ({ roomId }) => {
+  /**
+   * JOIN CHAT ROOM (SECURE)
+   */
+  socket.on("join_room", async ({ roomId }) => {
     if (!roomId) return;
+
+    // pelanggan hanya boleh join room miliknya
+    if (socket.user.role === "pelanggan") {
+      const room = await RoomChat.findById(roomId);
+
+      if (!room || room.pelanggan.toString() !== socket.user.id) {
+        return socket.emit("error_message", "Unauthorized room access");
+      }
+    }
+
     socket.join(`room_${roomId}`);
   });
 
+  /**
+   * SEND CHAT (SERVER TENTUKAN SENDER)
+   */
   socket.on("send_chat", async (payload) => {
     try {
-      const { roomId, sender_role, adminId, pelangganId, isi_chat } = payload || {};
-      if (!roomId || !sender_role || !isi_chat) return;
+      const { roomId, isi_chat } = payload || {};
+      if (!roomId || !isi_chat) return;
 
       const chatDoc = await Chat.create({
         room: roomId,
-        sender_role,
-        admin: sender_role === "admin" ? adminId : undefined,
-        pelanggan: sender_role === "pelanggan" ? pelangganId : undefined,
+        sender_role: socket.user.role,
+        admin:
+          socket.user.role === "admin" ? socket.user.id : undefined,
+        pelanggan:
+          socket.user.role === "pelanggan" ? socket.user.id : undefined,
         isi_chat,
       });
 
@@ -115,8 +174,67 @@ io.on("connection", (socket) => {
   });
 });
 
+
+function getDayRange(date) {
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return { start: null, end: null };
+  const start = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const end = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+  return { start, end };
+}
+
+// io.on("connection", (socket) => {
+//   console.log("🔌 Socket connected:", socket.id);
+
+//   socket.on("join_calendar", () => {
+//     socket.join("calendar_room");
+//   });
+
+//   socket.on("join_room", ({ roomId }) => {
+//     if (!roomId) return;
+//     socket.join(`room_${roomId}`);
+//   });
+
+//   socket.on("send_chat", async (payload) => {
+//     try {
+//       const { roomId, sender_role, adminId, pelangganId, isi_chat } = payload || {};
+//       if (!roomId || !sender_role || !isi_chat) return;
+
+//       const chatDoc = await Chat.create({
+//         room: roomId,
+//         sender_role,
+//         admin: sender_role === "admin" ? adminId : undefined,
+//         pelanggan: sender_role === "pelanggan" ? pelangganId : undefined,
+//         isi_chat,
+//       });
+
+//       io.to(`room_${roomId}`).emit("chat_new", chatDoc);
+//     } catch (err) {
+//       console.error("❌ send_chat error:", err.message);
+//       socket.emit("error_message", "Gagal mengirim chat.");
+//     }
+//   });
+
+//   socket.on("disconnect", (reason) => {
+//     console.log("❌ Socket disconnected:", socket.id, "reason:", reason);
+//   });
+// });
+
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, message: "Floraless API is running" });
+});
+
+app.get("/test-login", (req, res) => {
+  const token = jwt.sign(
+    { id: "admin123", role: "admin" },
+    process.env.JWT_SECRET || "supersecretkey"
+  );
+
+  res.cookie("token", token, {
+    httpOnly: false, // sementara untuk test
+  });
+
+  res.send("Test cookie set");
 });
 
 app.post("/api/pelanggan/register", async (req, res) => {
@@ -234,7 +352,12 @@ app.post("/api/tickets", async (req, res) => {
       info: `Ticket dibuat (pending) untuk tanggal ${new Date(tanggal_acara).toISOString()}`,
     });
 
-    io.to("calendar_room").emit("ticket_created", ticket);
+    io.to("calendar_room").emit("calendar_update", {
+      type: "created",
+      ticketId: ticket._id,
+      tanggal_acara: new Date(tanggal_acara),
+    });
+
 
     res.json(ticket);
   } catch (err) {
@@ -258,36 +381,6 @@ app.get("/api/tickets", async (req, res) => {
     res.json(data);
   } catch (err) {
     console.error("❌ get tickets:", err.message);
-    res.status(500).json({ message: err.message });
-  }
-});
-
-app.patch("/api/tickets/:id/cancel", async (req, res) => {
-  try {
-    const id = req.params.id;
-
-    const ticket = await TicketPemesanan.findById(id);
-    if (!ticket) return res.status(404).json({ message: "Ticket tidak ditemukan" });
-
-    ticket.status = "rejected";
-    if (Array.isArray(ticket.jadwal)) {
-      ticket.jadwal = ticket.jadwal.map((j) => ({
-        ...j,
-        status_tanggal: "cancelled",
-      }));
-    }
-    await ticket.save();
-
-    await LogAktivitas.create({
-      ticket: ticket._id,
-      info: "Ticket dibatalkan/selesai (status rejected, jadwal cancelled).",
-    });
-
-    io.to("calendar_room").emit("ticket_cancelled", ticket);
-
-    res.json(ticket);
-  } catch (err) {
-    console.error("❌ cancel ticket:", err.message);
     res.status(500).json({ message: err.message });
   }
 });

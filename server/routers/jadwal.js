@@ -43,6 +43,50 @@ router.get("/", async (req, res) => {
 
 /**
  * =========================
+ * CALENDAR SNAPSHOT
+ * GET /api/jadwal/calendar?month=YYYY-MM
+ * =========================
+ */
+router.get("/calendar", async (req, res) => {
+  try {
+    const { month } = req.query;
+
+    if (!month) {
+      return res.status(400).json({
+        message: "Query month wajib (format: YYYY-MM)",
+      });
+    }
+
+    const start = new Date(`${month}-01`);
+    if (Number.isNaN(start.getTime())) {
+      return res.status(400).json({
+        message: "Format month tidak valid",
+      });
+    }
+
+    const end = new Date(start);
+    end.setMonth(end.getMonth() + 1);
+
+    const jadwalList = await Jadwal.find({
+      tanggal_acara: { $gte: start, $lt: end },
+      status_tanggal: { $ne: "cancelled" },
+    });
+
+    const result = {};
+
+    jadwalList.forEach((j) => {
+      const dateKey = j.tanggal_acara.toISOString().split("T")[0];
+      result[dateKey] = "booked";
+    });
+
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+/**
+ * =========================
  * GET JADWAL BY ID
  * GET /api/jadwal/:id
  * =========================

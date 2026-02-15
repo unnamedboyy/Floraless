@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Floraless Socket Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    button {
+      margin: 5px 0;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+    .log {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      height: 300px;
+      overflow-y: auto;
+      background: #f9f9f9;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🔥 Floraless Real-time Socket Test</h2>
+
+  <button onclick="joinCalendar()">Join Calendar Room</button>
+  <button onclick="joinChat()">Join Chat Room (Manual ID)</button>
+
+  <div class="log" id="log"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const logDiv = document.getElementById("log");
+
+    function log(message) {
+      const p = document.createElement("div");
+      p.textContent = message;
+      logDiv.appendChild(p);
+      logDiv.scrollTop = logDiv.scrollHeight;
+    }
+
+    const socket = io({
+      withCredentials: true
+    });
+
+    // =========================
+    // CONNECTION EVENTS
+    // =========================
+    socket.on("connect", () => {
+      log("✅ Connected: " + socket.id);
+    });
+
+    socket.on("connect_error", (err) => {
+      log("❌ Connection error: " + err.message);
+    });
+
+    socket.on("disconnect", () => {
+      log("❌ Disconnected");
+    });
+
+    // =========================
+    // CALENDAR REALTIME
+    // =========================
+    socket.on("calendar_update", (data) => {
+      log("📅 Calendar Update: " + JSON.stringify(data));
+      console.log("Calendar Update:", data);
+    });
+
+    // =========================
+    // CHAT REALTIME
+    // =========================
+    socket.on("chat_new", (data) => {
+      log("💬 New Chat: " + JSON.stringify(data));
+      console.log("Chat Update:", data);
+    });
+
+    // =========================
+    // BUTTON ACTIONS
+    // =========================
+    function joinCalendar() {
+      socket.emit("join_calendar");
+      log("📡 Joined calendar_room");
+    }
+
+    function joinChat() {
+      const roomId = prompt("Masukkan Room ID:");
+      if (!roomId) return;
+
+      socket.emit("join_room", { roomId });
+      log("📡 Joined chat room: " + roomId);
+    }
+  </script>
+
+</body>
+</html>
