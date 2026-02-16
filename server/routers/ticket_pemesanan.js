@@ -6,12 +6,15 @@ const Jadwal = require("../models/Jadwal");
 const LogAktivitas = require("../models/LogAktivitas");
 const { protect, authorize } = require("../middlewares/auth");
 
-function getDayRange(date) {
-  const d = new Date(date);
-  const start = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  const end = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+function getDayRange(dateStr) {
+  const [year, month, day] = dateStr.split("-").map(Number);
+
+  const start = new Date(year, month - 1, day);
+  const end = new Date(year, month - 1, day + 1);
+
   return { start, end };
 }
+
 
 /**
  * =========================
@@ -22,19 +25,17 @@ router.post("/", protect, async (req, res) => {
   try {
     const { pelanggan, admin, layanan, info_acara, tanggal_acara } = req.body || {};
 
-    if (!pelanggan || !layanan || !tanggal_acara) {
+    if (!layanan || !tanggal_acara) {
       return res.status(400).json({
         message: "pelanggan, layanan, tanggal_acara wajib",
       });
     }
 
     // CEK BENTROK
-    const { start, end } = getDayRange(tanggal_acara);
-
-    const conflict = await Jadwal.findOne({
-      tanggal_acara: { $gte: start, $lt: end },
-      status_tanggal: { $ne: "cancelled" },
-    });
+  const conflict = await Jadwal.findOne({
+    tanggal_key: tanggal_acara,
+    status_tanggal: { $ne: "cancelled" },
+  });
 
     if (conflict) {
       return res.status(409).json({
@@ -43,17 +44,18 @@ router.post("/", protect, async (req, res) => {
     }
 
     const ticket = await TicketPemesanan.create({
-      pelanggan,
-      admin,
+      pelanggan: req.user.id,
       layanan,
       info_acara,
       status: "pending",
     });
 
+
     await Jadwal.create({
       ticket: ticket._id,
-      tanggal_acara,
-      status_tanggal: "booked",
+      tanggal_acara: new Date(tanggal_acara),
+      tanggal_key: tanggal_acara,
+      status_tanggal: "pending", // 🔥 default mengikuti ticket
     });
 
     await LogAktivitas.create({
@@ -68,8 +70,8 @@ router.post("/", protect, async (req, res) => {
 
     // 🔥 UNIVERSAL REALTIME
     req.app.get("io").to("calendar_room").emit("calendar_refresh", {
-    action: "create"
-  });
+      action: "create"
+    });
 
     res.status(201).json({ ticket });
 
@@ -180,6 +182,49 @@ router.patch("/:id", protect, authorize("admin"), async (req, res) => {
   }
 });
 
+router.patch("/:id/status", protect, authorize("admin"), async (req, res) => {
+  try {
+    const { status } = req.body;
+
+    if (!["approved", "rejected"].includes(status)) {
+      return res.status(400).json({ message: "Status tidak valid" });
+    }
+
+    const ticket = await TicketPemesanan.findById(req.params.id);
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket tidak ditemukan" });
+    }
+
+    // 🔥 UPDATE TICKET STATUS
+    ticket.status = status;
+    await ticket.save();
+
+    // 🔥 UPDATE JADWAL STATUS
+    const jadwal = await Jadwal.findOne({ ticket: ticket._id });
+
+    if (jadwal) {
+      if (status === "approved") {
+        jadwal.status_tanggal = "booked";
+      } else if (status === "rejected") {
+        jadwal.status_tanggal = "cancelled";
+      }
+
+      await jadwal.save();
+    }
+
+    // 🔥 REALTIME EMIT
+    req.app.get("io").to("calendar_room").emit("calendar_refresh");
+
+    res.json({ message: "Status updated" });
+
+  } catch (err) {
+    console.error("STATUS UPDATE ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
+
 /**
  * =========================
  * CANCEL TICKET
@@ -239,7 +284,7 @@ router.delete("/:id", protect, authorize("admin"), async (req, res) => {
 
     // 🔥 UNIVERSAL REALTIME
     req.app.get("io").to("calendar_room").emit("calendar_refresh", {
-      action: "cdelete"
+      action: "delete"
     });
 
     res.json({ message: "Ticket dan relasi berhasil dihapus" });

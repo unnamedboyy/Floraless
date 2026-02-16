@@ -1,3 +1,5 @@
+import CalendarView from "@/components/calendar/CalendarView";
+
 export default function Page() {
-  return <div>User Calendar</div>;
+  return <CalendarView role="user" />;
 }
