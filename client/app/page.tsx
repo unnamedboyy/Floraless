@@ -10,7 +10,6 @@ import Packages from "../components/landing/Packages";
 import Testimonials from "../components/landing/Testimonials";
 import BeforeAfter from "../components/landing/BeforeAfter";
 
-
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-white text-neutral-900">

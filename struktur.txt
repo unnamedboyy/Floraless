@@ -1,0 +1,20 @@
+app/
+ ├─ kontak
+ ├─ tentang
+ ├─ login/
+ │   └─ page.tsx
+ │
+ ├─ (protected)/
+ │   ├─ admin/
+ │   │   ├─ layout.tsx
+ │   │   ├─ dashboard/page.tsx
+ │   │   ├─ calendar/page.tsx
+ │   │   ├─ tickets/page.tsx
+ │   │   └─ chat/page.tsx
+ │   │
+ │   └─ user/
+ │       ├─ layout.tsx
+ │       ├─ dashboard/page.tsx
+ │       ├─ calendar/page.tsx
+ │       ├─ bookings/page.tsx
+ │       └─ chat/page.tsx
