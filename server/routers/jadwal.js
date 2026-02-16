@@ -4,30 +4,6 @@ const Jadwal = require("../models/Jadwal");
 const LogAktivitas = require("../models/LogAktivitas");
 const { protect, authorize } = require("../middlewares/auth");
 
-function getDayRange(date) {
-  const d = new Date(date);
-  const start = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  const end = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
-  return { start, end };
-}
-
-/**
- * =========================
- * GET ALL JADWAL
- * =========================
- */
-router.get("/", async (req, res) => {
-  try {
-    const jadwal = await Jadwal.find()
-      .populate("ticket")
-      .sort({ tanggal_acara: 1 });
-
-    res.json(jadwal);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
 /**
  * =========================
  * CALENDAR SNAPSHOT
@@ -43,29 +19,77 @@ router.get("/calendar", async (req, res) => {
       });
     }
 
-    const start = new Date(`${month}-01`);
-    if (Number.isNaN(start.getTime())) {
-      return res.status(400).json({
-        message: "Format month tidak valid",
-      });
-    }
-
-    const end = new Date(start);
-    end.setMonth(end.getMonth() + 1);
-
     const jadwalList = await Jadwal.find({
-      tanggal_acara: { $gte: start, $lt: end },
-      status_tanggal: { $ne: "cancelled" },
+      tanggal_key: { $regex: `^${month}` },
     });
 
     const result = {};
 
     jadwalList.forEach((j) => {
-      const dateKey = j.tanggal_acara.toISOString().split("T")[0];
-      result[dateKey] = "booked";
+      result[j.tanggal_key] = j.status_tanggal;
     });
 
     res.json(result);
+  } catch (err) {
+    console.error("CALENDAR ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
+/**
+ * =========================
+ * GET JADWAL BY DATE
+ * =========================
+ */
+router.get("/by-date", async (req, res) => {
+  try {
+    const { date } = req.query;
+
+    if (!date) {
+      return res.status(400).json({ message: "Query date wajib" });
+    }
+
+    const jadwal = await Jadwal.findOne({
+      tanggal_key: date,
+    }).populate({
+      path: "ticket",
+      populate: [
+        { path: "pelanggan", select: "username" },
+        { path: "layanan", select: "nama_layanan" },
+      ],
+    });
+
+    if (!jadwal) {
+      return res
+        .status(404)
+        .json({ message: "Tidak ada booking di tanggal ini" });
+    }
+
+    res.json({
+      _id: jadwal._id,
+      tanggal_key: jadwal.tanggal_key,
+      status_tanggal: jadwal.status_tanggal,
+      ticket: jadwal.ticket,
+    });
+  } catch (err) {
+    console.error("BY-DATE ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+/**
+ * =========================
+ * GET ALL JADWAL
+ * =========================
+ */
+router.get("/", async (req, res) => {
+  try {
+    const jadwal = await Jadwal.find()
+      .populate("ticket")
+      .sort({ tanggal_acara: 1 });
+
+    res.json(jadwal);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -96,7 +120,7 @@ router.get("/:id", async (req, res) => {
 
 /**
  * =========================
- * UPDATE JADWAL
+ * UPDATE JADWAL (ADMIN)
  * =========================
  */
 router.patch("/:id", protect, authorize("admin"), async (req, res) => {
@@ -108,13 +132,10 @@ router.patch("/:id", protect, authorize("admin"), async (req, res) => {
       return res.status(404).json({ message: "Jadwal tidak ditemukan" });
     }
 
-    // CEK BENTROK JIKA UBAH TANGGAL
     if (tanggal_acara) {
-      const { start, end } = getDayRange(tanggal_acara);
-
       const conflict = await Jadwal.findOne({
         _id: { $ne: req.params.id },
-        tanggal_acara: { $gte: start, $lt: end },
+        tanggal_key: tanggal_acara,
         status_tanggal: { $ne: "cancelled" },
       });
 
@@ -124,7 +145,8 @@ router.patch("/:id", protect, authorize("admin"), async (req, res) => {
         });
       }
 
-      jadwal.tanggal_acara = tanggal_acara;
+      jadwal.tanggal_acara = new Date(tanggal_acara);
+      jadwal.tanggal_key = tanggal_acara;
     }
 
     if (status_tanggal) jadwal.status_tanggal = status_tanggal;
@@ -142,11 +164,9 @@ router.patch("/:id", protect, authorize("admin"), async (req, res) => {
       message: "Jadwal updated",
     });
 
-    // 🔥 UNIVERSAL REALTIME
     req.app.get("io").to("calendar_room").emit("calendar_refresh");
 
     res.json(jadwal);
-
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

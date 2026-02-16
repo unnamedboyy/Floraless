@@ -63,6 +63,16 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+router.get("/", async (req, res) => {
+  try {
+    const list = await Layanan.find();
+    res.json(list);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
 /**
  * =========================
  * UPDATE LAYANAN
