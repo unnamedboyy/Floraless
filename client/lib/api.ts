@@ -1,12 +1,16 @@
-const BASE_URL = "http://localhost:5000";
+export async function apiFetch(url: string, options: RequestInit = {}) {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
-export async function apiFetch(
-  endpoint: string,
-  options: RequestInit = {}
-) {
-  const res = await fetch(`${BASE_URL}${endpoint}`, {
+  if (!baseUrl) {
+    throw new Error("NEXT_PUBLIC_API_URL belum diset");
+  }
+
+  const fullUrl =
+    `${baseUrl.replace(/\/$/, "")}/${url.replace(/^\//, "")}`;
+
+  const res = await fetch(fullUrl, {
     ...options,
-    credentials: "include", // 🔥 WAJIB untuk cookie
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
       ...(options.headers || {}),
@@ -14,8 +18,22 @@ export async function apiFetch(
   });
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message || "Request gagal");
+    let errorMessage = "Request gagal";
+
+    try {
+      const errorData = await res.json();
+      errorMessage = errorData?.message || errorMessage;
+    } catch {}
+
+    if (res.status !== 401) {
+      console.error("API ERROR:", {
+        fullUrl,
+        status: res.status,
+        message: errorMessage,
+      });
+    }
+
+    throw new Error(errorMessage);
   }
 
   return res.json();
