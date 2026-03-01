@@ -104,5 +104,74 @@ router.post("/logout", (req, res) => {
   res.json({ message: "Logout berhasil" });
 });
 
+/**
+ * REGISTER (hanya pelanggan)
+ */
+router.post("/register", async (req, res) => {
+  try {
+    const { nama, email, no_telepon, username, password } = req.body || {};
+
+    if (!nama || !no_telepon || !username || !password) {
+      return res.status(400).json({
+        message: "Nama, No Telepon, Username, dan Password wajib diisi",
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        message: "Password minimal 6 karakter",
+      });
+    }
+
+    // 🔎 Cek duplikasi
+    const existing = await Pelanggan.findOne({
+      $or: [
+        { username },
+        { no_telepon },
+        ...(email ? [{ email }] : []),
+      ],
+    });
+
+    if (existing) {
+      return res.status(400).json({
+        message: "Username / No Telepon / Email sudah digunakan",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const pelanggan = await Pelanggan.create({
+      nama,
+      email: email || undefined,
+      no_telepon,
+      username,
+      password: hashedPassword,
+    });
+
+    const token = signToken({
+      id: pelanggan._id,
+      role: "user",
+    });
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false, // true kalau production https
+    });
+
+    res.status(201).json({
+      message: "Register berhasil",
+      user: {
+        _id: pelanggan._id,
+        username: pelanggan.username,
+        role: "user",
+      },
+    });
+
+  } catch (err) {
+    console.error("REGISTER ERROR:", err);
+    res.status(500).json({ message: "Terjadi kesalahan server" });
+  }
+});
 
 module.exports = router;

@@ -1,54 +1,172 @@
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
+import Image from "next/image";
 
 export default function TentangPage() {
   return (
     <div className="min-h-screen bg-white text-neutral-900">
-      <Navbar />
+      <main>
 
-      <main className="pt-20">
-        <section className="mx-auto max-w-6xl px-4 py-12">
-          <h1 className="text-3xl font-semibold">Tentang</h1>
-          <p className="mt-4 max-w-3xl text-sm leading-relaxed text-neutral-600">
-            Lorem ipsum dolor sit amet consectetur. Amet sed nulla. Vulputate quis
-            viverra lectus. Lorem ipsum dolor sit amet consectetur. Integer vitae augue.
+        {/* HERO */}
+        <section className="relative h-[360px] w-full overflow-hidden">
+          <Image
+            src="/hero.jpg"
+            alt="Floraless Event"
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-black/30" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <h1 className="text-4xl md:text-5xl font-semibold text-white text-center">
+              Tentang Floraless
+            </h1>
+          </div>
+        </section>
+
+        {/* INTRO */}
+        <section className="mx-auto max-w-6xl px-4 py-16 text-center">
+          <p className="mx-auto max-w-3xl text-base leading-relaxed text-neutral-600">
+            Floraless hadir untuk menghadirkan dekorasi dan produksi acara yang
+            elegan, terorganisir, dan berkesan. Kami memadukan kreativitas,
+            detail, serta sistem perencanaan modern untuk memastikan setiap
+            momen berjalan sempurna.
           </p>
+        </section>
 
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
-            <div className="rounded-2xl border border-neutral-200 p-6">
-              <h3 className="text-lg font-semibold">Visi</h3>
-              <p className="mt-2 text-sm text-neutral-600">
-                Lorem ipsum dolor sit amet consectetur. Nunc commodo lorem.
+        {/* VISI & MISI */}
+        <section className="mx-auto max-w-6xl px-4 pb-20">
+          <div className="grid gap-10 md:grid-cols-2">
+
+            <div className="rounded-3xl border border-neutral-200 p-10 shadow-sm">
+              <h2 className="text-2xl font-semibold">Visi</h2>
+              <p className="mt-6 text-neutral-600 leading-relaxed">
+                Menjadi perusahaan dekorasi dan produksi acara terpercaya
+                yang menghadirkan pengalaman seamless melalui perpaduan
+                kreativitas, profesionalisme, dan teknologi.
               </p>
             </div>
 
-            <div className="rounded-2xl border border-neutral-200 p-6">
-              <h3 className="text-lg font-semibold">Misi</h3>
-              <p className="mt-2 text-sm text-neutral-600">
-                Lorem ipsum dolor sit amet consectetur. Id purus magna.
-              </p>
+            <div className="rounded-3xl border border-neutral-200 p-10 shadow-sm">
+              <h2 className="text-2xl font-semibold">Misi</h2>
+              <ul className="mt-6 space-y-4 text-neutral-600 leading-relaxed">
+                <li>• Memberikan konsultasi personal dan detail.</li>
+                <li>• Menghadirkan konsep dekorasi yang sesuai karakter klien.</li>
+                <li>• Menyediakan sistem booking yang transparan dan efisien.</li>
+                <li>• Menjaga kualitas produksi serta ketepatan waktu.</li>
+              </ul>
             </div>
 
-            <div className="rounded-2xl border border-neutral-200 p-6">
-              <h3 className="text-lg font-semibold">Nilai</h3>
-              <p className="mt-2 text-sm text-neutral-600">
-                Lorem ipsum dolor sit amet consectetur. Ultricies varius.
-              </p>
+          </div>
+        </section>
+
+        {/* TIMELINE */}
+        <section className="bg-neutral-50 py-20">
+          <div className="mx-auto max-w-6xl px-4">
+            <h2 className="text-center text-3xl font-semibold">
+              Perjalanan Kami
+            </h2>
+
+            <div className="mt-16 relative">
+
+              {/* vertical line */}
+              <div className="absolute left-1/2 top-0 hidden h-full w-[2px] -translate-x-1/2 bg-[#C9AE63] md:block" />
+
+              <div className="space-y-20">
+
+                {/* ITEM 1 */}
+                <div className="md:grid md:grid-cols-2 md:gap-12 md:items-center">
+                  <div className="md:text-right">
+                    <h3 className="text-xl font-semibold">Awal Perjalanan</h3>
+                    <p className="mt-4 text-neutral-600 leading-relaxed">
+                      Floraless bermula dari kecintaan terhadap seni dekorasi
+                      dan keinginan untuk membantu orang merayakan momen penting
+                      secara elegan dan bermakna.
+                    </p>
+                  </div>
+
+                  <div className="hidden md:flex justify-center">
+                    <div className="relative h-50 w-50 rounded-full overflow-hidden border-4 border-[#C9AE63] shadow-lg">
+                      <Image
+                        src="/gal-1.jpg"
+                        alt="Awal Perjalanan"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* ITEM 2 */}
+                <div className="md:grid md:grid-cols-2 md:gap-12 md:items-center">
+                  <div className="hidden md:flex justify-center order-1">
+                    <div className="relative h-50 w-50 rounded-full overflow-hidden border-4 border-[#C9AE63] shadow-lg">
+                      <Image
+                        src="/gal-2.jpg"
+                        alt="Berkembang"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="order-2">
+                    <h3 className="text-xl font-semibold">
+                      Berkembang & Profesional
+                    </h3>
+                    <p className="mt-4 text-neutral-600 leading-relaxed">
+                      Kami berkembang menjadi tim profesional yang tidak hanya
+                      fokus pada estetika, tetapi juga manajemen acara yang
+                      terstruktur dan efisien.
+                    </p>
+                  </div>
+                </div>
+
+                {/* ITEM 3 */}
+                <div className="md:grid md:grid-cols-2 md:gap-12 md:items-center">
+                  <div className="md:text-right">
+                    <h3 className="text-xl font-semibold">
+                      Integrasi Teknologi
+                    </h3>
+                    <p className="mt-4 text-neutral-600 leading-relaxed">
+                      Kami menghadirkan sistem booking online yang memudahkan
+                      klien memilih tanggal, memonitor status, dan berkomunikasi
+                      secara transparan.
+                    </p>
+                  </div>
+
+                  <div className="hidden md:flex justify-center">
+                    <div className="relative h-50 w-50 rounded-full overflow-hidden border-4 border-[#C9AE63] shadow-lg">
+                      <Image
+                        src="/gal-3.jpg"
+                        alt="Integrasi Teknologi"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+              </div>
             </div>
           </div>
+        </section>
 
-          <div className="mt-10 rounded-2xl bg-[#C9AE63] p-8 text-white">
-            <h2 className="text-xl font-semibold">Cerita Singkat</h2>
-            <p className="mt-3 text-sm leading-relaxed text-white/90">
-              Lorem ipsum dolor sit amet consectetur. In aliquet in sed massa. Arcu
-              tortor egestas aenean. Tristique sed feugiat volutpat. Lorem ipsum dolor
-              sit amet consectetur.
+        {/* FOUNDER QUOTE */}
+        <section className="py-20">
+          <div className="mx-auto max-w-4xl px-4 text-center">
+            <p className="text-2xl md:text-3xl font-semibold leading-relaxed text-[#C9AE63]">
+              “Setiap acara adalah cerita.  
+              Tugas kami adalah memastikan cerita itu dikenang dengan indah.”
+            </p>
+
+            <p className="mt-6 text-sm uppercase tracking-widest text-neutral-500">
+              — Founder Floraless
             </p>
           </div>
         </section>
-      </main>
 
-      <Footer />
+      </main>
     </div>
   );
 }
