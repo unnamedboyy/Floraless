@@ -37,7 +37,7 @@ export default function CalendarView({ role }: Props) {
   const loadSnapshot = useCallback(async () => {
     try {
       const data = await apiFetch(
-        `/api/jadwal/calendar?month=${monthString}`
+        `/jadwal/calendar?month=${monthString}`
       );
 
       console.log("SNAPSHOT:", bookedDates);
@@ -56,7 +56,7 @@ export default function CalendarView({ role }: Props) {
   // ================= LOAD LAYANAN =================
   useEffect(() => {
     if (showModal) {
-      apiFetch("/api/layanan")
+      apiFetch("/layanan")
         .then(setLayananList)
         .catch(console.error);
     }
@@ -95,7 +95,7 @@ export default function CalendarView({ role }: Props) {
         setAdminError(null);
 
         const data = await apiFetch(
-          `/api/jadwal/by-date?date=${dateKey}`
+          `/jadwal/by-date?date=${dateKey}`
         );
 
         setAdminDetail(data);
@@ -241,7 +241,7 @@ export default function CalendarView({ role }: Props) {
                   setLoadingBooking(true);
                   setBookingError(null);
 
-                  await apiFetch("/api/ticket", {
+                  await apiFetch("/ticket", {
                     method: "POST",
                     body: JSON.stringify({
                       layanan: selectedLayanan,
@@ -313,7 +313,7 @@ export default function CalendarView({ role }: Props) {
                   try {
                     setLoadingStatusUpdate(true);
                     await apiFetch(
-                      `/api/ticket/${adminDetail.ticket._id}/status`,
+                      `/ticket/${adminDetail.ticket._id}/status`,
                       {
                         method: "PATCH",
                         body: JSON.stringify({ status: "approved" }),
@@ -335,7 +335,7 @@ export default function CalendarView({ role }: Props) {
                   try {
                     setLoadingStatusUpdate(true);
                     await apiFetch(
-                      `/api/ticket/${adminDetail.ticket._id}/status`,
+                      `/ticket/${adminDetail.ticket._id}/status`,
                       {
                         method: "PATCH",
                         body: JSON.stringify({ status: "rejected" }),

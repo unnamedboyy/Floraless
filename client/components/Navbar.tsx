@@ -1,97 +1,79 @@
 "use client";
 
-import { useState } from "react";
-
-const navItems = [
-  { label: "Beranda", href: "/" },
-  { label: "Layanan", href: "/#packages" },
-  { label: "Jadwal", href: "/#schedule" },
-  { label: "Tentang", href: "/tentang" },
-  { label: "Kontak", href: "/kontak" },
-];
+import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
+  const { user, logout, loading } = useAuth();
+
+  // ⏳ Saat loading tetap render header kosong biar layout stabil
+  if (loading) {
+    return (
+      <header className="fixed inset-x-0 top-0 z-50 bg-black/80 h-[72px]" />
+    );
+  }
+
+  // 👑 Kalau admin login → jangan tampilkan navbar sama sekali
+  if (user?.role === "admin") {
+    return null;
+  }
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50">
-      <div className="bg-black/30 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <a href="/" className="flex items-center gap-2">
-            <span className="text-sm font-semibold tracking-widest text-white/90">
-              FLORALESS
-            </span>
-          </a>
+    <header className="fixed inset-x-0 top-0 z-50 bg-black/80 backdrop-blur-md">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 text-white">
+        
+        <Link href="/" className="text-sm font-semibold tracking-widest">
+          FLORALESS
+        </Link>
 
-          <nav className="hidden items-center gap-8 md:flex">
-            {navItems.map((it) => (
-              <a
-                key={it.href}
-                href={it.href}
-                className="text-xs font-medium tracking-widest text-white/80 hover:text-white"
+        <nav className="hidden md:flex items-center gap-8 text-sm">
+          <Link href="/">Beranda</Link>
+          <Link href="/#packages">Layanan</Link>
+          <Link href="/#schedule">Galeri</Link>
+          <Link href="/tentang">Tentang</Link>
+          <Link href="/kontak">Kontak</Link>
+
+          {user?.role === "user" && (
+            <>
+              <Link href="/user/calendar">Jadwal</Link>
+              <Link href="/user/bookings">Tiket</Link>
+              <Link href="/user/chat">Chat</Link>
+            </>
+          )}
+        </nav>
+
+        <div className="hidden md:flex items-center gap-3">
+          {!user ? (
+            <>
+              <Link
+                href="/login"
+                className="rounded-full border border-white/40 px-4 py-2 text-xs font-semibold hover:bg-white/10"
               >
-                {it.label}
-              </a>
-            ))}
-          </nav>
-
-          <div className="hidden items-center gap-3 md:flex">
-            <a
-              href="/customer"
-              className="rounded-full border border-white/40 px-4 py-2 text-xs font-semibold text-white/90 hover:bg-white/10"
-            >
-              Login
-            </a>
-            <a
-              href="/customer"
-              className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-neutral-900 hover:bg-white/90"
-            >
-              Register
-            </a>
-          </div>
-
-          <button
-            className="md:hidden rounded-lg border border-white/30 px-3 py-2 text-xs font-semibold text-white"
-            onClick={() => setOpen((v) => !v)}
-            aria-label="Toggle menu"
-          >
-            Menu
-          </button>
+                Login
+              </Link>
+              <Link
+                href="/register"
+                className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-neutral-900 hover:bg-white/90"
+              >
+                Register
+              </Link>
+            </>
+          ) : user.role === "user" ? (
+            <>
+              <span className="text-xs">
+                Halo, {user.username}
+              </span>
+              <button
+                onClick={async () => {
+                  await logout();
+                }}
+                className="rounded-full bg-red-500 px-4 py-2 text-xs font-semibold hover:bg-red-600"
+              >
+                Logout
+              </button>
+            </>
+          ) : null}
         </div>
-
-        {open && (
-          <div className="md:hidden border-t border-white/10">
-            <div className="mx-auto max-w-6xl px-4 py-4">
-              <div className="flex flex-col gap-3">
-                {navItems.map((it) => (
-                  <a
-                    key={it.href}
-                    href={it.href}
-                    onClick={() => setOpen(false)}
-                    className="text-sm font-medium text-white/85 hover:text-white"
-                  >
-                    {it.label}
-                  </a>
-                ))}
-
-                <div className="mt-3 flex gap-2">
-                  <a
-                    href="/customer"
-                    className="flex-1 rounded-full border border-white/40 px-4 py-2 text-center text-xs font-semibold text-white/90 hover:bg-white/10"
-                  >
-                    Login
-                  </a>
-                  <a
-                    href="/customer"
-                    className="flex-1 rounded-full bg-white px-4 py-2 text-center text-xs font-semibold text-neutral-900 hover:bg-white/90"
-                  >
-                    Register
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </header>
   );

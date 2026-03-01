@@ -24,21 +24,18 @@ export function middleware(request: NextRequest) {
     try {
       const decoded = jwtDecode<TokenPayload>(token);
 
-      // Admin mencoba masuk ke user route
       if (pathname.startsWith("/user") && decoded.role === "admin") {
         return NextResponse.redirect(
           new URL("/admin/dashboard", request.url)
         );
       }
 
-      // User mencoba masuk ke admin route
       if (pathname.startsWith("/admin") && decoded.role === "pelanggan") {
         return NextResponse.redirect(
           new URL("/user/dashboard", request.url)
         );
       }
     } catch (err) {
-      // Token invalid → redirect login
       return NextResponse.redirect(new URL("/login", request.url));
     }
   }

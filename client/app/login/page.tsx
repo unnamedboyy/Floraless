@@ -1,43 +1,59 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect  } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login, user } = useAuth(); 
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  
 
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    try {
-      const data = await apiFetch("/api/auth/login", {
-        method: "POST",
-        body: JSON.stringify({ username, password }),
-      });
-
-      // redirect berdasarkan role
-      if (data.role === "admin") {
-        router.push("/admin/dashboard");
-      } else {
-        router.push("/user/dashboard");
-      }
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+  if (!loading && user) {
+    if (user.role === "admin") {
+      router.replace("/admin/dashboard");
+    } else {
+      router.replace("/user/dashboard");
     }
-  };
+  }
+}, [user, loading, router]);
+
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+  setError("");
+
+  try {
+    const data = await apiFetch("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ username, password }),
+    });
+
+    login({
+      id: data.user._id,
+      username: data.user.username,
+      role: data.user.role,
+    });
+    if (data.user.role === "admin") {
+      router.replace("/admin/dashboard");
+    } else {
+      router.replace("/user/dashboard");
+    }
+
+  } catch (err: any) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white">
@@ -58,21 +74,21 @@ export default function LoginPage() {
         />
 
         <div className="relative">
-            <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full border border-neutral-300 px-4 py-3 rounded-lg pr-12"
-            />
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full border border-neutral-300 px-4 py-3 rounded-lg pr-12"
+          />
 
-            <button
+          <button
             type="button"
             onClick={() => setShowPassword((v) => !v)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500"
-            >
+          >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
+          </button>
         </div>
 
         {error && (
