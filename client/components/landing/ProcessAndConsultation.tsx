@@ -16,38 +16,38 @@ type Step = {
 const steps: Step[] = [
   {
     key: "konsultasi",
-    label: "Step 1 – Konsultasi",
-    title: "Konsultasi",
-    desc: "Arahkan isi deskripsi konsultasi di sini (placeholder).",
+    label: "Step 1 – Consultation",
+    title: "Consultation",
+    desc: "Kami memulai dengan sesi konsultasi untuk memahami konsep acara, tema dekorasi, serta kebutuhan teknis Anda. Tim Floraless akan membantu menyempurnakan ide agar sesuai dengan lokasi.",
     image: "/process.jpg",
-    ctaText: "Hubungi kami!",
+    ctaText: "Talk to us!",
     ctaHref: "/kontak",
   },
   {
     key: "perencanaan",
-    label: "Step 2 – Perencanaan Kreatif",
-    title: "Perencanaan Kreatif",
-    desc: "Arahkan isi deskripsi perencanaan kreatif di sini (placeholder).",
-    image: "/process.jpg",
-    ctaText: "Mulai Diskusi",
+    label: "Step 2 – Creative Planning",
+    title: "Creative Planning",
+    desc: "Kami menyusun perencanaan detail mulai dari desain dekorasi, layout area, pencahayaan, hingga rundown produksi agar semua berjalan terstruktur dan elegan.",
+    image: "/gal-2.jpg",
+    ctaText: "Start Planning",
     ctaHref: "/kontak",
   },
   {
-    key: "eksekusi",
-    label: "Step 3 – Eksekusi",
-    title: "Eksekusi",
-    desc: "Arahkan isi deskripsi eksekusi di sini (placeholder).",
-    image: "/process.jpg",
-    ctaText: "Konsultasi Sekarang",
+    key: "produksi",
+    label: "Step 3 – Production",
+    title: "Production",
+    desc: "Tim produksi kami menangani pemasangan dekorasi, pengaturan lighting & sound system, serta koordinasi vendor agar seluruh elemen berjalan sempurna.",
+    image: "/package-3.jpg",
+    ctaText: "Book Now",
     ctaHref: "/kontak",
   },
   {
     key: "hari-acara",
-    label: "Step 4 – Hari Acara",
-    title: "Hari Acara",
-    desc: "Arahkan isi deskripsi hari acara di sini (placeholder).",
-    image: "/process.jpg",
-    ctaText: "Hubungi kami!",
+    label: "Step 4 – Event Day!",
+    title: "Event Day!",
+    desc: "Hari istimewa Anda telah tiba. Nikmati momen tanpa khawatir karena tim Floraless memastikan setiap detail berjalan sempurna dan sesuai rencana.",
+    image: "/package-1.jpg",
+    ctaText: "Talk to us!",
     ctaHref: "/kontak",
   },
 ];
@@ -62,54 +62,55 @@ export default function ProcessAndConsultation() {
 
   return (
     <section className="bg-white">
-      <div className="mx-auto max-w-6xl px-4 py-14">
-        <h2 className="text-center text-2xl font-semibold text-[#C9AE63] md:text-3xl">
-          Perencanaan Dekorasi Gereja & Event <br className="hidden md:block" />
-          yang Mulus Bersama Floraless
+      <div className="mx-auto max-w-6xl px-4 py-20">
+
+        {/* Heading */}
+        <h2 className="text-center text-4xl font-semibold text-black md:text-5xl">
+          Seamless Event Planning with Floraless
         </h2>
-        <p className="mx-auto mt-3 max-w-3xl text-center text-sm text-neutral-600 md:text-base">
-          Isi deskripsi pengantar section (placeholder).
+
+        <p className="mx-auto mt-6 max-w-3xl text-center text-[#C9AE63] text-base md:text-lg">
+          Floraless goes beyond decoration — we craft unforgettable
+          experiences. Our simple steps ensure your event runs smoothly
+          from concept to celebration.
         </p>
 
-        <div className="mt-10 grid gap-10 md:grid-cols-12 md:items-start">
-          {/* KIRI: tombol/step */}
-          <aside className="md:col-span-4">
-            <div className="space-y-5">
-              {steps.map((s) => {
-                const isActive = s.key === activeKey;
+        {/* Layout */}
+        <div className="mt-14 grid gap-10 md:grid-cols-12">
 
-                return (
-                  <button
-                    key={s.key}
-                    type="button"
-                    onClick={() => setActiveKey(s.key)}
-                    className={[
-                      "w-full text-left transition",
-                      "rounded-none px-8 py-9 md:px-10 md:py-10",
-                      "shadow-[0_8px_22px_rgba(0,0,0,0.06)]",
-                      isActive
-                        ? "bg-[#C9AE63] text-white"
-                        : "bg-[#9A9A9A] text-white/95 hover:opacity-95",
-                    ].join(" ")}
-                  >
-                    <div> 
-                      <h2 className="text-left text-l font-semibold md:text-l">
-                        {s.label}
-                      </h2>
-                    </div>
+          {/* LEFT SIDE STEPS */}
+          <aside className="md:col-span-4 space-y-6">
+            {steps.map((s) => {
+              const isActive = s.key === activeKey;
 
-                    <p className="mt-3 max-w-[42ch] text-sm leading-relaxed text-white/90 md:text-m">
-                      Klik untuk melihat detail.
-                    </p>
-                  </button>
-                );
-              })}
-            </div>
+              return (
+                <button
+                  key={s.key}
+                  onClick={() => setActiveKey(s.key)}
+                  className={[
+                    "w-full text-left rounded-2xl px-6 py-8 transition-all shadow-md",
+                    isActive
+                      ? "bg-[#C9AE63] text-black"
+                      : "bg-neutral-200 text-black hover:bg-neutral-300",
+                  ].join(" ")}
+                >
+                  <h3 className="text-lg font-semibold">
+                    {s.label}
+                  </h3>
+
+                  <p className="mt-3 text-sm opacity-80">
+                    Click to view details.
+                  </p>
+                </button>
+              );
+            })}
           </aside>
 
-          {/* KANAN: konten berubah */}
+          {/* RIGHT SIDE CONTENT */}
           <div className="md:col-span-8">
-            <div className="relative h-[260px] w-full overflow-hidden rounded-[28px] shadow-[0_10px_30px_rgba(0,0,0,0.10)] md:h-[380px]">
+
+            {/* Image */}
+            <div className="relative w-full overflow-hidden rounded-3xl shadow-lg aspect-[16/7]">
               <Image
                 src={active.image}
                 alt={active.title}
@@ -119,25 +120,26 @@ export default function ProcessAndConsultation() {
               />
             </div>
 
-            {/* 2) Judul + info */}
-            <div className="mt-7">
-              <h3 className="text-[20px] font-extrabold tracking-tight text-black md:text-[30px]">
-                {active.title}
-              </h3>
-              <p className="mt-4 max-w-3xl text-[15px] leading-relaxed text-neutral-700 md:text-base">
-                {active.desc}
-              </p>
-            </div>
+            {/* Title */}
+            <h3 className="mt-8 text-3xl font-bold text-black md:text-4xl">
+              {active.title}
+            </h3>
 
-            {/* 3) Tombol bawah: full width, border emas, rounded agak besar (lebih “About”) */}
+            {/* Description */}
+            <p className="mt-4 max-w-3xl text-neutral-600 leading-relaxed">
+              {active.desc}
+            </p>
+
+            {/* CTA */}
             <div className="mt-8">
               <a
                 href={active.ctaHref ?? "#"}
-                className="inline-flex w-full items-center justify-center rounded-[14px] border-2 border-[#C9AE63] px-6 py-5 text-base font-semibold text-[#C9AE63] hover:bg-[#C9AE63]/10 md:text-lg"
+                className="inline-flex w-full items-center justify-center rounded-xl border-2 border-[#C9AE63] px-6 py-5 text-lg font-semibold text-[#C9AE63] transition hover:bg-[#C9AE63] hover:text-white"
               >
                 {active.ctaText}
               </a>
             </div>
+
           </div>
         </div>
       </div>

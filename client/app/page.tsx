@@ -6,6 +6,7 @@ import ProcessAndConsultation from "@/components/landing/ProcessAndConsultation"
 import Packages from "@/components/landing/Packages";
 import Testimonials from "@/components/landing/Testimonials";
 import BeforeAfter from "@/components/landing/BeforeAfter";
+import FaqSection from "@/components/landing/FaqSection";
 
 export default function HomePage() {
   return (
@@ -18,6 +19,7 @@ export default function HomePage() {
       <BeforeAfter />
       <Packages />
       <Testimonials />
+      <FaqSection />
     </>
   );
 }
