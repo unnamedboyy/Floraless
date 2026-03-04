@@ -4,7 +4,7 @@ import Link from "next/link";
 export default function Hero() {
   return (
     <section id="home" className="relative">
-      <div className="relative h-[78vh] min-h-[560px] w-full">
+      <div className="relative h-[78vh] min-h-[680px] w-full">
         <Image src="/hero.jpg" alt="Hero" fill priority className="object-cover" />
         <div className="absolute inset-0 bg-black/50" />
 

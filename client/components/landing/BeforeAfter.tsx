@@ -4,8 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 
 export default function BeforeAfterSection() {
-  const beforeSrc = "/before.jpg";
-  const afterSrc = "/after2.jpg";
+  const beforeSrc = "/before3.png";
+  const afterSrc = "/after3.png";
   const heightClassName = "h-[480px] md:h-[640px]";
 
   const wrapRef = useRef<HTMLDivElement | null>(null);

@@ -13,17 +13,16 @@ const { seedOnce } = require("./seed");
 const RoomChat = require("./models/RoomChat");
 const Chat = require("./models/Chat");
 
-
 const app = express();
 const server = http.createServer(app);
 
-// ENV
+// ================= ENV =================
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI =
   process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/floraless_db";
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
 
-// ===== Middleware =====
+// ================= MIDDLEWARE =================
 app.use(
   cors({
     origin: CLIENT_URL,
@@ -34,8 +33,9 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static("public"));
+app.use("/uploads", express.static("uploads"));
 
-// ===== ROUTERS =====
+// ================= ROUTERS =================
 app.use("/api/auth", require("./routers/auth"));
 app.use("/api/admin", require("./routers/admin"));
 app.use("/api/pelanggan", require("./routers/pelanggan"));
@@ -46,12 +46,11 @@ app.use("/api/log", require("./routers/log_aktivitas"));
 app.use("/api/room-chat", require("./routers/room_chat"));
 app.use("/api/chat", require("./routers/chat"));
 
-// ===== Health Check =====
 app.get("/api/health", (req, res) => {
   res.json({ ok: true });
 });
 
-// ===== MongoDB =====
+// ================= DATABASE =================
 mongoose
   .connect(MONGODB_URI)
   .then(async () => {
@@ -62,7 +61,7 @@ mongoose
     console.error("❌ MongoDB connection error:", err.message)
   );
 
-// ===== Socket Setup =====
+// ================= SOCKET =================
 const io = new Server(server, {
   cors: {
     origin: CLIENT_URL,
@@ -72,7 +71,7 @@ const io = new Server(server, {
 
 app.set("io", io);
 
-// ===== Socket Auth =====
+// ===== SOCKET AUTH =====
 io.use((socket, next) => {
   try {
     const rawCookie = socket.handshake.headers.cookie;
@@ -82,10 +81,7 @@ io.use((socket, next) => {
     const token = parsed.token;
     if (!token) return next(new Error("Unauthorized"));
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET // HAPUS fallback
-    );
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     socket.user = {
       id: decoded.id,
@@ -98,24 +94,22 @@ io.use((socket, next) => {
   }
 });
 
-
-// ===== Socket Events =====
+// ================= SOCKET EVENTS =================
 io.on("connection", (socket) => {
-  console.log("🔌 Socket connected:", socket.id);
+  console.log("🔌 Socket connected:", socket.user?.id);
 
+  // ===== Calendar Room =====
   socket.on("join_calendar", () => {
-    if (!socket.user) return;
-    console.log("📅 User join calendar:", socket.user.id);
     socket.join("calendar_room");
   });
 
-
-  socket.on("join_room", async ({ roomId }) => {
+  // ===== Join Chat Room =====
+  socket.on("join_chat_room", async ({ roomId }) => {
     if (!roomId) return;
 
     const room = await RoomChat.findById(roomId);
     if (!room) {
-      return socket.emit("error_message", "Room tidak ditemukan");
+      return socket.emit("chat_error", "Room tidak ditemukan");
     }
 
     // pelanggan hanya boleh join room miliknya
@@ -123,13 +117,14 @@ io.on("connection", (socket) => {
       socket.user.role === "pelanggan" &&
       room.pelanggan.toString() !== socket.user.id
     ) {
-      return socket.emit("error_message", "Unauthorized room access");
+      return socket.emit("chat_error", "Unauthorized room access");
     }
-
+    console.log("JOIN ROOM:", roomId, socket.user);
     socket.join(`room_${roomId}`);
   });
 
-  socket.on("send_chat", async ({ roomId, isi_chat }) => {
+  // ===== Send Chat =====
+  socket.on("chat_send", async ({ roomId, isi_chat }) => {
     try {
       if (!roomId || !isi_chat) return;
 
@@ -140,7 +135,7 @@ io.on("connection", (socket) => {
         socket.user.role === "pelanggan" &&
         room.pelanggan.toString() !== socket.user.id
       ) {
-        return socket.emit("error_message", "Unauthorized");
+        return socket.emit("chat_error", "Unauthorized");
       }
 
       const chatDoc = await Chat.create({
@@ -153,20 +148,25 @@ io.on("connection", (socket) => {
         isi_chat,
       });
 
-      io.to(`room_${roomId}`).emit("chat_new", chatDoc);
+      // 🔥 Populate supaya frontend dapat username
+      const populatedChat = await Chat.findById(chatDoc._id)
+        .populate("admin", "username")
+        .populate("pelanggan", "username");
+
+      io.to(`room_${roomId}`).emit("chat_receive", populatedChat);
 
     } catch (err) {
-      console.error("❌ send_chat error:", err.message);
-      socket.emit("error_message", "Gagal mengirim chat.");
+      console.error("❌ chat_send error:", err.message);
+      socket.emit("chat_error", "Gagal mengirim chat.");
     }
   });
 
   socket.on("disconnect", () => {
-    console.log("❌ Socket disconnected:", socket.id);
+    console.log("❌ Socket disconnected:", socket.user?.id);
   });
 });
 
-// ===== Start Server =====
+// ================= START SERVER =================
 server.listen(PORT, () => {
   console.log(`🚀 Server listening on port ${PORT}`);
 });

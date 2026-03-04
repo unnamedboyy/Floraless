@@ -52,7 +52,7 @@ router.post("/login", async (req, res) => {
 
     if (!user) {
       user = await Pelanggan.findOne({ username });
-      role = "user";
+      role = "pelanggan";
     }
 
     if (!user) {
@@ -150,7 +150,7 @@ router.post("/register", async (req, res) => {
 
     const token = signToken({
       id: pelanggan._id,
-      role: "user",
+      role: "pelanggan"
     });
 
     res.cookie("token", token, {
@@ -164,7 +164,7 @@ router.post("/register", async (req, res) => {
       user: {
         _id: pelanggan._id,
         username: pelanggan.username,
-        role: "user",
+        role: "pelanggan",
       },
     });
 

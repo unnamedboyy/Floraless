@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import ChatWidget from "@/components/ChatWidget";
 
 export default function UserLayout({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
@@ -12,23 +13,21 @@ export default function UserLayout({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!loading) {
-      if (!user || user.role !== "user") {
+      if (!user || user.role !== "pelanggan") {
         router.replace("/login");
       }
     }
   }, [user, loading, router]);
 
-  if (loading || !user || user.role !== "user") {
+  if (loading || !user || user.role !== "pelanggan") {
     return null;
   }
 
   return (
     <>
-      <Navbar />
       <main className="pt-[72px] min-h-screen">
         {children}
       </main>
-      <Footer />
     </>
   );
 }

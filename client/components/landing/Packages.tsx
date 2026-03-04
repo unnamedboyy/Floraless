@@ -36,12 +36,16 @@ export default function Packages() {
       <div className="mx-auto max-w-6xl px-4 py-12">
         {/* HEADER */}
         <div className="grid gap-6 md:grid-cols-12 md:items-start">
-          <div className="md:col-span-5">
-            <h2 className="text-2xl font-semibold">
+          <div className="md:col-span-6">
+            {/* <h2 className="text-2xl font-semibold">
+              Pilih Paket Dekorasi <br /> Sesuai Kebutuhan
+            </h2> */}
+
+            <h2 className="text-left text-4xl font-semibold text-black md:text-5xl">
               Pilih Paket Dekorasi <br /> Sesuai Kebutuhan
             </h2>
           </div>
-          <div className="md:col-span-7">
+          <div className="md:col-span-6">
             <p className="text-sm leading-relaxed text-neutral-600">
               Kami menyediakan berbagai pilihan layanan dekorasi gereja dan event
               yang dapat disesuaikan dengan kebutuhan dan konsep acara Anda.
