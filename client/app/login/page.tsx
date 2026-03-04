@@ -21,7 +21,7 @@ export default function LoginPage() {
     if (user.role === "admin") {
       router.replace("/admin/dashboard");
     } else {
-      router.replace("/user/dashboard");
+      router.replace("/");
     }
   }
 }, [user, loading, router]);
@@ -45,7 +45,7 @@ const handleLogin = async (e: React.FormEvent) => {
     if (data.user.role === "admin") {
       router.replace("/admin/dashboard");
     } else {
-      router.replace("/user/dashboard");
+      router.replace("/");
     }
 
   } catch (err: any) {

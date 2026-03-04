@@ -1,39 +1,33 @@
 const express = require("express");
 const router = express.Router();
 const Layanan = require("../models/Layanan");
+const upload = require("../utils/upload");
+const { verifyToken } = require("../utils/jwt");
 
 /**
  * =========================
- * CREATE LAYANAN
- * POST /api/layanan
+ * MIDDLEWARE ADMIN ONLY
  * =========================
  */
-router.post("/", async (req, res) => {
+function adminOnly(req, res, next) {
   try {
-    const { nama_layanan, deskripsi, harga } = req.body || {};
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ message: "Unauthorized" });
 
-    if (!nama_layanan || harga == null) {
-      return res.status(400).json({
-        message: "nama_layanan dan harga wajib",
-      });
+    const payload = verifyToken(token);
+    if (payload.role !== "admin") {
+      return res.status(403).json({ message: "Forbidden" });
     }
 
-    const layanan = await Layanan.create({
-      nama_layanan,
-      deskripsi: deskripsi || "",
-      harga,
-    });
-
-    res.status(201).json(layanan);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    next();
+  } catch {
+    return res.status(401).json({ message: "Invalid token" });
   }
-});
+}
 
 /**
  * =========================
- * GET ALL LAYANAN
- * GET /api/layanan
+ * GET ALL LAYANAN (PUBLIC)
  * =========================
  */
 router.get("/", async (req, res) => {
@@ -47,8 +41,7 @@ router.get("/", async (req, res) => {
 
 /**
  * =========================
- * GET LAYANAN BY ID
- * GET /api/layanan/:id
+ * GET BY ID
  * =========================
  */
 router.get("/:id", async (req, res) => {
@@ -63,27 +56,52 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.get("/", async (req, res) => {
+/**
+ * =========================
+ * CREATE (ADMIN)
+ * =========================
+ */
+router.post("/", adminOnly, upload.single("gambar"), async (req, res) => {
   try {
-    const list = await Layanan.find();
-    res.json(list);
+    const { nama_layanan, deskripsi, harga } = req.body;
+
+    if (!nama_layanan || harga == null) {
+      return res.status(400).json({
+        message: "nama_layanan dan harga wajib",
+      });
+    }
+
+    const layanan = await Layanan.create({
+      nama_layanan,
+      deskripsi: deskripsi || "",
+      harga,
+      gambar: req.file ? `/uploads/${req.file.filename}` : "",
+    });
+
+    res.status(201).json(layanan);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-
 /**
  * =========================
- * UPDATE LAYANAN
- * PATCH /api/layanan/:id
+ * UPDATE (ADMIN)
  * =========================
  */
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", adminOnly, upload.single("gambar"), async (req, res) => {
   try {
+    const updateData = {
+      ...req.body,
+    };
+
+    if (req.file) {
+      updateData.gambar = `/uploads/${req.file.filename}`;
+    }
+
     const updated = await Layanan.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true, runValidators: true }
     );
 
@@ -99,11 +117,10 @@ router.patch("/:id", async (req, res) => {
 
 /**
  * =========================
- * DELETE LAYANAN
- * DELETE /api/layanan/:id
+ * DELETE (ADMIN)
  * =========================
  */
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", adminOnly, async (req, res) => {
   try {
     const deleted = await Layanan.findByIdAndDelete(req.params.id);
 

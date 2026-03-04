@@ -223,8 +223,6 @@ router.patch("/:id/status", protect, authorize("admin"), async (req, res) => {
   }
 });
 
-
-
 /**
  * =========================
  * CANCEL TICKET

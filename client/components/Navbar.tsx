@@ -33,7 +33,7 @@ export default function Navbar() {
           <Link href="/tentang">Tentang</Link>
           <Link href="/kontak">Kontak</Link>
 
-          {user?.role === "user" && (
+          {user?.role === "pelanggan" && (
             <>
               <Link href="/user/calendar">Jadwal</Link>
               <Link href="/user/bookings">Tiket</Link>
@@ -58,7 +58,7 @@ export default function Navbar() {
                 Register
               </Link>
             </>
-          ) : user.role === "user" ? (
+          ) : user.role === "pelanggan" ? (
             <>
               <span className="text-xs">
                 Halo, {user.username}

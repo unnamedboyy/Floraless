@@ -1,12 +1,20 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { apiFetch } from "@/lib/api";
+
+export type Role = "admin" | "pelanggan";
 
 type User = {
   id: string;
   username: string;
-  role: "user" | "admin";
+  role: Role;
 };
 
 type AuthContextType = {
@@ -30,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser({
           id: data.id,
           username: data.username,
-          role: data.role,
+          role: data.role as Role, // 👈 penting
         });
       } catch {
         setUser(null);

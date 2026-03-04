@@ -6,7 +6,9 @@ export default function Gallery() {
   return (
     <section id="schedule" className="bg-white">
       <div className="mx-auto max-w-6xl px-4 py-12">
-        <h2 className="text-center text-2xl font-semibold">Galeri Kami</h2>
+        <h2 className="text-center text-4xl font-semibold text-black md:text-5xl">
+          Galeri Kami
+        </h2>
 
         <div className="mt-8 grid gap-4 md:grid-cols-12">
           <div className="md:col-span-8">

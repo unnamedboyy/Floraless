@@ -37,6 +37,7 @@ export default function AdminLayout({
 
   const menu = [
     { label: "Dashboard", href: "/admin/dashboard" },
+    { label: "layanan", href: "/admin/layanan" },
     { label: "Calendar", href: "/admin/calendar" },
     { label: "Tickets", href: "/admin/tickets" },
     { label: "Chat", href: "/admin/chat" },
