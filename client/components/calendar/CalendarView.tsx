@@ -11,12 +11,10 @@ type Props = {
 export default function CalendarView({ role }: Props) {
   const today = new Date();
 
-  // ================= STATE =================
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
   const [bookedDates, setBookedDates] = useState<Record<string, string>>({});
 
-  // USER MODAL
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [layananList, setLayananList] = useState<any[]>([]);
@@ -25,7 +23,6 @@ export default function CalendarView({ role }: Props) {
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [loadingBooking, setLoadingBooking] = useState(false);
 
-  // ADMIN MODAL
   const [adminDetail, setAdminDetail] = useState<any>(null);
   const [loadingAdmin, setLoadingAdmin] = useState(false);
   const [adminError, setAdminError] = useState<string | null>(null);
@@ -33,14 +30,9 @@ export default function CalendarView({ role }: Props) {
 
   const monthString = `${year}-${String(month + 1).padStart(2, "0")}`;
 
-  // ================= SNAPSHOT =================
   const loadSnapshot = useCallback(async () => {
     try {
-      const data = await apiFetch(
-        `/jadwal/calendar?month=${monthString}`
-      );
-
-      console.log("SNAPSHOT:", bookedDates);
+      const data = await apiFetch(`/jadwal/calendar?month=${monthString}`);
       setBookedDates(data);
     } catch (err) {
       console.error("Gagal load snapshot:", err);
@@ -53,7 +45,6 @@ export default function CalendarView({ role }: Props) {
 
   useCalendarSocket(loadSnapshot);
 
-  // ================= LOAD LAYANAN =================
   useEffect(() => {
     if (showModal) {
       apiFetch("/layanan")
@@ -62,7 +53,6 @@ export default function CalendarView({ role }: Props) {
     }
   }, [showModal]);
 
-  // ================= NAVIGATION =================
   const goPrevMonth = () => {
     if (month === 0) {
       setMonth(11);
@@ -81,9 +71,10 @@ export default function CalendarView({ role }: Props) {
     }
   };
 
-  // ================= CLICK HANDLER =================
-  const handleDateClick = async (dateKey: string, status: string | undefined) => {
-    console.log("CLICKED:", dateKey, status, role);
+  const handleDateClick = async (
+    dateKey: string,
+    status: string | undefined
+  ) => {
     if (role === "user" && !status) {
       setSelectedDate(dateKey);
       setShowModal(true);
@@ -94,9 +85,7 @@ export default function CalendarView({ role }: Props) {
         setLoadingAdmin(true);
         setAdminError(null);
 
-        const data = await apiFetch(
-          `/jadwal/by-date?date=${dateKey}`
-        );
+        const data = await apiFetch(`/jadwal/by-date?date=${dateKey}`);
 
         setAdminDetail(data);
       } catch (err: any) {
@@ -107,7 +96,6 @@ export default function CalendarView({ role }: Props) {
     }
   };
 
-  // ================= GENERATE GRID =================
   const days = useMemo(() => {
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
@@ -116,13 +104,13 @@ export default function CalendarView({ role }: Props) {
     const totalDays = lastDay.getDate();
 
     const cells: (number | null)[] = [];
+
     for (let i = 0; i < startDay; i++) cells.push(null);
     for (let d = 1; d <= totalDays; d++) cells.push(d);
 
     return cells;
   }, [year, month]);
 
-  // ================= STATUS COLOR =================
   const getStatusClass = (status: string | undefined) => {
     if (!status) {
       return role === "user"
@@ -131,29 +119,31 @@ export default function CalendarView({ role }: Props) {
     }
 
     if (status === "booked")
-    return "bg-green-600 text-white border-green-600";
+      return "bg-emerald-500 text-white border-emerald-500";
 
     if (status === "cancelled")
-    return "bg-red-500 text-white border-red-500";
+      return "bg-rose-500 text-white border-rose-500";
 
     if (status === "pending")
-    return "bg-yellow-500 text-white border-yellow-500";
+      return "bg-amber-400 text-white border-amber-400";
 
     return "border-neutral-200";
   };
 
   return (
-    <div>
-      {/* ================= HEADER ================= */}
-      <div className="flex items-center justify-between mb-8">
+    <div className="max-w-5xl mx-auto">
+
+      {/* HEADER */}
+      <div className="flex items-center justify-between mb-10">
+
         <button
           onClick={goPrevMonth}
-          className="px-4 py-2 rounded-lg border border-neutral-300 hover:bg-neutral-100"
+          className="h-10 w-10 flex items-center justify-center rounded-full border border-neutral-300 hover:bg-neutral-100 transition"
         >
           ←
         </button>
 
-        <h2 className="text-xl font-semibold capitalize">
+        <h2 className="text-2xl font-semibold tracking-tight capitalize">
           {new Date(year, month).toLocaleString("id-ID", {
             month: "long",
             year: "numeric",
@@ -162,21 +152,21 @@ export default function CalendarView({ role }: Props) {
 
         <button
           onClick={goNextMonth}
-          className="px-4 py-2 rounded-lg border border-neutral-300 hover:bg-neutral-100"
+          className="h-10 w-10 flex items-center justify-center rounded-full border border-neutral-300 hover:bg-neutral-100 transition"
         >
           →
         </button>
       </div>
 
-      {/* ================= DAY LABEL ================= */}
-      <div className="grid grid-cols-7 gap-3 text-center text-sm font-medium text-neutral-600 mb-3">
+      {/* DAY LABEL */}
+      <div className="grid grid-cols-7 gap-4 text-center text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-4">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
           <div key={d}>{d}</div>
         ))}
       </div>
 
-      {/* ================= GRID ================= */}
-      <div className="grid grid-cols-7 gap-3">
+      {/* GRID */}
+      <div className="grid grid-cols-7 gap-4">
         {days.map((day, idx) => {
           if (!day) return <div key={idx} />;
 
@@ -187,7 +177,9 @@ export default function CalendarView({ role }: Props) {
             <div
               key={idx}
               onClick={() => handleDateClick(dateKey, status)}
-              className={`h-20 rounded-xl border flex items-center justify-center transition ${getStatusClass(status)}`}
+              className={`h-20 rounded-2xl border flex items-center justify-center font-medium shadow-sm transition hover:shadow-md ${getStatusClass(
+                status
+              )}`}
             >
               {day}
             </div>
@@ -195,12 +187,14 @@ export default function CalendarView({ role }: Props) {
         })}
       </div>
 
-      {/* ================= USER MODAL ================= */}
+      {/* USER MODAL */}
       {showModal && selectedDate && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-8 w-full max-w-md">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+
+          <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl">
+
             <h3 className="text-lg font-semibold mb-4">
-              Booking Tanggal {selectedDate}
+              Booking {selectedDate}
             </h3>
 
             {bookingError && (
@@ -212,7 +206,7 @@ export default function CalendarView({ role }: Props) {
             <select
               value={selectedLayanan}
               onChange={(e) => setSelectedLayanan(e.target.value)}
-              className="w-full border border-neutral-300 rounded-lg p-3 mb-3"
+              className="w-full border border-neutral-200 rounded-xl p-3 mb-3"
             >
               <option value="">Pilih Layanan</option>
               {layananList.map((l) => (
@@ -223,10 +217,10 @@ export default function CalendarView({ role }: Props) {
             </select>
 
             <textarea
-              placeholder="Info acara (opsional)"
+              placeholder="Info acara"
               value={infoAcara}
               onChange={(e) => setInfoAcara(e.target.value)}
-              className="w-full border border-neutral-300 rounded-lg p-3 mb-3"
+              className="w-full border border-neutral-200 rounded-xl p-3 mb-3"
             />
 
             <button
@@ -251,40 +245,40 @@ export default function CalendarView({ role }: Props) {
                   });
 
                   setShowModal(false);
-                  setSelectedDate(null);
-                  setSelectedLayanan("");
-                  setInfoAcara("");
                 } catch (err: any) {
                   setBookingError(err.message);
                 } finally {
                   setLoadingBooking(false);
                 }
               }}
-              className="w-full bg-[#C9AE63] text-white py-3 rounded-lg mt-2 disabled:opacity-50"
+              className="w-full bg-[#C9AE63] text-white py-3 rounded-xl font-semibold"
             >
               {loadingBooking ? "Processing..." : "Confirm Booking"}
             </button>
 
             <button
               onClick={() => setShowModal(false)}
-              className="w-full mt-3 border border-neutral-300 py-3 rounded-lg"
+              className="w-full mt-3 border border-neutral-200 py-3 rounded-xl"
             >
               Cancel
             </button>
+
           </div>
         </div>
       )}
 
-      {/* ================= ADMIN MODAL ================= */}
+      {/* ADMIN MODAL */}
       {adminDetail && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-8 w-full max-w-lg">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+
+          <div className="bg-white rounded-3xl p-10 w-full max-w-lg shadow-2xl">
 
             <h3 className="text-lg font-semibold mb-6">
               Detail Booking {adminDetail.tanggal_key}
             </h3>
 
             <div className="space-y-3 text-sm">
+
               <div>
                 <strong>Pelanggan:</strong>{" "}
                 {adminDetail.ticket?.pelanggan?.username}
@@ -304,14 +298,17 @@ export default function CalendarView({ role }: Props) {
                 <strong>Status:</strong>{" "}
                 {adminDetail.ticket?.status}
               </div>
+
             </div>
 
             <div className="mt-6 flex gap-3">
+
               <button
                 disabled={loadingStatusUpdate}
                 onClick={async () => {
                   try {
                     setLoadingStatusUpdate(true);
+
                     await apiFetch(
                       `/ticket/${adminDetail.ticket._id}/status`,
                       {
@@ -319,12 +316,13 @@ export default function CalendarView({ role }: Props) {
                         body: JSON.stringify({ status: "approved" }),
                       }
                     );
+
                     setAdminDetail(null);
                   } finally {
                     setLoadingStatusUpdate(false);
                   }
                 }}
-                className="flex-1 bg-green-600 text-white py-3 rounded-lg"
+                className="flex-1 bg-emerald-500 text-white py-3 rounded-xl"
               >
                 Approve
               </button>
@@ -334,6 +332,7 @@ export default function CalendarView({ role }: Props) {
                 onClick={async () => {
                   try {
                     setLoadingStatusUpdate(true);
+
                     await apiFetch(
                       `/ticket/${adminDetail.ticket._id}/status`,
                       {
@@ -341,20 +340,22 @@ export default function CalendarView({ role }: Props) {
                         body: JSON.stringify({ status: "rejected" }),
                       }
                     );
+
                     setAdminDetail(null);
                   } finally {
                     setLoadingStatusUpdate(false);
                   }
                 }}
-                className="flex-1 bg-red-600 text-white py-3 rounded-lg"
+                className="flex-1 bg-rose-500 text-white py-3 rounded-xl"
               >
                 Reject
               </button>
+
             </div>
 
             <button
               onClick={() => setAdminDetail(null)}
-              className="w-full mt-4 border border-neutral-300 py-3 rounded-lg"
+              className="w-full mt-4 border border-neutral-200 py-3 rounded-xl"
             >
               Close
             </button>
@@ -362,6 +363,7 @@ export default function CalendarView({ role }: Props) {
           </div>
         </div>
       )}
+
     </div>
   );
 }

@@ -3,7 +3,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ChatWidget from "@/components/ChatWidget";
-import { AuthProvider } from "@/context/AuthContext";
+import { AuthProvider} from "@/context/AuthContext";
 
 type Props = {
   children: ReactNode;
@@ -18,6 +18,7 @@ export default function RootLayout({ children }: Props) {
           <main>
             {children}
           </main>
+
           <Footer />
           <ChatWidget />
         </AuthProvider>

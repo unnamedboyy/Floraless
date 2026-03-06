@@ -99,6 +99,38 @@ router.get("/", async (req, res) => {
   }
 });
 
+
+/**
+ * =========================
+ * GET TICKETS BY USER
+ * =========================
+ */
+router.get("/user/my", protect, async (req, res) => {
+  try {
+
+    const tickets = await TicketPemesanan.find({
+      pelanggan: req.user.id,
+    })
+      .populate("layanan", "nama_layanan gambar")
+      .sort({ createdAt: -1 });
+
+    const formatted = tickets.map(ticket => ({
+      _id: ticket._id,
+      layanan: ticket.layanan,
+      status: ticket.status,
+      info_acara: ticket.info_acara,
+      createdAt: ticket.createdAt,
+      tanggal_acara: ticket.jadwal?.[0]?.tanggal_acara || null
+    }));
+
+    res.json(formatted);
+
+  } catch (err) {
+    console.error("USER TICKETS ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
 /**
  * =========================
  * GET BY ID

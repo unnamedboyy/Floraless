@@ -25,7 +25,7 @@ export default function UserLayout({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <main className="pt-[72px] min-h-screen">
+      <main className="min-h-screen">
         {children}
       </main>
     </>

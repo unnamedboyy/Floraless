@@ -2,28 +2,51 @@
 
 import Image from "next/image";
 import { InstagramIcon, Music2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function KontakPage() {
+  const [offset, setOffset] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setOffset(window.scrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <div className="min-h-screen bg-white text-neutral-900">
       <main>
 
-        {/* HERO */}
+        {/* HERO PARALLAX */}
         <section className="relative h-[520px] w-full overflow-hidden">
-          <Image
-            src="/about.jpg"
-            alt="Contact Floraless"
-            fill
-            className="object-cover"
-            priority
-          />
+
+          <div
+            className="absolute inset-0 scale-110"
+            style={{
+              transform: `translateY(${offset * 0.35}px)`
+            }}
+          >
+            <Image
+              src="/about.jpg"
+              alt="Contact Floraless"
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+
           <div className="absolute inset-0 bg-black/50" />
+
           <div className="absolute inset-0 flex items-center justify-center text-center px-6">
             <h1 className="text-5xl md:text-7xl font-semibold text-white leading-tight tracking-tight">
               Let’s Create Something <br className="hidden md:block" />
               Beautiful Together
             </h1>
           </div>
+
         </section>
 
         {/* CONTENT */}
@@ -36,32 +59,6 @@ export default function KontakPage() {
                 <h3 className="text-2xl font-semibold text-center">
                   Leave Your Message
                 </h3>
-
-                {/* <form className="mt-10 space-y-6">
-
-                  <input
-                    className="w-full rounded-xl border border-neutral-200 px-5 py-4 text-base outline-none focus:ring-2 focus:ring-[#C9AE63]/40 transition"
-                    placeholder="Subject"
-                  />
-
-                  <input
-                    className="w-full rounded-xl border border-neutral-200 px-5 py-4 text-base outline-none focus:ring-2 focus:ring-[#C9AE63]/40 transition"
-                    placeholder="Your Email"
-                  />
-
-                  <textarea
-                    className="min-h-[160px] w-full rounded-xl border border-neutral-200 px-5 py-4 text-base outline-none focus:ring-2 focus:ring-[#C9AE63]/40 transition"
-                    placeholder="Tell us about your event..."
-                  />
-
-                  <button
-                    type="button"
-                    className="w-full rounded-xl bg-[#C9AE63] px-6 py-5 text-base font-semibold text-white transition hover:opacity-90"
-                  >
-                    Send Message
-                  </button>
-
-                </form> */}
               </div>
             </div>
 
@@ -72,16 +69,13 @@ export default function KontakPage() {
                 <br /> <br /><br /><br /> <br />
               </div>
 
-              {/* Heading */}
               <div className="mb-10">
-
                 <h2 className="text-4xl md:text-6xl font-semibold leading-tight tracking-tight text-black">
                   Don’t hesitate to <br className="hidden md:block" />
                   contact us
                 </h2>
               </div>
 
-              {/* Contact Cards */}
               <div className="mt-8 grid gap-5 md:grid-cols-2">
 
                 <div className="rounded-2xl bg-neutral-100 p-8 shadow-sm transition hover:shadow-md">
@@ -121,6 +115,7 @@ export default function KontakPage() {
                 </p>
 
                 <div className="mt-6 flex gap-5">
+
                   <a
                     href="https://instagram.com/floraless_/"
                     target="_blank"

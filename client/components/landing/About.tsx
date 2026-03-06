@@ -3,7 +3,7 @@ import Image from "next/image";
 export default function About() {
   return (
     <section className="bg-white">
-      <div className="mx-auto max-w-6xl px-4 pb-10 pt-2">
+      <div className="mx-auto max-w-6xl px-4 pb-2 pt-2">
         <div className="relative md:min-h-[360px]">
           {/* Gambar (kiri) */}
           <div className="md:w-7/12">
