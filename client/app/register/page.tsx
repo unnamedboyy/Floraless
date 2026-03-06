@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import Image from "next/image";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -19,7 +20,6 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loadingBtn, setLoadingBtn] = useState(false);
 
-  // 🔥 Redirect kalau sudah login
   useEffect(() => {
     if (!loading && user) {
       if (user.role === "admin") {
@@ -74,12 +74,26 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
+
+      {/* BACKGROUND */}
+      <Image
+        src="/hero.jpg"
+        alt="Register Floraless"
+        fill
+        className="object-cover"
+        priority
+      />
+
+      {/* OVERLAY */}
+      <div className="absolute inset-0 bg-black/50" />
+
+      {/* REGISTER CARD */}
       <form
         onSubmit={handleRegister}
-        className="w-full max-w-md space-y-4 border border-neutral-200 p-8 rounded-2xl"
+        className="relative z-10 w-full max-w-md space-y-4 rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl p-10 shadow-2xl"
       >
-        <h1 className="text-2xl font-semibold text-center text-[#C9AE63]">
+        <h1 className="text-2xl font-semibold text-center text-white">
           Register Floraless
         </h1>
 
@@ -88,7 +102,7 @@ export default function RegisterPage() {
           placeholder="Nama Lengkap"
           value={nama}
           onChange={(e) => setNama(e.target.value)}
-          className="w-full border border-neutral-300 px-4 py-3 rounded-lg"
+          className="w-full rounded-lg border border-white/30 bg-white/20 px-4 py-3 text-white placeholder-white/70 outline-none focus:border-[#C9AE63]"
         />
 
         <input
@@ -96,7 +110,7 @@ export default function RegisterPage() {
           placeholder="Email (opsional)"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border border-neutral-300 px-4 py-3 rounded-lg"
+          className="w-full rounded-lg border border-white/30 bg-white/20 px-4 py-3 text-white placeholder-white/70 outline-none focus:border-[#C9AE63]"
         />
 
         <input
@@ -104,7 +118,7 @@ export default function RegisterPage() {
           placeholder="No Telepon"
           value={noTelepon}
           onChange={(e) => setNoTelepon(e.target.value)}
-          className="w-full border border-neutral-300 px-4 py-3 rounded-lg"
+          className="w-full rounded-lg border border-white/30 bg-white/20 px-4 py-3 text-white placeholder-white/70 outline-none focus:border-[#C9AE63]"
         />
 
         <input
@@ -112,7 +126,7 @@ export default function RegisterPage() {
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="w-full border border-neutral-300 px-4 py-3 rounded-lg"
+          className="w-full rounded-lg border border-white/30 bg-white/20 px-4 py-3 text-white placeholder-white/70 outline-none focus:border-[#C9AE63]"
         />
 
         <input
@@ -120,7 +134,7 @@ export default function RegisterPage() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border border-neutral-300 px-4 py-3 rounded-lg"
+          className="w-full rounded-lg border border-white/30 bg-white/20 px-4 py-3 text-white placeholder-white/70 outline-none focus:border-[#C9AE63]"
         />
 
         <input
@@ -128,20 +142,21 @@ export default function RegisterPage() {
           placeholder="Confirm Password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full border border-neutral-300 px-4 py-3 rounded-lg"
+          className="w-full rounded-lg border border-white/30 bg-white/20 px-4 py-3 text-white placeholder-white/70 outline-none focus:border-[#C9AE63]"
         />
 
         {error && (
-          <p className="text-sm text-red-500 text-center">{error}</p>
+          <p className="text-sm text-red-400 text-center">{error}</p>
         )}
 
         <button
           type="submit"
           disabled={loadingBtn}
-          className="w-full rounded-full bg-[#C9AE63] py-3 text-white font-semibold hover:opacity-90"
+          className="w-full rounded-full bg-[#C9AE63] py-3 font-semibold text-white hover:opacity-90 transition"
         >
           {loadingBtn ? "Processing..." : "Register"}
         </button>
+
       </form>
     </div>
   );

@@ -45,6 +45,7 @@ router.post("/", async (req, res) => {
   }
 });
 
+
 /**
  * =========================
  * GET ALL PELANGGAN
@@ -53,8 +54,15 @@ router.post("/", async (req, res) => {
  */
 router.get("/", async (req, res) => {
   try {
-    const pelanggan = await Pelanggan.find().sort({ createdAt: -1 });
-    res.json(pelanggan);
+    const tickets = await TicketPemesanan.find()
+      .populate("pelanggan")
+      .populate("admin")
+      .populate("layanan")
+      .sort({ createdAt: -1 });
+
+    const clean = tickets.filter(t => t.pelanggan);
+
+    res.json(clean);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

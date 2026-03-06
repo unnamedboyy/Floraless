@@ -1,27 +1,51 @@
-import Navbar from "../../components/Navbar";
-import Footer from "../../components/Footer";
+"use client";
+
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import FaqSection from "@/components/landing/FaqSection";
 
 export default function TentangPage() {
+  const [offset, setOffset] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setOffset(window.scrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <div className="min-h-screen bg-white text-neutral-900">
       <main>
 
-        {/* HERO */}
+        {/* HERO PARALLAX */}
         <section className="relative h-[360px] w-full overflow-hidden">
-          <Image
-            src="/hero.jpg"
-            alt="Floraless Event"
-            fill
-            className="object-cover"
-            priority
-          />
+
+          <div
+            className="absolute inset-0 scale-110"
+            style={{
+              transform: `translateY(${offset * 0.35}px)`
+            }}
+          >
+            <Image
+              src="/hero.jpg"
+              alt="Floraless Event"
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+
           <div className="absolute inset-0 bg-black/30" />
+
           <div className="absolute inset-0 flex items-center justify-center">
             <h1 className="text-4xl md:text-5xl font-semibold text-white text-center">
               Tentang Floraless
             </h1>
           </div>
+
         </section>
 
         {/* INTRO */}

@@ -2,6 +2,14 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
+import {
+  Search,
+  Plus,
+  Pencil,
+  Trash2,
+  Power,
+  X,
+} from "lucide-react";
 
 type Layanan = {
   _id: string;
@@ -17,7 +25,9 @@ export default function AdminLayananPage() {
 
   const [list, setList] = useState<Layanan[]>([]);
   const [loading, setLoading] = useState(true);
+
   const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
 
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Layanan | null>(null);
@@ -31,12 +41,19 @@ export default function AdminLayananPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
 
+  /* =============================
+      LOAD DATA
+  ============================= */
+
   async function load() {
     setLoading(true);
+
     const res = await fetch(`${API}/layanan`, {
       credentials: "include",
     });
+
     const data = await res.json();
+
     setList(data);
     setLoading(false);
   }
@@ -45,11 +62,35 @@ export default function AdminLayananPage() {
     load();
   }, []);
 
+  /* =============================
+      SEARCH + FILTER
+  ============================= */
+
   const filtered = useMemo(() => {
-    return list.filter((item) =>
-      item.nama_layanan.toLowerCase().includes(search.toLowerCase())
-    );
-  }, [list, search]);
+    return list.filter((item) => {
+
+      const matchSearch = item.nama_layanan
+        .toLowerCase()
+        .includes(search.toLowerCase());
+
+      let matchFilter = true;
+
+      if (filter === "active") {
+        matchFilter = item.isActive === true;
+      }
+
+      if (filter === "inactive") {
+        matchFilter = item.isActive === false;
+      }
+
+      return matchSearch && matchFilter;
+
+    });
+  }, [list, search, filter]);
+
+  /* =============================
+      OPEN MODAL
+  ============================= */
 
   function openCreate() {
     setEditing(null);
@@ -61,18 +102,21 @@ export default function AdminLayananPage() {
 
   function openEdit(item: Layanan) {
     setEditing(item);
+
     setForm({
       nama_layanan: item.nama_layanan,
       deskripsi: item.deskripsi || "",
       harga: String(item.harga),
     });
 
-    // 👇 PERBAIKAN: langsung pakai item.gambar
     setPreview(item.gambar || null);
-
     setFile(null);
     setShowModal(true);
   }
+
+  /* =============================
+      IMAGE CHANGE
+  ============================= */
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const selected = e.target.files?.[0];
@@ -82,15 +126,18 @@ export default function AdminLayananPage() {
     setPreview(URL.createObjectURL(selected));
   }
 
+  /* =============================
+      SUBMIT
+  ============================= */
+
   async function handleSubmit() {
     const formData = new FormData();
+
     formData.append("nama_layanan", form.nama_layanan);
     formData.append("deskripsi", form.deskripsi);
     formData.append("harga", form.harga);
 
-    if (file) {
-      formData.append("gambar", file);
-    }
+    if (file) formData.append("gambar", file);
 
     const url = editing
       ? `${API}/layanan/${editing._id}`
@@ -106,6 +153,10 @@ export default function AdminLayananPage() {
     load();
   }
 
+  /* =============================
+      DELETE
+  ============================= */
+
   async function handleDelete(id: string) {
     if (!confirm("Hapus layanan ini?")) return;
 
@@ -116,6 +167,10 @@ export default function AdminLayananPage() {
 
     load();
   }
+
+  /* =============================
+      TOGGLE STATUS
+  ============================= */
 
   async function toggleActive(item: Layanan) {
     await fetch(`${API}/layanan/${item._id}`, {
@@ -130,111 +185,203 @@ export default function AdminLayananPage() {
     load();
   }
 
+  /* =============================
+      UI
+  ============================= */
+
   return (
-    <div className="p-8">
+    <div className="px-10 py-12 space-y-12">
+
       {/* HEADER */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Layanan</h1>
+
+      <div className="flex items-center justify-between">
+
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Layanan
+          </h1>
+
+          <p className="text-neutral-500 text-sm mt-2">
+            Kelola semua paket dekorasi yang tersedia
+          </p>
+        </div>
+
         <button
           onClick={openCreate}
-          className="bg-[#C9AE63] text-white px-5 py-2 rounded-lg"
+          className="flex items-center gap-2 bg-[#C9AE63] text-white px-5 py-2 rounded-lg hover:opacity-90"
         >
-          + Tambah
+          <Plus size={16} />
+          Tambah Layanan
         </button>
+
       </div>
 
-      {/* SEARCH */}
-      <input
-        placeholder="Search layanan..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full border rounded-lg px-4 py-3 mb-6"
-      />
+      {/* SEARCH + FILTER */}
+
+      <div className="flex items-center gap-4">
+
+        <div className="relative flex-1">
+
+          <Search
+            size={16}
+            className="absolute left-3 top-2.5 text-neutral-400"
+          />
+
+          <input
+            placeholder="Search layanan..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full border border-neutral-200 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-neutral-300"
+          />
+
+        </div>
+
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="border border-neutral-200 rounded-lg px-4 py-2 text-sm w-[160px] bg-white"
+        >
+          <option value="all">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+
+      </div>
+
+      {/* TABLE HEADER */}
+
+      <div className="grid grid-cols-12 text-xs uppercase tracking-widest text-neutral-400 border-b pb-4">
+
+        <div className="col-span-4">Layanan</div>
+        <div className="col-span-2">Harga</div>
+        <div className="col-span-2">Status</div>
+        <div className="col-span-4 text-right">Action</div>
+
+      </div>
+
+      {/* LIST */}
 
       {loading ? (
-        <p>Loading...</p>
+        <p className="text-neutral-500">Loading...</p>
       ) : (
-        <div className="grid gap-6">
+        <div className="divide-y">
+
           {filtered.map((item) => (
+
             <div
               key={item._id}
-              className="border rounded-2xl p-5 flex gap-6 items-center"
+              className="grid grid-cols-12 items-center py-6 hover:bg-neutral-50 transition"
             >
-              {/* IMAGE */}
-              <div className="relative w-28 h-20 rounded-lg overflow-hidden bg-neutral-100 flex items-center justify-center">
-                {item.gambar ? (
-                  <Image
-                    src={item.gambar}
-                    alt={item.nama_layanan}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <span className="text-xs text-neutral-400">
-                    No Image
-                  </span>
-                )}
+
+              {/* LAYANAN */}
+
+              <div className="col-span-4 flex items-center gap-4">
+
+                <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-neutral-100">
+
+                  {item.gambar && (
+                    <Image
+                      src={item.gambar}
+                      alt={item.nama_layanan}
+                      fill
+                      className="object-cover"
+                    />
+                  )}
+
+                </div>
+
+                <div>
+
+                  <p className="font-medium text-neutral-900">
+                    {item.nama_layanan}
+                  </p>
+
+                  <p className="text-xs text-neutral-500 line-clamp-1">
+                    {item.deskripsi}
+                  </p>
+
+                </div>
+
               </div>
 
-              {/* INFO */}
-              <div className="flex-1">
-                <h3 className="font-semibold">
-                  {item.nama_layanan}
-                </h3>
-                <p className="text-sm text-neutral-500 mt-1">
-                  Rp {item.harga.toLocaleString()}
-                </p>
+              {/* HARGA */}
+
+              <div className="col-span-2 text-sm text-neutral-700">
+                Rp {item.harga.toLocaleString()}
+              </div>
+
+              {/* STATUS */}
+
+              <div className="col-span-2">
 
                 <span
-                  className={`inline-block mt-2 px-3 py-1 text-xs rounded-full ${
+                  className={`px-3 py-1 text-xs rounded-full ${
                     item.isActive
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
+                      ? "bg-green-50 text-green-600"
+                      : "bg-neutral-100 text-neutral-500"
                   }`}
                 >
                   {item.isActive ? "Active" : "Inactive"}
                 </span>
+
               </div>
 
-              {/* ACTIONS */}
-              <div className="flex flex-col gap-2">
+              {/* ACTION */}
+
+              <div className="col-span-4 flex justify-end gap-2">
+
                 <button
                   onClick={() => openEdit(item)}
-                  className="px-3 py-1 text-sm border rounded-lg"
+                  className="p-2 hover:bg-neutral-100 rounded-lg"
                 >
-                  Edit
+                  <Pencil size={16} />
                 </button>
 
                 <button
                   onClick={() => toggleActive(item)}
-                  className="px-3 py-1 text-sm bg-yellow-500 text-white rounded-lg"
+                  className="p-2 hover:bg-neutral-100 rounded-lg"
                 >
-                  Toggle
+                  <Power size={16} />
                 </button>
 
                 <button
                   onClick={() => handleDelete(item._id)}
-                  className="px-3 py-1 text-sm bg-red-500 text-white rounded-lg"
+                  className="p-2 hover:bg-red-50 text-red-500 rounded-lg"
                 >
-                  Delete
+                  <Trash2 size={16} />
                 </button>
+
               </div>
+
             </div>
+
           ))}
+
         </div>
       )}
 
       {/* MODAL */}
+
       {showModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-8 w-full max-w-lg">
-            <h2 className="text-xl font-semibold mb-6">
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
+
+          <div className="bg-white rounded-2xl p-8 w-full max-w-lg relative">
+
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute right-4 top-4 text-neutral-400 hover:text-black"
+            >
+              <X size={18} />
+            </button>
+
+            <h2 className="text-lg font-semibold mb-6">
               {editing ? "Edit Layanan" : "Tambah Layanan"}
             </h2>
 
             <div className="space-y-4">
+
               <input
-                placeholder="Nama Layanan"
+                placeholder="Nama layanan"
                 value={form.nama_layanan}
                 onChange={(e) =>
                   setForm({
@@ -242,7 +389,7 @@ export default function AdminLayananPage() {
                     nama_layanan: e.target.value,
                   })
                 }
-                className="w-full border rounded-lg px-4 py-3"
+                className="w-full border rounded-lg px-4 py-2"
               />
 
               <input
@@ -250,9 +397,12 @@ export default function AdminLayananPage() {
                 placeholder="Harga"
                 value={form.harga}
                 onChange={(e) =>
-                  setForm({ ...form, harga: e.target.value })
+                  setForm({
+                    ...form,
+                    harga: e.target.value,
+                  })
                 }
-                className="w-full border rounded-lg px-4 py-3"
+                className="w-full border rounded-lg px-4 py-2"
               />
 
               <textarea
@@ -264,31 +414,30 @@ export default function AdminLayananPage() {
                     deskripsi: e.target.value,
                   })
                 }
-                className="w-full border rounded-lg px-4 py-3"
+                className="w-full border rounded-lg px-4 py-2"
               />
 
-              {/* FILE INPUT */}
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleFileChange}
-                className="w-full border rounded-lg px-4 py-3"
               />
 
-              {/* PREVIEW */}
               {preview && (
-                <div className="relative w-full h-40 rounded-lg overflow-hidden">
+                <div className="relative h-40 rounded-lg overflow-hidden">
                   <Image
                     src={preview}
-                    alt="Preview"
+                    alt="preview"
                     fill
                     className="object-cover"
                   />
                 </div>
               )}
+
             </div>
 
-            <div className="flex justify-end gap-4 mt-6">
+            <div className="flex justify-end gap-3 mt-6">
+
               <button
                 onClick={() => setShowModal(false)}
                 className="px-4 py-2 border rounded-lg"
@@ -302,10 +451,14 @@ export default function AdminLayananPage() {
               >
                 {editing ? "Update" : "Create"}
               </button>
+
             </div>
+
           </div>
+
         </div>
       )}
+
     </div>
   );
 }

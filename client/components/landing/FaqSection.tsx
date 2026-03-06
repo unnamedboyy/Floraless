@@ -44,42 +44,45 @@ export default function FaqSection() {
   };
 
   return (
-    <section className="bg-black py-24 px-6">
-      <div className="max-w-5xl mx-auto">
-        <h2 className="text-center text-white text-5xl font-semibold mb-16 tracking-wide">
-          FAQ
+    <section className="bg-white py-24 px-6">
+      <div className="max-w-4xl mx-auto">
+
+        <h2 className="text-center text-4xl font-semibold text-neutral-900 mb-16">
+          Frequently Asked Questions
         </h2>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {faqs.map((faq, index) => {
             const isOpen = activeIndex === index;
 
             return (
               <div
                 key={index}
-                className="rounded-2xl bg-neutral-200 overflow-hidden transition-all duration-300"
+                className="border border-neutral-200 rounded-2xl overflow-hidden bg-white shadow-sm"
               >
                 <button
                   onClick={() => toggle(index)}
-                  className="w-full flex items-center justify-between px-8 py-6 text-left"
+                  className="w-full flex items-center justify-between px-6 py-5 text-left"
                 >
-                  <span className="text-lg font-medium text-black">
+                  <span className="text-base font-medium text-neutral-900">
                     {faq.question}
                   </span>
 
                   <ArrowUpRight
                     className={`transition-transform duration-300 ${
-                      isOpen ? "rotate-45 text-black" : "text-blue-600"
+                      isOpen
+                        ? "rotate-45 text-[#C9AE63]"
+                        : "text-neutral-400"
                     }`}
                   />
                 </button>
 
                 <div
-                  className={`px-8 transition-all duration-300 ${
-                    isOpen ? "max-h-60 pb-6" : "max-h-0"
-                  } overflow-hidden`}
+                  className={`transition-all duration-300 overflow-hidden ${
+                    isOpen ? "max-h-60 px-6 pb-6" : "max-h-0"
+                  }`}
                 >
-                  <p className="text-sm text-neutral-700 leading-relaxed">
+                  <p className="text-sm text-neutral-600 leading-relaxed">
                     {faq.answer}
                   </p>
                 </div>
@@ -87,6 +90,7 @@ export default function FaqSection() {
             );
           })}
         </div>
+
       </div>
     </section>
   );

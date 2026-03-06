@@ -80,34 +80,29 @@ export default function Packages() {
                 </div>
 
                 {/* CONTENT */}
-                <div className="absolute inset-x-0 top-0 p-6 text-white">
-                  <h3 className="text-xl font-semibold">
-                    {layanan.nama_layanan}
-                  </h3>
+                <div className="absolute inset-x-0 bottom-0 flex justify-center pb-8 px-6">
 
-                  {layanan.deskripsi && (
-                    <p className="mt-3 text-sm text-white/85 line-clamp-3">
-                      {layanan.deskripsi}
-                    </p>
-                  )}
+                  <div className="text-center text-white max-w-sm">
 
-                  {layanan.fitur && layanan.fitur.length > 0 && (
-                    <ul className="mt-4 space-y-2 text-sm text-white/90">
-                      {layanan.fitur.slice(0, 3).map((f, idx) => (
-                        <li key={idx} className="flex items-start gap-2">
-                          <span className="mt-1 inline-block h-3 w-3 rounded-full bg-[#C9AE63]" />
-                          <span>{f}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                    <h3 className="text-xl font-semibold">
+                      {layanan.nama_layanan}
+                    </h3>
 
-                  <a
-                    href="/login"
-                    className="mt-6 inline-block rounded-full bg-[#C9AE63] px-5 py-2 text-xs font-semibold hover:opacity-90"
-                  >
-                    Booking Sekarang
-                  </a>
+                    {layanan.deskripsi && (
+                      <p className="mt-2 text-sm text-white/85 line-clamp-2">
+                        {layanan.deskripsi}
+                      </p>
+                    )}
+
+                    <a
+                      href="/login"
+                      className="mt-4 inline-block rounded-full bg-[#C9AE63] px-6 py-2 text-xs font-semibold hover:opacity-90 transition"
+                    >
+                      Booking Sekarang
+                    </a>
+
+                  </div>
+
                 </div>
               </div>
             ))}

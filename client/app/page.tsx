@@ -19,7 +19,7 @@ export default function HomePage() {
       <BeforeAfter />
       <Packages />
       <Testimonials />
-      <FaqSection />
+      {/* <FaqSection /> */}
     </>
   );
 }
