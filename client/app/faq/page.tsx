@@ -98,7 +98,7 @@ export default function FaqPage() {
       </section>
 
       {/* QUICK HELP */}
-      <section className="py-16 px-6 bg-neutral-50">
+      <section className="py-16 px-6 bg-white">
         <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-6">
 
           <div className="border rounded-2xl p-6 bg-white shadow-sm">
@@ -129,7 +129,7 @@ export default function FaqPage() {
       </section>
 
       {/* FAQ LIST */}
-      <section className="py-24 px-6">
+      <section className="py-15 px-6">
         <div className="max-w-4xl mx-auto">
 
           <h2 className="text-3xl font-semibold text-center mb-16">
