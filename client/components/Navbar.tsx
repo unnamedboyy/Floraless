@@ -70,14 +70,14 @@ export default function Navbar() {
                 href="/user/calendar"
                 className="relative after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all hover:after:w-full"
               >
-                Jadwal
+                Kalender
               </Link>
 
               <Link
                 href="/user/tickets"
                 className="relative after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all hover:after:w-full"
               >
-                Tiket
+                Transaksi
               </Link>
 
               {/* <Link
@@ -110,7 +110,7 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <span className="text-xs opacity-80">
+              <span className="text-xs font-semibold">
                 Halo, {user.username}
               </span>
 

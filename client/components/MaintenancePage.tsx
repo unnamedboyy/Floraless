@@ -75,9 +75,9 @@ export default function MaintenancePage() {
 
         {/* TITLE */}
         <h1 className="text-4xl font-semibold md:text-5xl">
-          Website Sedang Maintenance
+          Website Sedang
           <span className="block text-[#C9AE63]">
-            Dalam 
+            Dalam Maintenance
           </span>
         </h1>
 
