@@ -46,9 +46,7 @@ export default function FaqPage() {
   };
 
   useEffect(() => {
-    const handleScroll = () => {
-      setOffset(window.scrollY);
-    };
+    const handleScroll = () => setOffset(window.scrollY);
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -57,7 +55,7 @@ export default function FaqPage() {
   return (
     <div className="bg-white text-neutral-900">
 
-      {/* HERO PARALLAX */}
+      {/* HERO */}
       <section className="relative h-[420px] w-full overflow-hidden">
 
         <div
@@ -75,10 +73,8 @@ export default function FaqPage() {
           />
         </div>
 
-        {/* OVERLAY */}
         <div className="absolute inset-0 bg-black/50" />
 
-        {/* CONTENT */}
         <div className="relative flex h-full items-center justify-center text-center px-6">
           <div className="max-w-3xl">
 
@@ -98,38 +94,32 @@ export default function FaqPage() {
       </section>
 
       {/* QUICK HELP */}
-      <section className="py-16 px-6 bg-white">
+      <section className="py-16 px-6">
+
         <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-6">
 
-          <div className="border rounded-2xl p-6 bg-white shadow-sm">
-            <h3 className="font-semibold text-lg">Booking Acara</h3>
-            <p className="text-sm text-neutral-600 mt-3">
-              Gunakan fitur kalender untuk memilih tanggal yang tersedia dan
-              melakukan permintaan booking secara langsung.
-            </p>
-          </div>
+          <HelpCard
+            title="Booking Acara"
+            text="Gunakan fitur kalender untuk memilih tanggal yang tersedia dan melakukan permintaan booking secara langsung."
+          />
 
-          <div className="border rounded-2xl p-6 bg-white shadow-sm">
-            <h3 className="font-semibold text-lg">Status Pesanan</h3>
-            <p className="text-sm text-neutral-600 mt-3">
-              Semua status booking dapat dipantau melalui halaman tiket pada
-              dashboard akun Anda.
-            </p>
-          </div>
+          <HelpCard
+            title="Status Pesanan"
+            text="Semua status booking dapat dipantau melalui halaman tiket pada dashboard akun Anda."
+          />
 
-          <div className="border rounded-2xl p-6 bg-white shadow-sm">
-            <h3 className="font-semibold text-lg">Butuh Bantuan?</h3>
-            <p className="text-sm text-neutral-600 mt-3">
-              Anda dapat langsung menghubungi admin melalui fitur live chat
-              untuk mendapatkan bantuan lebih lanjut.
-            </p>
-          </div>
+          <HelpCard
+            title="Butuh Bantuan?"
+            text="Anda dapat langsung menghubungi admin melalui fitur live chat untuk mendapatkan bantuan lebih lanjut."
+          />
 
         </div>
+
       </section>
 
       {/* FAQ LIST */}
-      <section className="py-15 px-6">
+      <section className="py-16 px-6">
+
         <div className="max-w-4xl mx-auto">
 
           <h2 className="text-3xl font-semibold text-center mb-16">
@@ -137,7 +127,9 @@ export default function FaqPage() {
           </h2>
 
           <div className="space-y-4">
+
             {faqs.map((faq, index) => {
+
               const isOpen = activeIndex === index;
 
               return (
@@ -145,10 +137,12 @@ export default function FaqPage() {
                   key={index}
                   className="border border-neutral-200 rounded-2xl overflow-hidden bg-white shadow-sm"
                 >
+
                   <button
                     onClick={() => toggle(index)}
                     className="w-full flex items-center justify-between px-6 py-5 text-left"
                   >
+
                     <span className="text-base font-medium">
                       {faq.question}
                     </span>
@@ -160,6 +154,7 @@ export default function FaqPage() {
                           : "text-neutral-400"
                       }`}
                     />
+
                   </button>
 
                   <div
@@ -167,20 +162,26 @@ export default function FaqPage() {
                       isOpen ? "max-h-60 px-6 pb-6" : "max-h-0"
                     }`}
                   >
+
                     <p className="text-sm text-neutral-600 leading-relaxed">
                       {faq.answer}
                     </p>
+
                   </div>
+
                 </div>
               );
             })}
+
           </div>
 
         </div>
+
       </section>
 
       {/* CONTACT SUPPORT */}
       <section className="py-20 bg-neutral-50 px-6">
+
         <div className="max-w-3xl mx-auto text-center">
 
           <h2 className="text-3xl font-semibold">
@@ -189,7 +190,7 @@ export default function FaqPage() {
 
           <p className="mt-4 text-neutral-600">
             Jika pertanyaan Anda belum terjawab, silakan hubungi tim kami
-            <br/>melalui fitur live chat atau kontak yang tersedia.
+            melalui fitur live chat atau kontak yang tersedia.
           </p>
 
           <button className="mt-8 bg-[#C9AE63] text-white px-8 py-3 rounded-full hover:opacity-90">
@@ -197,7 +198,34 @@ export default function FaqPage() {
           </button>
 
         </div>
+
       </section>
+
+    </div>
+  );
+}
+
+/* ======================
+   HELP CARD
+====================== */
+
+function HelpCard({
+  title,
+  text,
+}: {
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="border rounded-2xl p-6 bg-white shadow-sm">
+
+      <h3 className="font-semibold text-lg">
+        {title}
+      </h3>
+
+      <p className="text-sm text-neutral-600 mt-3 leading-relaxed">
+        {text}
+      </p>
 
     </div>
   );

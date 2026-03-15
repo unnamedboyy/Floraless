@@ -4,11 +4,7 @@ const Layanan = require("../models/Layanan");
 const upload = require("../utils/upload");
 const { verifyToken } = require("../utils/jwt");
 
-/**
- * =========================
- * MIDDLEWARE ADMIN ONLY
- * =========================
- */
+// MIDDLEWARE ADMIN ONLY
 function adminOnly(req, res, next) {
   try {
     const token = req.cookies.token;
@@ -25,11 +21,8 @@ function adminOnly(req, res, next) {
   }
 }
 
-/**
- * =========================
- * GET ALL LAYANAN (PUBLIC)
- * =========================
- */
+// GET ALL LAYANAN
+// GET /api/layanan
 router.get("/", async (req, res) => {
   try {
     const layanan = await Layanan.find().sort({ createdAt: -1 });
@@ -39,11 +32,8 @@ router.get("/", async (req, res) => {
   }
 });
 
-/**
- * =========================
- * GET BY ID
- * =========================
- */
+// GET LAYANAN BY ID
+// GET /api/layanan/:id
 router.get("/:id", async (req, res) => {
   try {
     const layanan = await Layanan.findById(req.params.id);
@@ -56,11 +46,8 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-/**
- * =========================
- * CREATE (ADMIN)
- * =========================
- */
+// CREATE LAYANAN
+// POST /api/layanan
 router.post("/", adminOnly, upload.single("gambar"), async (req, res) => {
   try {
     const { nama_layanan, deskripsi, harga } = req.body;
@@ -84,11 +71,8 @@ router.post("/", adminOnly, upload.single("gambar"), async (req, res) => {
   }
 });
 
-/**
- * =========================
- * UPDATE (ADMIN)
- * =========================
- */
+// UPDATE LAYANAN
+// PATCH /api/layanan/:id
 router.patch("/:id", adminOnly, upload.single("gambar"), async (req, res) => {
   try {
     const updateData = {
@@ -115,11 +99,8 @@ router.patch("/:id", adminOnly, upload.single("gambar"), async (req, res) => {
   }
 });
 
-/**
- * =========================
- * DELETE (ADMIN)
- * =========================
- */
+// DELETE LAYANAN
+// DELETE /api/layanan/:id
 router.delete("/:id", adminOnly, async (req, res) => {
   try {
     const deleted = await Layanan.findByIdAndDelete(req.params.id);

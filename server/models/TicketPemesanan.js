@@ -2,23 +2,57 @@ const mongoose = require("mongoose");
 
 const jadwalSchema = new mongoose.Schema(
   {
-    tanggal_acara: { type: Date, required: true },
-    status_tanggal: { type: String, default: "booked" }, // booked/cancelled/done
-    info: { type: String },
+    tanggal_acara: {
+      type: Date,
+      required: true,
+    },
+
+    status_tanggal: {
+      type: String,
+      default: "booked",
+    },
+
+    info: {
+      type: String,
+    },
   },
   { _id: false }
 );
 
 const ticketSchema = new mongoose.Schema(
   {
-    pelanggan: { type: mongoose.Schema.Types.ObjectId, ref: "Pelanggan", required: true, index: true },
-    admin: { type: mongoose.Schema.Types.ObjectId, ref: "Admin" },
-    layanan: { type: mongoose.Schema.Types.ObjectId, ref: "Layanan", required: true },
+    pelanggan: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Pelanggan",
+      required: true,
+      index: true,
+    },
 
-    status: { type: String, default: "pending", index: true }, // pending/approved/rejected/done
-    info_acara: { type: String },
+    admin: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Admin",
+    },
 
-    jadwal: { type: [jadwalSchema], default: [] },
+    layanan: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Layanan",
+      required: true,
+    },
+
+    status: {
+      type: String,
+      default: "pending",
+      index: true,
+    },
+
+    info_acara: {
+      type: String,
+    },
+
+    jadwal: {
+      type: [jadwalSchema],
+      default: [],
+    },
   },
   { timestamps: true }
 );

@@ -3,12 +3,8 @@ const router = express.Router();
 const RoomChat = require("../models/RoomChat");
 const Pelanggan = require("../models/Pelanggan");
 
-/**
- * =========================
- * CREATE / GET ROOM BY PELANGGAN
- * POST /api/room-chat
- * =========================
- */
+// CREATE / GET ROOM BY PELANGGAN
+// POST /api/room-chat
 router.post("/", async (req, res) => {
   try {
     const { pelanggan } = req.body || {};
@@ -34,12 +30,8 @@ router.post("/", async (req, res) => {
   }
 });
 
-/**
- * =========================
- * GET ALL ROOM CHAT
- * GET /api/room-chat
- * =========================
- */
+// GET ALL ROOM CHAT
+// GET /api/room-chat
 router.get("/", async (req, res) => {
   try {
     const rooms = await RoomChat.find()
@@ -52,12 +44,8 @@ router.get("/", async (req, res) => {
   }
 });
 
-/**
- * =========================
- * GET ROOM BY ID
- * GET /api/room-chat/:id
- * =========================
- */
+// GET ROOM CHAT BY ID
+// GET /api/room-chat/:id
 router.get("/:id", async (req, res) => {
   try {
     const room = await RoomChat.findById(req.params.id).populate("pelanggan");

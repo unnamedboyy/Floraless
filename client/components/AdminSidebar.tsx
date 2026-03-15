@@ -4,9 +4,11 @@ import Link from "next/link";
 import {
   LayoutDashboard,
   Calendar,
+  Ticket,
+  CreditCard,
   Package,
   MessageCircle,
-  Settings,
+  Settings
 } from "lucide-react";
 
 export default function AdminSidebar() {
@@ -14,9 +16,9 @@ export default function AdminSidebar() {
     <aside className="fixed top-0 left-0 w-20 h-screen bg-[#0A0A0A] border-r border-neutral-800 flex flex-col items-center py-6 z-50">
 
       {/* LOGO */}
-      <div className="mb-12 text-white font-bold text-sm tracking-widest">
-        F
-      </div>
+      {/* <div className="mb-12 text-white font-bold text-sm tracking-widest">
+        Floraless
+      </div> */}
 
       {/* NAVIGATION */}
       <nav className="flex flex-col gap-8">
@@ -26,12 +28,12 @@ export default function AdminSidebar() {
         </Link>
 
         <Link href="/admin/tickets">
-          <Calendar className="text-neutral-400 hover:text-white transition" />
+          <Ticket className="text-neutral-400 hover:text-white transition" />
         </Link>
 
-        <Link href="/admin/calendar">
+        {/* <Link href="/admin/calendar">
           <Calendar className="text-neutral-400 hover:text-white transition" />
-        </Link>
+        </Link> */}
 
         <Link href="/admin/layanan">
           <Package className="text-neutral-400 hover:text-white transition" />
@@ -41,10 +43,13 @@ export default function AdminSidebar() {
           <MessageCircle className="text-neutral-400 hover:text-white transition" />
         </Link>
 
+        <Link href="/admin/payments">
+          <CreditCard className="text-neutral-400 hover:text-white transition" />
+        </Link>
+
         <Link href="/admin/settings">
           <Settings className="text-neutral-400 hover:text-white transition" />
         </Link>
-
       </nav>
 
     </aside>

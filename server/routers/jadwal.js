@@ -4,11 +4,8 @@ const Jadwal = require("../models/Jadwal");
 const LogAktivitas = require("../models/LogAktivitas");
 const { protect, authorize } = require("../middlewares/auth");
 
-/**
- * =========================
- * CALENDAR SNAPSHOT
- * =========================
- */
+// CALENDAR SNAPSHOT
+// GET /api/jadwal/calendar
 router.get("/calendar", async (req, res) => {
   try {
     const { month } = req.query;
@@ -36,12 +33,8 @@ router.get("/calendar", async (req, res) => {
   }
 });
 
-
-/**
- * =========================
- * GET JADWAL BY DATE
- * =========================
- */
+// GET JADWAL BY DATE
+// GET /api/jadwal/by-date
 router.get("/by-date", async (req, res) => {
   try {
     const { date } = req.query;
@@ -78,11 +71,8 @@ router.get("/by-date", async (req, res) => {
   }
 });
 
-/**
- * =========================
- * GET ALL JADWAL
- * =========================
- */
+// GET ALL JADWAL
+// GET /api/jadwal
 router.get("/", async (req, res) => {
   try {
     const jadwal = await Jadwal.find()
@@ -95,11 +85,8 @@ router.get("/", async (req, res) => {
   }
 });
 
-/**
- * =========================
- * GET JADWAL BY ID
- * =========================
- */
+// GET JADWAL BY ID
+// GET /api/jadwal/:id
 router.get("/:id", async (req, res) => {
   try {
     const jadwal = await Jadwal.findById(req.params.id)
@@ -118,11 +105,8 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-/**
- * =========================
- * UPDATE JADWAL (ADMIN)
- * =========================
- */
+// UPDATE JADWAL
+// PATCH /api/jadwal/:id
 router.patch("/:id", protect, authorize("admin"), async (req, res) => {
   try {
     const { status_tanggal, info, tanggal_acara } = req.body || {};

@@ -6,6 +6,8 @@ const Admin = require("../models/Admin");
 const Pelanggan = require("../models/Pelanggan");
 const { signToken, verifyToken } = require("../utils/jwt");
 
+// GET CURRENT USER
+// GET /auth/me
 router.get("/me", async (req, res) => {
   try {
     const token = req.cookies.token;
@@ -36,9 +38,8 @@ router.get("/me", async (req, res) => {
   }
 });
 
-/**
- * LOGIN (admin atau pelanggan)
- */
+// LOGIN
+// POST /auth/login
 router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body || {};
@@ -89,9 +90,8 @@ router.post("/login", async (req, res) => {
   }
 });
 
-/**
- * LOGOUT
- */
+// LOGOUT
+// POST /auth/logout
 router.post("/logout", (req, res) => {
   console.log("LOGOUT COOKIE BEFORE:", req.cookies);
   res.clearCookie("token", {
@@ -104,9 +104,8 @@ router.post("/logout", (req, res) => {
   res.json({ message: "Logout berhasil" });
 });
 
-/**
- * REGISTER (hanya pelanggan)
- */
+// REGISTER
+// POST /auth/register
 router.post("/register", async (req, res) => {
   try {
     const { nama, email, no_telepon, username, password } = req.body || {};
@@ -123,7 +122,6 @@ router.post("/register", async (req, res) => {
       });
     }
 
-    // 🔎 Cek duplikasi
     const existing = await Pelanggan.findOne({
       $or: [
         { username },
@@ -156,7 +154,7 @@ router.post("/register", async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       sameSite: "lax",
-      secure: false, // true kalau production https
+      secure: false,
     });
 
     res.status(201).json({

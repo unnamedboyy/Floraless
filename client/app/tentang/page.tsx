@@ -20,46 +20,47 @@ export default function TentangPage() {
     <div className="min-h-screen bg-white text-neutral-900">
       <main>
 
-        {/* HERO PARALLAX */}
-        <section className="relative h-[360px] w-full overflow-hidden">
+      {/* HERO */}
+      <section className="relative h-[420px] w-full overflow-hidden">
 
-          <div
-            className="absolute inset-0 scale-110"
-            style={{
-              transform: `translateY(${offset * 0.35}px)`
-            }}
-          >
-            <Image
-              src="/hero.jpg"
-              alt="Floraless Event"
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
+        <div
+          className="absolute inset-0 scale-110"
+          style={{
+            transform: `translateY(${offset * 0.3}px)`
+          }}
+        >
+          <Image
+            src="/hero.jpg"
+            alt="FAQ Floraless"
+            fill
+            priority
+            className="object-cover"
+          />
+        </div>
 
-          <div className="absolute inset-0 bg-black/30" />
+        <div className="absolute inset-0 bg-black/50" />
 
-          <div className="absolute inset-0 flex items-center justify-center">
-            <h1 className="text-4xl md:text-5xl font-semibold text-white text-center">
+        <div className="relative flex h-full items-center justify-center text-center px-6">
+          <div className="max-w-3xl">
+
+            <h1 className="text-4xl md:text-5xl font-semibold text-white">
               Tentang Floraless
             </h1>
-          </div>
 
-        </section>
-
-        {/* INTRO */}
-        <section className="mx-auto max-w-6xl px-4 py-16 text-center">
-          <p className="mx-auto max-w-3xl text-base leading-relaxed text-neutral-600">
-            Floraless hadir untuk menghadirkan dekorasi dan produksi acara yang
+            <p className="mt-6 text-white/80 leading-relaxed">
+                         Floraless hadir untuk menghadirkan dekorasi dan produksi acara yang
             elegan, terorganisir, dan berkesan. Kami memadukan kreativitas,
             detail, serta sistem perencanaan modern untuk memastikan setiap
             momen berjalan sempurna.
-          </p>
-        </section>
+            </p>
+
+          </div>
+        </div>
+
+      </section>
 
         {/* VISI & MISI */}
-        <section className="mx-auto max-w-6xl px-4 pb-20">
+        <section className="mx-auto max-w-6xl px-4 py-20">
           <div className="grid gap-10 md:grid-cols-2">
 
             <div className="rounded-3xl border border-neutral-200 p-10 shadow-sm">

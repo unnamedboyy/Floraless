@@ -1,152 +1,204 @@
 "use client";
 
-import Image from "next/image";
-import { X, Calendar, Clock } from "lucide-react";
+import { useEffect, useState } from "react";
+import { apiFetch } from "@/lib/api";
+import { useRouter } from "next/navigation";
 
-type Props = {
-  ticket: any;
-  onClose: () => void;
+type Ticket = {
+  _id: string;
+  status: string;
+  info_acara?: string;
+  createdAt?: string;
+  tanggal_acara?: string;
+
+  layanan?: {
+    nama_layanan?: string;
+    harga?: number;
+  };
 };
 
-export default function TicketDetailModal({ ticket, onClose }: Props) {
-  if (!ticket) return null;
+export default function TicketDetailModal({
+  ticket,
+  onClose,
+}: {
+  ticket: Ticket;
+  onClose: () => void;
+}) {
 
-  const steps = [
-    { key: "created", label: "Booking Dibuat" },
-    { key: "pending", label: "Diproses Admin" },
-    { key: "approved", label: "Disetujui" },
-  ];
+  const router = useRouter();
 
-  function getStepState(index: number) {
-    if (ticket.status === "pending") {
-      if (index === 0) return "done";
-      if (index === 1) return "active";
-      return "todo";
+  const [detail, setDetail] = useState<any>(null);
+  const [summary, setSummary] = useState<any>(null);
+
+  useEffect(() => {
+    async function load() {
+
+      try {
+
+        const data = await apiFetch(`/ticket/${ticket._id}`);
+        setDetail(data);
+
+        const pay = await apiFetch(`/pembayaran/summary/${ticket._id}`);
+        setSummary(pay);
+
+      } catch (err) {
+        console.error(err);
+      }
+
     }
 
-    if (ticket.status === "approved") {
-      if (index <= 2) return "done";
-    }
+    load();
 
-    if (ticket.status === "rejected") {
-      if (index === 0) return "done";
-      if (index === 1) return "active";
-      return "todo";
-    }
+  }, [ticket]);
 
-    return "todo";
+  function goPayment(type: string) {
+
+    router.push(
+      `/user/payments?ticket=${ticket._id}&type=${type}`
+    );
+
   }
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
 
-      {/* WINDOW */}
-      <div className="relative w-[700px] max-w-[90vw] rounded-2xl bg-white shadow-2xl overflow-hidden">
+      <div className="bg-white rounded-2xl p-8 w-full max-w-lg space-y-6 shadow-xl">
 
-        {/* CLOSE BUTTON */}
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 z-10 p-2 rounded-full hover:bg-neutral-100"
-        >
-          <X size={20} />
-        </button>
+        <h2 className="text-xl font-semibold">
+          Detail Booking
+        </h2>
 
-        {/* IMAGE */}
-        <div className="relative h-56 w-full">
-          <Image
-            src={ticket.layanan?.gambar || "/package-1.jpg"}
-            alt="event"
-            fill
-            className="object-cover"
-          />
-        </div>
-
-        {/* CONTENT */}
-        <div className="p-6 space-y-6">
-
-          <h2 className="text-2xl font-semibold">
-            {ticket.layanan?.nama_layanan}
-          </h2>
-
-          {/* DATE */}
-          {ticket.tanggal_acara && (
-            <div className="flex items-center gap-2 text-neutral-600 text-sm">
-              <Calendar size={16} />
-              {new Date(ticket.tanggal_acara).toLocaleDateString("id-ID", {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
-            </div>
-          )}
-
-          {/* CREATED */}
-          {ticket.createdAt && (
-            <div className="flex items-center gap-2 text-neutral-500 text-sm">
-              <Clock size={16} />
-              Dibuat {new Date(ticket.createdAt).toLocaleDateString()}
-            </div>
-          )}
-
-          {/* INFO */}
-          <p className="text-neutral-600 text-sm leading-relaxed">
-            {ticket.info_acara || "Detail acara belum tersedia."}
+        {!detail && (
+          <p className="text-sm text-neutral-500">
+            Memuat data...
           </p>
+        )}
 
-          {/* TIMELINE */}
-          <div className="pt-4 border-t">
+        {detail && (
+          <div className="space-y-3 text-sm">
 
-            <p className="text-sm text-neutral-500 mb-5">
-              Status Proses Booking
+            <p>
+              <span className="text-neutral-500">ID Ticket</span>
+              <br />
+              #{ticket._id.slice(-6)}
             </p>
 
-            <div className="flex items-center justify-between relative">
+            <p>
+              <span className="text-neutral-500">Layanan</span>
+              <br />
+              {detail.ticket.layanan?.nama_layanan}
+            </p>
 
-              {steps.map((step, i) => {
-                const state = getStepState(i);
+            <p>
+              <span className="text-neutral-500">Status</span>
+              <br />
+              {detail.ticket.status}
+            </p>
 
-                return (
-                  <div
-                    key={i}
-                    className="flex flex-col items-center flex-1 relative"
-                  >
+            <p>
+              <span className="text-neutral-500">Info Acara</span>
+              <br />
+              {detail.ticket.info_acara || "-"}
+            </p>
 
-                    {/* LINE */}
-                    {i !== 0 && (
-                      <div className="absolute left-0 top-3 w-full h-[2px] bg-neutral-200 -z-10" />
-                    )}
+            {detail.jadwal?.map((j: any, i: number) => (
 
-                    {/* DOT */}
-                    <div
-                      className={`w-6 h-6 rounded-full border-2
-                      ${
-                        state === "done"
-                          ? "bg-[#C9AE63] border-[#C9AE63]"
-                          : state === "active"
-                          ? "border-[#C9AE63]"
-                          : "border-neutral-300"
-                      }`}
-                    />
+              <p key={i}>
+                <span className="text-neutral-500">
+                  Tanggal Acara
+                </span>
+                <br />
 
-                    {/* LABEL */}
-                    <p
-                      className={`text-xs mt-3 text-center
-                      ${
-                        state === "done" || state === "active"
-                          ? "text-neutral-900"
-                          : "text-neutral-400"
-                      }`}
-                    >
-                      {step.label}
-                    </p>
+                {new Date(
+                  j.tanggal_acara
+                ).toLocaleDateString("id-ID")}
 
-                  </div>
-                );
-              })}
+              </p>
+
+            ))}
+
+          </div>
+        )}
+
+        {/* PAYMENT SUMMARY */}
+
+        {summary && (
+
+          <div className="border-t pt-4 space-y-3 text-sm">
+
+            <h3 className="font-medium">
+              Progress Pembayaran
+            </h3>
+
+            <p>
+              Total Harga
+              <br />
+              Rp {summary.total_harga?.toLocaleString()}
+            </p>
+
+            <p>
+              Sudah Dibayar
+              <br />
+              Rp {summary.total_dibayar?.toLocaleString()}
+            </p>
+
+            <p>
+              Sisa
+              <br />
+              Rp {summary.sisa?.toLocaleString()}
+            </p>
+
+            {/* BUTTON PEMBAYARAN */}
+
+            <div className="flex gap-3 pt-3">
+
+              {ticket.status === "approved" && (
+
+                <button
+                  onClick={() => goPayment("dp1")}
+                  className="px-4 py-2 bg-black text-white rounded-lg text-sm"
+                >
+                  Bayar DP1
+                </button>
+
+              )}
+
+              {ticket.status === "dp1_verified" && (
+
+                <button
+                  onClick={() => goPayment("dp2")}
+                  className="px-4 py-2 bg-black text-white rounded-lg text-sm"
+                >
+                  Bayar DP2
+                </button>
+
+              )}
+
+              {ticket.status === "dp2_verified" && (
+
+                <button
+                  onClick={() => goPayment("pelunasan")}
+                  className="px-4 py-2 bg-black text-white rounded-lg text-sm"
+                >
+                  Bayar Pelunasan
+                </button>
+
+              )}
+
             </div>
 
           </div>
+
+        )}
+
+        <div className="flex justify-end pt-4">
+
+          <button
+            onClick={onClose}
+            className="px-4 py-2 border rounded-lg hover:bg-neutral-100"
+          >
+            Tutup
+          </button>
 
         </div>
 
