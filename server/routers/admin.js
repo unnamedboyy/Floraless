@@ -3,12 +3,8 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 const Admin = require("../models/Admin");
 
-/**
- * =========================
- * CREATE ADMIN
- * POST /api/admin
- * =========================
- */
+// CREATE ADMIN
+// POST /api/admin
 router.post("/", async (req, res) => {
   try {
     const { nama, email, no_telepon, username, password, role } = req.body || {};
@@ -36,7 +32,7 @@ router.post("/", async (req, res) => {
       email,
       no_telepon,
       username,
-      password:hashedPassword,
+      password: hashedPassword,
       role: role || "admin",
     });
 
@@ -46,12 +42,8 @@ router.post("/", async (req, res) => {
   }
 });
 
-/**
- * =========================
- * GET ALL ADMIN
- * GET /api/admin
- * =========================
- */
+// GET ALL ADMIN
+// GET /api/admin
 router.get("/", async (req, res) => {
   try {
     const admins = await Admin.find().sort({ createdAt: -1 });
@@ -61,12 +53,8 @@ router.get("/", async (req, res) => {
   }
 });
 
-/**
- * =========================
- * GET ADMIN BY ID
- * GET /api/admin/:id
- * =========================
- */
+// GET ADMIN BY ID
+// GET /api/admin/:id
 router.get("/:id", async (req, res) => {
   try {
     const admin = await Admin.findById(req.params.id);
@@ -79,12 +67,8 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-/**
- * =========================
- * UPDATE ADMIN
- * PATCH /api/admin/:id
- * =========================
- */
+// UPDATE ADMIN
+// PATCH /api/admin/:id
 router.patch("/:id", async (req, res) => {
   try {
     const updated = await Admin.findByIdAndUpdate(
@@ -103,12 +87,8 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
-/**
- * =========================
- * DELETE ADMIN
- * DELETE /api/admin/:id
- * =========================
- */
+// DELETE ADMIN
+// DELETE /api/admin/:id
 router.delete("/:id", async (req, res) => {
   try {
     const deleted = await Admin.findByIdAndDelete(req.params.id);

@@ -2,12 +2,9 @@ const express = require("express");
 const router = express.Router();
 const LogAktivitas = require("../models/LogAktivitas");
 
-/**
- * =========================
- * GET LOG BY TICKET
- * GET /api/log/:ticketId
- * =========================
- */
+ // GET LOG BY TICKET
+ // GET /api/log/:ticketId
+ 
 router.get("/:ticketId", async (req, res) => {
   try {
     const logs = await LogAktivitas.find({

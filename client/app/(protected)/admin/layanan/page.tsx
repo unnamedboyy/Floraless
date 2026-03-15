@@ -21,6 +21,7 @@ type Layanan = {
 };
 
 export default function AdminLayananPage() {
+
   const API = process.env.NEXT_PUBLIC_API_URL;
 
   const [list, setList] = useState<Layanan[]>([]);
@@ -41,11 +42,12 @@ export default function AdminLayananPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
 
-  /* =============================
-      LOAD DATA
-  ============================= */
+  /* =========================
+     LOAD DATA
+  ========================= */
 
   async function load() {
+
     setLoading(true);
 
     const res = await fetch(`${API}/layanan`, {
@@ -56,17 +58,19 @@ export default function AdminLayananPage() {
 
     setList(data);
     setLoading(false);
+
   }
 
   useEffect(() => {
     load();
   }, []);
 
-  /* =============================
-      SEARCH + FILTER
-  ============================= */
+  /* =========================
+     SEARCH + FILTER
+  ========================= */
 
   const filtered = useMemo(() => {
+
     return list.filter((item) => {
 
       const matchSearch = item.nama_layanan
@@ -86,21 +90,25 @@ export default function AdminLayananPage() {
       return matchSearch && matchFilter;
 
     });
+
   }, [list, search, filter]);
 
-  /* =============================
-      OPEN MODAL
-  ============================= */
+  /* =========================
+     MODAL HANDLING
+  ========================= */
 
   function openCreate() {
+
     setEditing(null);
     setForm({ nama_layanan: "", deskripsi: "", harga: "" });
     setFile(null);
     setPreview(null);
     setShowModal(true);
+
   }
 
   function openEdit(item: Layanan) {
+
     setEditing(item);
 
     setForm({
@@ -112,25 +120,29 @@ export default function AdminLayananPage() {
     setPreview(item.gambar || null);
     setFile(null);
     setShowModal(true);
+
   }
 
-  /* =============================
-      IMAGE CHANGE
-  ============================= */
+  /* =========================
+     IMAGE CHANGE
+  ========================= */
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+
     const selected = e.target.files?.[0];
     if (!selected) return;
 
     setFile(selected);
     setPreview(URL.createObjectURL(selected));
+
   }
 
-  /* =============================
-      SUBMIT
-  ============================= */
+  /* =========================
+     SUBMIT
+  ========================= */
 
   async function handleSubmit() {
+
     const formData = new FormData();
 
     formData.append("nama_layanan", form.nama_layanan);
@@ -151,13 +163,15 @@ export default function AdminLayananPage() {
 
     setShowModal(false);
     load();
+
   }
 
-  /* =============================
-      DELETE
-  ============================= */
+  /* =========================
+     DELETE
+  ========================= */
 
   async function handleDelete(id: string) {
+
     if (!confirm("Hapus layanan ini?")) return;
 
     await fetch(`${API}/layanan/${id}`, {
@@ -166,13 +180,15 @@ export default function AdminLayananPage() {
     });
 
     load();
+
   }
 
-  /* =============================
-      TOGGLE STATUS
-  ============================= */
+  /* =========================
+     TOGGLE STATUS
+  ========================= */
 
   async function toggleActive(item: Layanan) {
+
     await fetch(`${API}/layanan/${item._id}`, {
       method: "PATCH",
       credentials: "include",
@@ -183,193 +199,201 @@ export default function AdminLayananPage() {
     });
 
     load();
+
   }
 
-  /* =============================
-      UI
-  ============================= */
-
   return (
-    <div className="px-10 py-12 space-y-12">
 
-      {/* HEADER */}
+    <div className="bg-neutral-100 min-h-screen">
+      <div className="p-10 space-y-10">
 
-      <div className="flex items-center justify-between">
+        {/* HEADER */}
 
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">
-            Layanan
-          </h1>
+        <div className="flex items-center justify-between">
 
-          <p className="text-neutral-500 text-sm mt-2">
-            Kelola semua paket dekorasi yang tersedia
-          </p>
-        </div>
+          <div>
 
-        <button
-          onClick={openCreate}
-          className="flex items-center gap-2 bg-[#C9AE63] text-white px-5 py-2 rounded-lg hover:opacity-90"
-        >
-          <Plus size={16} />
-          Tambah Layanan
-        </button>
+            <h1 className="text-3xl font-semibold">
+              Layanan
+            </h1>
 
-      </div>
+            <p className="text-sm text-neutral-500 mt-2">
+              Kelola semua paket dekorasi yang tersedia
+            </p>
 
-      {/* SEARCH + FILTER */}
+          </div>
 
-      <div className="flex items-center gap-4">
-
-        <div className="relative flex-1">
-
-          <Search
-            size={16}
-            className="absolute left-3 top-2.5 text-neutral-400"
-          />
-
-          <input
-            placeholder="Search layanan..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full border border-neutral-200 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-neutral-300"
-          />
+          <button
+            onClick={openCreate}
+            className="flex items-center gap-2 bg-[#C9AE63] text-white px-5 py-2 rounded-lg hover:opacity-90"
+          >
+            <Plus size={16} />
+            Tambah Layanan
+          </button>
 
         </div>
 
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="border border-neutral-200 rounded-lg px-4 py-2 text-sm w-[160px] bg-white"
-        >
-          <option value="all">All Status</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
+        {/* CARD */}
 
-      </div>
+        <div className="bg-white rounded-2xl shadow-sm p-6 space-y-6">
 
-      {/* TABLE HEADER */}
+          {/* SEARCH */}
 
-      <div className="grid grid-cols-12 text-xs uppercase tracking-widest text-neutral-400 border-b pb-4">
+          <div className="flex items-center gap-4">
 
-        <div className="col-span-4">Layanan</div>
-        <div className="col-span-2">Harga</div>
-        <div className="col-span-2">Status</div>
-        <div className="col-span-4 text-right">Action</div>
+            <div className="relative flex-1">
 
-      </div>
+              <Search
+                size={16}
+                className="absolute left-3 top-3 text-neutral-400"
+              />
 
-      {/* LIST */}
-
-      {loading ? (
-        <p className="text-neutral-500">Loading...</p>
-      ) : (
-        <div className="divide-y">
-
-          {filtered.map((item) => (
-
-            <div
-              key={item._id}
-              className="grid grid-cols-12 items-center py-6 hover:bg-neutral-50 transition"
-            >
-
-              {/* LAYANAN */}
-
-              <div className="col-span-4 flex items-center gap-4">
-
-                <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-neutral-100">
-
-                  {item.gambar && (
-                    <Image
-                      src={item.gambar}
-                      alt={item.nama_layanan}
-                      fill
-                      className="object-cover"
-                    />
-                  )}
-
-                </div>
-
-                <div>
-
-                  <p className="font-medium text-neutral-900">
-                    {item.nama_layanan}
-                  </p>
-
-                  <p className="text-xs text-neutral-500 line-clamp-1">
-                    {item.deskripsi}
-                  </p>
-
-                </div>
-
-              </div>
-
-              {/* HARGA */}
-
-              <div className="col-span-2 text-sm text-neutral-700">
-                Rp {item.harga.toLocaleString()}
-              </div>
-
-              {/* STATUS */}
-
-              <div className="col-span-2">
-
-                <span
-                  className={`px-3 py-1 text-xs rounded-full ${
-                    item.isActive
-                      ? "bg-green-50 text-green-600"
-                      : "bg-neutral-100 text-neutral-500"
-                  }`}
-                >
-                  {item.isActive ? "Active" : "Inactive"}
-                </span>
-
-              </div>
-
-              {/* ACTION */}
-
-              <div className="col-span-4 flex justify-end gap-2">
-
-                <button
-                  onClick={() => openEdit(item)}
-                  className="p-2 hover:bg-neutral-100 rounded-lg"
-                >
-                  <Pencil size={16} />
-                </button>
-
-                <button
-                  onClick={() => toggleActive(item)}
-                  className="p-2 hover:bg-neutral-100 rounded-lg"
-                >
-                  <Power size={16} />
-                </button>
-
-                <button
-                  onClick={() => handleDelete(item._id)}
-                  className="p-2 hover:bg-red-50 text-red-500 rounded-lg"
-                >
-                  <Trash2 size={16} />
-                </button>
-
-              </div>
+              <input
+                placeholder="Search layanan..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full border border-neutral-200 rounded-lg pl-9 pr-4 py-2 text-sm"
+              />
 
             </div>
 
-          ))}
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="border border-neutral-200 rounded-lg px-4 py-2 text-sm w-[160px]"
+            >
+
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+
+            </select>
+
+          </div>
+
+          {/* TABLE HEADER */}
+
+          <div className="grid grid-cols-12 text-xs uppercase tracking-widest text-neutral-400 border-b pb-3">
+
+            <div className="col-span-4">Layanan</div>
+            <div className="col-span-2">Harga</div>
+            <div className="col-span-2">Status</div>
+            <div className="col-span-4 text-right">Action</div>
+
+          </div>
+
+          {/* LIST */}
+
+          {loading ? (
+
+            <p className="text-neutral-500">Loading...</p>
+
+          ) : (
+
+            <div className="divide-y">
+
+              {filtered.map((item) => (
+
+                <div
+                  key={item._id}
+                  className="grid grid-cols-12 items-center py-4 hover:bg-neutral-50"
+                >
+
+                  <div className="col-span-4 flex items-center gap-4">
+
+                    <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-neutral-100">
+
+                      {item.gambar && (
+                        <Image
+                          src={item.gambar}
+                          alt={item.nama_layanan}
+                          fill
+                          className="object-cover"
+                        />
+                      )}
+
+                    </div>
+
+                    <div>
+
+                      <p className="font-medium">
+                        {item.nama_layanan}
+                      </p>
+
+                      <p className="text-xs text-neutral-500 line-clamp-1">
+                        {item.deskripsi}
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                  <div className="col-span-2 text-sm text-neutral-700">
+                    Rp {item.harga.toLocaleString()}
+                  </div>
+
+                  <div className="col-span-2">
+
+                    <span
+                      className={`px-3 py-1 text-xs rounded-full ${
+                        item.isActive
+                          ? "bg-emerald-50 text-emerald-600"
+                          : "bg-neutral-100 text-neutral-500"
+                      }`}
+                    >
+                      {item.isActive ? "Active" : "Inactive"}
+                    </span>
+
+                  </div>
+
+                  <div className="col-span-4 flex justify-end gap-2">
+
+                    <button
+                      onClick={() => openEdit(item)}
+                      className="p-2 hover:bg-neutral-100 rounded-lg"
+                    >
+                      <Pencil size={16} />
+                    </button>
+
+                    <button
+                      onClick={() => toggleActive(item)}
+                      className="p-2 hover:bg-neutral-100 rounded-lg"
+                    >
+                      <Power size={16} />
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(item._id)}
+                      className="p-2 hover:bg-red-50 text-red-500 rounded-lg"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+
+                  </div>
+
+                </div>
+
+              ))}
+
+            </div>
+
+          )}
 
         </div>
-      )}
+
+      </div>
 
       {/* MODAL */}
 
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
+
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
 
           <div className="bg-white rounded-2xl p-8 w-full max-w-lg relative">
 
             <button
               onClick={() => setShowModal(false)}
-              className="absolute right-4 top-4 text-neutral-400 hover:text-black"
+              className="absolute right-4 top-4 text-neutral-400"
             >
               <X size={18} />
             </button>
@@ -457,8 +481,10 @@ export default function AdminLayananPage() {
           </div>
 
         </div>
+
       )}
 
     </div>
+
   );
 }

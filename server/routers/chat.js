@@ -5,12 +5,8 @@ const RoomChat = require("../models/RoomChat");
 const Admin = require("../models/Admin");
 const Pelanggan = require("../models/Pelanggan");
 
-/**
- * =========================
- * CREATE CHAT
- * POST /api/chat
- * =========================
- */
+// CREATE CHAT
+// POST /api/chat
 router.post("/", async (req, res) => {
   try {
     const {
@@ -66,12 +62,8 @@ router.post("/", async (req, res) => {
   }
 });
 
-/**
- * =========================
- * GET CHAT BY ROOM
- * GET /api/chat/:roomId
- * =========================
- */
+// GET CHAT BY ROOM
+// GET /api/chat/:roomId
 router.get("/:roomId", async (req, res) => {
   try {
     const chats = await Chat.find({ room: req.params.roomId })

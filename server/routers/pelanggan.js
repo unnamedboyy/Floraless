@@ -3,12 +3,8 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 const Pelanggan = require("../models/Pelanggan");
 
-/**
- * =========================
- * CREATE PELANGGAN
- * POST /api/pelanggan
- * =========================
- */
+// CREATE PELANGGAN
+// POST /api/pelanggan
 router.post("/", async (req, res) => {
   try {
     const { nama, email, no_telepon, username, password } = req.body || {};
@@ -45,13 +41,8 @@ router.post("/", async (req, res) => {
   }
 });
 
-
-/**
- * =========================
- * GET ALL PELANGGAN
- * GET /api/pelanggan
- * =========================
- */
+// GET ALL PELANGGAN
+// GET /api/pelanggan
 router.get("/", async (req, res) => {
   try {
     const tickets = await TicketPemesanan.find()
@@ -68,12 +59,8 @@ router.get("/", async (req, res) => {
   }
 });
 
-/**
- * =========================
- * GET PELANGGAN BY ID
- * GET /api/pelanggan/:id
- * =========================
- */
+// GET PELANGGAN BY ID
+// GET /api/pelanggan/:id
 router.get("/:id", async (req, res) => {
   try {
     const pelanggan = await Pelanggan.findById(req.params.id);
@@ -86,12 +73,8 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-/**
- * =========================
- * UPDATE PELANGGAN
- * PATCH /api/pelanggan/:id
- * =========================
- */
+// UPDATE PELANGGAN
+// PATCH /api/pelanggan/:id
 router.patch("/:id", async (req, res) => {
   try {
     const updated = await Pelanggan.findByIdAndUpdate(
@@ -110,12 +93,8 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
-/**
- * =========================
- * DELETE PELANGGAN
- * DELETE /api/pelanggan/:id
- * =========================
- */
+// DELETE PELANGGAN
+// DELETE /api/pelanggan/:id
 router.delete("/:id", async (req, res) => {
   try {
     const deleted = await Pelanggan.findByIdAndDelete(req.params.id);

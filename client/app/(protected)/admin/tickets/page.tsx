@@ -22,6 +22,7 @@ type Ticket = {
 };
 
 export default function AdminTicketsPage() {
+
   const API = process.env.NEXT_PUBLIC_API_URL;
 
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -34,6 +35,7 @@ export default function AdminTicketsPage() {
   const [detail, setDetail] = useState<any>(null);
 
   async function load() {
+
     setLoading(true);
 
     const res = await fetch(`${API}/ticket`, {
@@ -44,6 +46,7 @@ export default function AdminTicketsPage() {
 
     setTickets(data);
     setLoading(false);
+
   }
 
   useEffect(() => {
@@ -55,7 +58,9 @@ export default function AdminTicketsPage() {
   ======================= */
 
   const filtered = useMemo(() => {
+
     return tickets.filter((t) => {
+
       const username =
         t.pelanggan?.username?.toLowerCase() || "";
 
@@ -70,7 +75,9 @@ export default function AdminTicketsPage() {
         filter === "all" ? true : t.status === filter;
 
       return matchSearch && matchFilter;
+
     });
+
   }, [tickets, search, filter]);
 
   /* =======================
@@ -78,16 +85,13 @@ export default function AdminTicketsPage() {
   ======================= */
 
   const metrics = useMemo(() => {
+
     return {
-      pending: tickets.filter((t) => t.status === "pending")
-        .length,
-      approved: tickets.filter(
-        (t) => t.status === "approved"
-      ).length,
-      rejected: tickets.filter(
-        (t) => t.status === "rejected"
-      ).length,
+      pending: tickets.filter((t) => t.status === "pending").length,
+      approved: tickets.filter((t) => t.status === "approved").length,
+      rejected: tickets.filter((t) => t.status === "rejected").length,
     };
+
   }, [tickets]);
 
   /* =======================
@@ -95,6 +99,7 @@ export default function AdminTicketsPage() {
   ======================= */
 
   async function updateStatus(id: string, status: string) {
+
     await fetch(`${API}/ticket/${id}/status`, {
       method: "PATCH",
       credentials: "include",
@@ -103,6 +108,7 @@ export default function AdminTicketsPage() {
     });
 
     load();
+
   }
 
   /* =======================
@@ -110,6 +116,7 @@ export default function AdminTicketsPage() {
   ======================= */
 
   async function openDetail(ticket: Ticket) {
+
     setSelected(ticket);
 
     const res = await fetch(`${API}/ticket/${ticket._id}`, {
@@ -119,6 +126,7 @@ export default function AdminTicketsPage() {
     const data = await res.json();
 
     setDetail(data);
+
   }
 
   /* =======================
@@ -126,173 +134,197 @@ export default function AdminTicketsPage() {
   ======================= */
 
   function badge(status: string) {
+
     switch (status) {
+
       case "approved":
         return "bg-emerald-50 text-emerald-600";
+
       case "pending":
         return "bg-amber-50 text-amber-600";
+
       case "rejected":
         return "bg-red-50 text-red-600";
+
       default:
         return "bg-neutral-100 text-neutral-600";
+
     }
+
   }
 
   return (
-    <div className="px-10 py-12 space-y-12">
 
-      {/* HEADER */}
-      <div>
+    <div className="bg-neutral-100 min-h-screen">
+      <div className="p-10 space-y-10">
 
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Ticket Management
-        </h1>
+        {/* HEADER */}
 
-        <p className="text-neutral-500 text-sm mt-2">
-          Monitor dan kelola semua pemesanan pelanggan
-        </p>
+        <div>
 
-      </div>
+          <h1 className="text-3xl font-semibold">
+            Ticket Management
+          </h1>
 
-      {/* METRICS */}
-      <div className="grid grid-cols-3 gap-6">
-
-        <Metric title="Pending Booking" value={metrics.pending} />
-
-        <Metric title="Approved Booking" value={metrics.approved} />
-
-        <Metric title="Rejected Booking" value={metrics.rejected} />
-
-      </div>
-
-      {/* SEARCH + FILTER */}
-      <div className="flex items-center gap-4">
-
-        <div className="relative flex-1">
-
-          <Search
-            size={16}
-            className="absolute left-3 top-2.5 text-neutral-400"
-          />
-
-          <input
-            placeholder="Search username atau layanan..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full border border-neutral-200 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-neutral-300"
-          />
+          <p className="text-sm text-neutral-500 mt-2">
+            Monitor dan kelola semua pemesanan pelanggan
+          </p>
 
         </div>
 
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="border border-neutral-200 rounded-lg px-4 py-2 text-sm"
-        >
-          <option value="all">All Status</option>
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="rejected">Rejected</option>
-        </select>
+        {/* METRICS */}
 
-      </div>
+        <div className="grid grid-cols-3 gap-6">
 
-      {/* TABLE HEADER */}
-      <div className="grid grid-cols-12 text-xs uppercase tracking-widest text-neutral-400 border-b pb-4">
+          <Metric title="Pending Booking" value={metrics.pending} />
 
-        <div className="col-span-3">User</div>
-        <div className="col-span-3">Layanan</div>
-        <div className="col-span-2">Harga</div>
-        <div className="col-span-2">Status</div>
-        <div className="col-span-2 text-right">Action</div>
+          <Metric title="Approved Booking" value={metrics.approved} />
 
-      </div>
+          <Metric title="Rejected Booking" value={metrics.rejected} />
 
-      {/* LIST */}
-      {loading ? (
-        <p className="text-neutral-500">Loading...</p>
-      ) : (
-        <div className="divide-y">
+        </div>
 
-          {filtered.map((t) => (
-            <div
-              key={t._id}
-              className="grid grid-cols-12 items-center py-6 hover:bg-neutral-50 transition"
-            >
+        {/* TABLE CARD */}
 
-              {/* USER */}
-              <div className="col-span-3 font-medium text-neutral-800">
-                {t.pelanggan?.username || "Unknown User"}
-              </div>
+        <div className="bg-white rounded-2xl shadow-sm p-6 space-y-6">
 
-              {/* LAYANAN */}
-              <div className="col-span-3 text-neutral-700">
-                {t.layanan?.nama_layanan || "Unknown Service"}
-              </div>
+          {/* SEARCH + FILTER */}
 
-              {/* HARGA */}
-              <div className="col-span-2 text-sm text-neutral-600">
-                Rp{" "}
-                {t.layanan?.harga
-                  ? t.layanan.harga.toLocaleString()
-                  : "-"}
-              </div>
+          <div className="flex items-center gap-4">
 
-              {/* STATUS */}
-              <div className="col-span-2">
+            <div className="relative flex-1">
 
-                <span
-                  className={`px-3 py-1 text-xs rounded-full font-medium ${badge(
-                    t.status
-                  )}`}
-                >
-                  {t.status}
-                </span>
+              <Search
+                size={16}
+                className="absolute left-3 top-3 text-neutral-400"
+              />
 
-              </div>
-
-              {/* ACTION */}
-              <div className="col-span-2 flex justify-end gap-2">
-
-                {t.status === "pending" && (
-                  <>
-                    <button
-                      onClick={() =>
-                        updateStatus(t._id, "approved")
-                      }
-                      className="text-xs px-3 py-1 rounded-md bg-emerald-600 text-white hover:opacity-90"
-                    >
-                      Approve
-                    </button>
-
-                    <button
-                      onClick={() =>
-                        updateStatus(t._id, "rejected")
-                      }
-                      className="text-xs px-3 py-1 rounded-md bg-red-600 text-white hover:opacity-90"
-                    >
-                      Reject
-                    </button>
-                  </>
-                )}
-
-                <button
-                  onClick={() => openDetail(t)}
-                  className="text-xs px-3 py-1 border rounded-md hover:bg-neutral-100"
-                >
-                  Detail
-                </button>
-
-              </div>
+              <input
+                placeholder="Search username atau layanan..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full border border-neutral-200 rounded-lg pl-9 pr-4 py-2 text-sm"
+              />
 
             </div>
-          ))}
+
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="border border-neutral-200 rounded-lg px-4 py-2 text-sm"
+            >
+
+              <option value="all">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+
+            </select>
+
+          </div>
+
+          {/* TABLE HEADER */}
+
+          <div className="grid grid-cols-12 text-xs uppercase tracking-widest text-neutral-400 border-b pb-3">
+
+            <div className="col-span-3">User</div>
+            <div className="col-span-3">Layanan</div>
+            <div className="col-span-2">Harga</div>
+            <div className="col-span-2">Status</div>
+            <div className="col-span-2 text-right">Action</div>
+
+          </div>
+
+          {/* LIST */}
+
+          {loading ? (
+
+            <p className="text-neutral-500">Loading...</p>
+
+          ) : (
+
+            <div className="divide-y">
+
+              {filtered.map((t) => (
+
+                <div
+                  key={t._id}
+                  className="grid grid-cols-12 items-center py-4 hover:bg-neutral-50"
+                >
+
+                  <div className="col-span-3 font-medium">
+                    {t.pelanggan?.username || "Unknown"}
+                  </div>
+
+                  <div className="col-span-3">
+                    {t.layanan?.nama_layanan}
+                  </div>
+
+                  <div className="col-span-2 text-sm text-neutral-600">
+                    Rp {t.layanan?.harga?.toLocaleString() || "-"}
+                  </div>
+
+                  <div className="col-span-2">
+
+                    <span
+                      className={`px-3 py-1 text-xs rounded-full font-medium ${badge(
+                        t.status
+                      )}`}
+                    >
+                      {t.status}
+                    </span>
+
+                  </div>
+
+                  <div className="col-span-2 flex justify-end gap-2">
+
+                    {t.status === "pending" && (
+                      <>
+                        <button
+                          onClick={() =>
+                            updateStatus(t._id, "approved")
+                          }
+                          className="text-xs px-3 py-1 rounded-md bg-emerald-600 text-white"
+                        >
+                          Approve
+                        </button>
+
+                        <button
+                          onClick={() =>
+                            updateStatus(t._id, "rejected")
+                          }
+                          className="text-xs px-3 py-1 rounded-md bg-red-600 text-white"
+                        >
+                          Reject
+                        </button>
+                      </>
+                    )}
+
+                    <button
+                      onClick={() => openDetail(t)}
+                      className="text-xs px-3 py-1 border rounded-md"
+                    >
+                      Detail
+                    </button>
+
+                  </div>
+
+                </div>
+
+              ))}
+
+            </div>
+
+          )}
 
         </div>
-      )}
 
-      {/* MODAL DETAIL */}
+      </div>
+
+      {/* MODAL */}
+
       {selected && detail && (
+
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center">
 
           <div className="bg-white rounded-2xl p-8 w-full max-w-xl space-y-5 shadow-xl">
@@ -304,51 +336,28 @@ export default function AdminTicketsPage() {
             <div className="space-y-2 text-sm">
 
               <p>
-                <span className="text-neutral-500">
-                  User
-                </span>{" "}
+                <span className="text-neutral-500">User</span>
                 <br />
-                {detail.ticket.pelanggan?.username ||
-                  "Unknown"}
+                {detail.ticket.pelanggan?.username}
               </p>
 
               <p>
-                <span className="text-neutral-500">
-                  Layanan
-                </span>{" "}
+                <span className="text-neutral-500">Layanan</span>
                 <br />
                 {detail.ticket.layanan?.nama_layanan}
               </p>
 
               <p>
-                <span className="text-neutral-500">
-                  Status
-                </span>{" "}
+                <span className="text-neutral-500">Status</span>
                 <br />
                 {detail.ticket.status}
               </p>
 
               <p>
-                <span className="text-neutral-500">
-                  Info Acara
-                </span>{" "}
+                <span className="text-neutral-500">Info Acara</span>
                 <br />
                 {detail.ticket.info_acara || "-"}
               </p>
-
-              {detail.jadwal?.map(
-                (j: any, i: number) => (
-                  <p key={i}>
-                    <span className="text-neutral-500">
-                      Tanggal Acara
-                    </span>{" "}
-                    <br />
-                    {new Date(
-                      j.tanggal_acara
-                    ).toLocaleDateString("id-ID")}
-                  </p>
-                )
-              )}
 
             </div>
 
@@ -359,7 +368,7 @@ export default function AdminTicketsPage() {
                   setSelected(null);
                   setDetail(null);
                 }}
-                className="px-4 py-2 border rounded-lg hover:bg-neutral-100"
+                className="px-4 py-2 border rounded-lg"
               >
                 Close
               </button>
@@ -369,15 +378,16 @@ export default function AdminTicketsPage() {
           </div>
 
         </div>
+
       )}
 
     </div>
+
   );
+
 }
 
-/* =======================
-   METRIC CARD
-======================= */
+/* METRIC CARD */
 
 function Metric({
   title,
@@ -386,17 +396,21 @@ function Metric({
   title: string;
   value: number;
 }) {
+
   return (
-    <div className="border border-neutral-200 rounded-xl p-6">
+
+    <div className="bg-white p-6 rounded-2xl shadow-sm">
 
       <p className="text-sm text-neutral-500">
         {title}
       </p>
 
-      <p className="text-3xl font-semibold mt-2">
+      <p className="text-2xl font-semibold mt-2">
         {value}
       </p>
 
     </div>
+
   );
+
 }

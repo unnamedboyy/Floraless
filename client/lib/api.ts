@@ -1,5 +1,5 @@
 export async function apiFetch(url: string, options: RequestInit = {}) {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
   if (!baseUrl) {
     throw new Error("NEXT_PUBLIC_API_URL belum diset");

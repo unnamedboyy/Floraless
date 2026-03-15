@@ -15,7 +15,6 @@ const jadwalSchema = new mongoose.Schema(
       index: true,
     },
 
-    // 🔥 FIELD BARU
     tanggal_key: {
       type: String,
       required: true,
@@ -24,7 +23,7 @@ const jadwalSchema = new mongoose.Schema(
 
     status_tanggal: {
       type: String,
-      default: "booked", // booked | cancelled | done
+      default: "booked",
       index: true,
     },
 
@@ -35,7 +34,6 @@ const jadwalSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// 🔥 Index untuk query cepat per hari
 jadwalSchema.index({ tanggal_key: 1, status_tanggal: 1 });
 
 module.exports = mongoose.model("Jadwal", jadwalSchema);

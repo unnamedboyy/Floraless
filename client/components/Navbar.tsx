@@ -67,10 +67,10 @@ export default function Navbar() {
           {user?.role === "pelanggan" && (
             <>
               <Link
-                href="/user/calendar"
+                href="/user/bookings"
                 className="relative after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all hover:after:w-full"
               >
-                Kalender
+                Booking
               </Link>
 
               <Link

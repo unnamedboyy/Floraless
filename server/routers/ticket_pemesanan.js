@@ -15,12 +15,8 @@ function getDayRange(dateStr) {
   return { start, end };
 }
 
-
-/**
- * =========================
- * CREATE TICKET
- * =========================
- */
+// CREATE TICKET
+// POST /api/ticket
 router.post("/", protect, async (req, res) => {
   try {
     const { pelanggan, admin, layanan, info_acara, tanggal_acara } = req.body || {};
@@ -31,11 +27,10 @@ router.post("/", protect, async (req, res) => {
       });
     }
 
-    // CEK BENTROK
-  const conflict = await Jadwal.findOne({
-    tanggal_key: tanggal_acara,
-    status_tanggal: { $ne: "cancelled" },
-  });
+    const conflict = await Jadwal.findOne({
+      tanggal_key: tanggal_acara,
+      status_tanggal: { $ne: "cancelled" },
+    });
 
     if (conflict) {
       return res.status(409).json({
@@ -50,12 +45,11 @@ router.post("/", protect, async (req, res) => {
       status: "pending",
     });
 
-
     await Jadwal.create({
       ticket: ticket._id,
       tanggal_acara: new Date(tanggal_acara),
       tanggal_key: tanggal_acara,
-      status_tanggal: "pending", // 🔥 default mengikuti ticket
+      status_tanggal: "pending",
     });
 
     await LogAktivitas.create({
@@ -68,7 +62,6 @@ router.post("/", protect, async (req, res) => {
       message: "Ticket created",
     });
 
-    // 🔥 UNIVERSAL REALTIME
     req.app.get("io").to("calendar_room").emit("calendar_refresh", {
       action: "create"
     });
@@ -80,11 +73,8 @@ router.post("/", protect, async (req, res) => {
   }
 });
 
-/**
- * =========================
- * GET ALL TICKET
- * =========================
- */
+// GET ALL TICKET
+// GET /api/ticket
 router.get("/", async (req, res) => {
   try {
     const tickets = await TicketPemesanan.find()
@@ -99,12 +89,8 @@ router.get("/", async (req, res) => {
   }
 });
 
-
-/**
- * =========================
- * GET TICKETS BY USER
- * =========================
- */
+// GET TICKETS BY USER
+// GET /api/ticket/user/my
 router.get("/user/my", protect, async (req, res) => {
   try {
 
@@ -131,11 +117,8 @@ router.get("/user/my", protect, async (req, res) => {
   }
 });
 
-/**
- * =========================
- * GET BY ID
- * =========================
- */
+// GET TICKET BY ID
+// GET /api/ticket/:id
 router.get("/:id", async (req, res) => {
   try {
     const ticket = await TicketPemesanan.findById(req.params.id)
@@ -157,11 +140,8 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-/**
- * =========================
- * UPDATE (ADMIN ONLY)
- * =========================
- */
+// UPDATE TICKET
+// PATCH /api/ticket/:id
 router.patch("/:id", protect, authorize("admin"), async (req, res) => {
   try {
     const ticket = await TicketPemesanan.findById(req.params.id);
@@ -202,7 +182,6 @@ router.patch("/:id", protect, authorize("admin"), async (req, res) => {
       });
     }
 
-    // 🔥 UNIVERSAL REALTIME
     req.app.get("io").to("calendar_room").emit("calendar_refresh", {
       action: "update"
     });
@@ -214,6 +193,8 @@ router.patch("/:id", protect, authorize("admin"), async (req, res) => {
   }
 });
 
+// UPDATE TICKET STATUS
+// PATCH /api/ticket/:id/status
 router.patch("/:id/status", protect, authorize("admin"), async (req, res) => {
   try {
     const { status } = req.body;
@@ -227,11 +208,9 @@ router.patch("/:id/status", protect, authorize("admin"), async (req, res) => {
       return res.status(404).json({ message: "Ticket tidak ditemukan" });
     }
 
-    // 🔥 UPDATE TICKET STATUS
     ticket.status = status;
     await ticket.save();
 
-    // 🔥 UPDATE JADWAL STATUS
     const jadwal = await Jadwal.findOne({ ticket: ticket._id });
 
     if (jadwal) {
@@ -244,7 +223,6 @@ router.patch("/:id/status", protect, authorize("admin"), async (req, res) => {
       await jadwal.save();
     }
 
-    // 🔥 REALTIME EMIT
     req.app.get("io").to("calendar_room").emit("calendar_refresh");
 
     res.json({ message: "Status updated" });
@@ -255,11 +233,8 @@ router.patch("/:id/status", protect, authorize("admin"), async (req, res) => {
   }
 });
 
-/**
- * =========================
- * CANCEL TICKET
- * =========================
- */
+// CANCEL TICKET
+// PATCH /api/ticket/:id/cancel
 router.patch("/:id/cancel", protect, async (req, res) => {
   try {
     const ticket = await TicketPemesanan.findById(req.params.id);
@@ -285,7 +260,6 @@ router.patch("/:id/cancel", protect, async (req, res) => {
       message: "Ticket cancelled",
     });
 
-    // 🔥 UNIVERSAL REALTIME
     req.app.get("io").to("calendar_room").emit("calendar_refresh", {
       action: "cancel"
     });
@@ -297,11 +271,8 @@ router.patch("/:id/cancel", protect, async (req, res) => {
   }
 });
 
-/**
- * =========================
- * DELETE TICKET
- * =========================
- */
+// DELETE TICKET
+// DELETE /api/ticket/:id
 router.delete("/:id", protect, authorize("admin"), async (req, res) => {
   try {
     const ticket = await TicketPemesanan.findByIdAndDelete(req.params.id);
@@ -312,7 +283,6 @@ router.delete("/:id", protect, authorize("admin"), async (req, res) => {
     await Jadwal.deleteMany({ ticket: ticket._id });
     await LogAktivitas.deleteMany({ ticket: ticket._id });
 
-    // 🔥 UNIVERSAL REALTIME
     req.app.get("io").to("calendar_room").emit("calendar_refresh", {
       action: "delete"
     });

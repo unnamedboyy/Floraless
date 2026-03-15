@@ -6,37 +6,56 @@ import { apiFetch } from "@/lib/api";
 
 type Props = {
   role: "admin" | "user";
+  onSelectDate?: (date: string) => void;
 };
 
-export default function CalendarView({ role }: Props) {
+export default function CalendarView({ role, onSelectDate }: Props) {
+
   const today = new Date();
 
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
+
   const [bookedDates, setBookedDates] = useState<Record<string, string>>({});
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+
   const [layananList, setLayananList] = useState<any[]>([]);
   const [selectedLayanan, setSelectedLayanan] = useState("");
+
   const [infoAcara, setInfoAcara] = useState("");
+
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [loadingBooking, setLoadingBooking] = useState(false);
 
   const [adminDetail, setAdminDetail] = useState<any>(null);
   const [loadingAdmin, setLoadingAdmin] = useState(false);
-  const [adminError, setAdminError] = useState<string | null>(null);
+
   const [loadingStatusUpdate, setLoadingStatusUpdate] = useState(false);
 
   const monthString = `${year}-${String(month + 1).padStart(2, "0")}`;
 
+  /* =============================
+     LOAD SNAPSHOT
+  ============================= */
+
   const loadSnapshot = useCallback(async () => {
+
     try {
-      const data = await apiFetch(`/jadwal/calendar?month=${monthString}`);
+
+      const data = await apiFetch(
+        `/jadwal/calendar?month=${monthString}`
+      );
+
       setBookedDates(data);
+
     } catch (err) {
+
       console.error("Gagal load snapshot:", err);
+
     }
+
   }, [monthString]);
 
   useEffect(() => {
@@ -45,58 +64,91 @@ export default function CalendarView({ role }: Props) {
 
   useCalendarSocket(loadSnapshot);
 
+  /* =============================
+     LOAD LAYANAN
+  ============================= */
+
   useEffect(() => {
+
     if (showModal) {
+
       apiFetch("/layanan")
         .then(setLayananList)
         .catch(console.error);
+
     }
+
   }, [showModal]);
 
+  /* =============================
+     MONTH NAVIGATION
+  ============================= */
+
   const goPrevMonth = () => {
+
     if (month === 0) {
       setMonth(11);
       setYear((y) => y - 1);
     } else {
       setMonth((m) => m - 1);
     }
+
   };
 
   const goNextMonth = () => {
+
     if (month === 11) {
       setMonth(0);
       setYear((y) => y + 1);
     } else {
       setMonth((m) => m + 1);
     }
+
   };
+
+  /* =============================
+     DATE CLICK
+  ============================= */
 
   const handleDateClick = async (
     dateKey: string,
     status: string | undefined
   ) => {
+
     if (role === "user" && !status) {
-      setSelectedDate(dateKey);
-      setShowModal(true);
+      if (onSelectDate) {
+        onSelectDate(dateKey);
+      }
     }
 
     if (role === "admin" && status) {
-      try {
-        setLoadingAdmin(true);
-        setAdminError(null);
 
-        const data = await apiFetch(`/jadwal/by-date?date=${dateKey}`);
+      try {
+
+        setLoadingAdmin(true);
+
+        const data = await apiFetch(
+          `/jadwal/by-date?date=${dateKey}`
+        );
 
         setAdminDetail(data);
-      } catch (err: any) {
-        setAdminError(err.message);
+
       } finally {
+
         setLoadingAdmin(false);
+
       }
+
     }
+
   };
 
+  /* =============================
+     CALENDAR GRID
+  ============================= */
+
   const days = useMemo(() => {
+
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
 
@@ -109,9 +161,15 @@ export default function CalendarView({ role }: Props) {
     for (let d = 1; d <= totalDays; d++) cells.push(d);
 
     return cells;
+
   }, [year, month]);
 
+  /* =============================
+     STATUS COLOR
+  ============================= */
+
   const getStatusClass = (status: string | undefined) => {
+
     if (!status) {
       return role === "user"
         ? "border-neutral-200 hover:bg-[#C9AE63]/10 cursor-pointer"
@@ -128,22 +186,24 @@ export default function CalendarView({ role }: Props) {
       return "bg-amber-400 text-white border-amber-400";
 
     return "border-neutral-200";
+
   };
 
   return (
     <div className="max-w-5xl mx-auto">
 
       {/* HEADER */}
-      <div className="flex items-center justify-between mb-10">
+
+      <div className="flex items-center justify-between mb-10 border-b pb-6">
 
         <button
           onClick={goPrevMonth}
-          className="h-10 w-10 flex items-center justify-center rounded-full border border-neutral-300 hover:bg-neutral-100 transition"
+          className="h-10 w-10 flex items-center justify-center rounded-full border border-neutral-200 hover:bg-neutral-100 shadow-sm"
         >
           ←
         </button>
 
-        <h2 className="text-2xl font-semibold tracking-tight capitalize">
+        <h2 className="text-2xl font-semibold capitalize">
           {new Date(year, month).toLocaleString("id-ID", {
             month: "long",
             year: "numeric",
@@ -152,44 +212,69 @@ export default function CalendarView({ role }: Props) {
 
         <button
           onClick={goNextMonth}
-          className="h-10 w-10 flex items-center justify-center rounded-full border border-neutral-300 hover:bg-neutral-100 transition"
+          className="h-10 w-10 flex items-center justify-center rounded-full border border-neutral-200 hover:bg-neutral-100 shadow-sm"
         >
           →
         </button>
+
       </div>
 
       {/* DAY LABEL */}
+
       <div className="grid grid-cols-7 gap-4 text-center text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-4">
+
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
           <div key={d}>{d}</div>
         ))}
+
       </div>
 
       {/* GRID */}
-      <div className="grid grid-cols-7 gap-4">
+
+      <div className="grid grid-cols-7 gap-2">
+
         {days.map((day, idx) => {
+
           if (!day) return <div key={idx} />;
 
-          const dateKey = `${monthString}-${String(day).padStart(2, "0")}`;
+          const dateKey = `${monthString}-${String(day).padStart(
+            2,
+            "0"
+          )}`;
+
           const status = bookedDates[dateKey];
 
           return (
+
             <div
               key={idx}
               onClick={() => handleDateClick(dateKey, status)}
-              className={`h-20 rounded-2xl border flex items-center justify-center font-medium shadow-sm transition hover:shadow-md ${getStatusClass(
+              className={`h-24 rounded-xl border flex flex-col items-center justify-center font-medium shadow-sm hover:shadow-md transition text-sm ${getStatusClass(
                 status
               )}`}
             >
-              {day}
+
+              <span className="text-lg">{day}</span>
+
+              {status && (
+                <span className="text-[10px] uppercase mt-1 opacity-80">
+                  {status}
+                </span>
+              )}
+
             </div>
+
           );
+
         })}
+
       </div>
 
       {/* USER MODAL */}
+
       {showModal && selectedDate && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
           <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl">
 
@@ -206,34 +291,38 @@ export default function CalendarView({ role }: Props) {
             <select
               value={selectedLayanan}
               onChange={(e) => setSelectedLayanan(e.target.value)}
-              className="w-full border border-neutral-200 rounded-xl p-3 mb-3"
+              className="w-full border rounded-xl p-3 mb-3"
             >
+
               <option value="">Pilih Layanan</option>
+
               {layananList.map((l) => (
                 <option key={l._id} value={l._id}>
                   {l.nama_layanan}
                 </option>
               ))}
+
             </select>
 
             <textarea
               placeholder="Info acara"
               value={infoAcara}
               onChange={(e) => setInfoAcara(e.target.value)}
-              className="w-full border border-neutral-200 rounded-xl p-3 mb-3"
+              className="w-full border rounded-xl p-3 mb-3"
             />
 
             <button
               disabled={loadingBooking}
               onClick={async () => {
+
                 try {
+
                   if (!selectedLayanan) {
                     setBookingError("Pilih layanan terlebih dahulu");
                     return;
                   }
 
                   setLoadingBooking(true);
-                  setBookingError(null);
 
                   await apiFetch("/ticket", {
                     method: "POST",
@@ -245,31 +334,43 @@ export default function CalendarView({ role }: Props) {
                   });
 
                   setShowModal(false);
+
                 } catch (err: any) {
+
                   setBookingError(err.message);
+
                 } finally {
+
                   setLoadingBooking(false);
+
                 }
+
               }}
               className="w-full bg-[#C9AE63] text-white py-3 rounded-xl font-semibold"
             >
+
               {loadingBooking ? "Processing..." : "Confirm Booking"}
+
             </button>
 
             <button
               onClick={() => setShowModal(false)}
-              className="w-full mt-3 border border-neutral-200 py-3 rounded-xl"
+              className="w-full mt-3 border py-3 rounded-xl"
             >
               Cancel
             </button>
 
           </div>
+
         </div>
+
       )}
 
       {/* ADMIN MODAL */}
+
       {adminDetail && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
           <div className="bg-white rounded-3xl p-10 w-full max-w-lg shadow-2xl">
 
@@ -306,7 +407,9 @@ export default function CalendarView({ role }: Props) {
               <button
                 disabled={loadingStatusUpdate}
                 onClick={async () => {
+
                   try {
+
                     setLoadingStatusUpdate(true);
 
                     await apiFetch(
@@ -318,9 +421,13 @@ export default function CalendarView({ role }: Props) {
                     );
 
                     setAdminDetail(null);
+
                   } finally {
+
                     setLoadingStatusUpdate(false);
+
                   }
+
                 }}
                 className="flex-1 bg-emerald-500 text-white py-3 rounded-xl"
               >
@@ -330,7 +437,9 @@ export default function CalendarView({ role }: Props) {
               <button
                 disabled={loadingStatusUpdate}
                 onClick={async () => {
+
                   try {
+
                     setLoadingStatusUpdate(true);
 
                     await apiFetch(
@@ -342,9 +451,13 @@ export default function CalendarView({ role }: Props) {
                     );
 
                     setAdminDetail(null);
+
                   } finally {
+
                     setLoadingStatusUpdate(false);
+
                   }
+
                 }}
                 className="flex-1 bg-rose-500 text-white py-3 rounded-xl"
               >
@@ -355,13 +468,15 @@ export default function CalendarView({ role }: Props) {
 
             <button
               onClick={() => setAdminDetail(null)}
-              className="w-full mt-4 border border-neutral-200 py-3 rounded-xl"
+              className="w-full mt-4 border py-3 rounded-xl"
             >
               Close
             </button>
 
           </div>
+
         </div>
+
       )}
 
     </div>
