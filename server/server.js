@@ -19,7 +19,7 @@ const server = http.createServer(app);
 // ================= ENV =================
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/floraless_db";
+  process.env.MONGODB_URI;
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
 
 // ================= MIDDLEWARE =================
@@ -56,7 +56,6 @@ mongoose
   .connect(MONGODB_URI)
   .then(async () => {
     console.log("✅ MongoDB connected");
-    await seedOnce();
   })
   .catch((err) =>
     console.error("❌ MongoDB connection error:", err.message)
