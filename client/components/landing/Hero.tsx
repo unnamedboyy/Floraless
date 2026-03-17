@@ -18,7 +18,7 @@ export default function Hero() {
 
   return (
     <section id="home" className="relative overflow-hidden">
-      <div className="relative h-[100vh] min-h-[680px] w-full">
+      <div className="relative h-[70vh] min-h-[680px] w-full">
         
         {/* PARALLAX IMAGE */}
         <div

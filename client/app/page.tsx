@@ -6,20 +6,40 @@ import ProcessAndConsultation from "@/components/landing/ProcessAndConsultation"
 import Packages from "@/components/landing/Packages";
 import Testimonials from "@/components/landing/Testimonials";
 import BeforeAfter from "@/components/landing/BeforeAfter";
-import FaqSection from "@/components/landing/FaqSection";
+import Reveal from "@/components/ui/Reveal";
 
 export default function HomePage() {
   return (
     <>
       <Hero />
-      <Features />
-      <About />
-      <Gallery />
-      <ProcessAndConsultation />
-      <BeforeAfter />
-      <Packages />
-      <Testimonials />
-      {/* <FaqSection /> */}
+
+      <Reveal>
+        <Features />
+      </Reveal>
+
+      <Reveal>
+        <About />
+      </Reveal>
+
+      <Reveal>
+        <Gallery />
+      </Reveal>
+
+      <Reveal>
+        <ProcessAndConsultation />
+      </Reveal>
+
+      <Reveal>
+        <BeforeAfter />
+      </Reveal>
+
+      <Reveal>
+        <Packages />
+      </Reveal>
+
+      <Reveal>
+        <Testimonials />
+      </Reveal>
     </>
   );
 }

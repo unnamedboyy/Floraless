@@ -2,32 +2,66 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { apiFetch } from "@/lib/api";
 
-const data = [
-  {
-    name: "Nadira & Fajar",
-    role: "Wedding Event",
-    quote:
-      "Pengalaman kami menggunakan Floraless benar-benar luar biasa. Proses booking lewat website sangat mudah karena bisa langsung memilih tanggal di kalender dan melihat ketersediaan.",
-  },
-  {
-    name: "Rico Pratama",
-    role: "Corporate Gathering",
-    quote:
-      "Kami menggunakan Floraless untuk acara corporate gathering kantor. Sistem booking online mereka sangat membantu karena semuanya transparan dan bisa dipantau dari dashboard.",
-  },
-  {
-    name: "Salsa Putri",
-    role: "Birthday Celebration",
-    quote:
-      "Saya suka sekali dengan kemudahan sistemnya. Dari register akun, booking tanggal, sampai komunikasi lewat fitur chat semuanya praktis dan nyaman digunakan.",
-  },
-];
+type Testimoni = {
+  _id: string;
+  komentar: string;
+  rating: number;
+  pelanggan?: {
+    username?: string;
+  };
+  layanan?: {
+    nama_layanan?: string;
+  };
+};
 
 export default function Testimonials() {
+
+  const [data, setData] = useState<Testimoni[]>([]);
   const [idx, setIdx] = useState(0);
   const [direction, setDirection] = useState(1);
   const [pause, setPause] = useState(false);
+
+  /* ======================
+     LOAD DATA FROM API
+  ====================== */
+
+  useEffect(() => {
+
+    async function load() {
+      try {
+
+        const res = await apiFetch("/testimoni");
+
+        setData(res);
+
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    load();
+
+  }, []);
+
+  /* ======================
+     AUTO SLIDE
+  ====================== */
+
+  useEffect(() => {
+
+    if (pause || data.length === 0) return;
+
+    const interval = setInterval(() => {
+      next();
+    }, 6000);
+
+    return () => clearInterval(interval);
+
+  }, [pause, data]);
+
+  if (!data.length) return null;
 
   const next = () => {
     setDirection(1);
@@ -41,15 +75,9 @@ export default function Testimonials() {
 
   const t = data[idx];
 
-  useEffect(() => {
-    if (pause) return;
-
-    const interval = setInterval(() => {
-      next();
-    }, 6000);
-
-    return () => clearInterval(interval);
-  }, [pause]);
+  /* ======================
+     ANIMATION
+  ====================== */
 
   const variants = {
     enter: (direction: number) => ({
@@ -68,11 +96,13 @@ export default function Testimonials() {
 
   return (
     <section className="bg-white">
-      <div className="mx-auto max-w-6xl px-4 py-24">
+
+      <div className="mx-auto max-w-6xl px-4 pb-24">
 
         <div className="grid md:grid-cols-12 gap-12 items-center">
 
           {/* LEFT */}
+
           <div className="md:col-span-4">
 
             <h2 className="text-3xl font-semibold leading-tight">
@@ -106,22 +136,17 @@ export default function Testimonials() {
           </div>
 
           {/* RIGHT */}
+
           <div
             className="md:col-span-8 relative overflow-hidden"
             onMouseEnter={() => setPause(true)}
             onMouseLeave={() => setPause(false)}
           >
-            
-          {/* FADE LEFT */}
-          {/* <div className="pointer-events-none absolute -left-16 top-0 h-full w-40 bg-gradient-to-r from-white to-transparent z-10" /> */}
 
-          {/* FADE RIGHT */}
-          {/* <div className="pointer-events-none absolute -right-16 top-0 h-full w-40 bg-gradient-to-l from-white to-transparent z-10" /> */}
-            
             <AnimatePresence custom={direction} mode="wait">
 
               <motion.div
-                key={idx}
+                key={t._id}
                 custom={direction}
                 variants={variants}
                 initial="enter"
@@ -139,21 +164,23 @@ export default function Testimonials() {
                 </div>
 
                 <p className="mt-2 text-sm md:text-base leading-relaxed text-white/95">
-                  {t.quote}
+                  {t.komentar}
                 </p>
 
                 <div className="mt-8">
 
                   <p className="text-sm font-semibold">
-                    {t.name}
+                    {t.pelanggan?.username}
                   </p>
 
                   <p className="text-xs text-white/80">
-                    {t.role}
+                    {t.layanan?.nama_layanan}
                   </p>
 
                   <div className="text-xs mt-1">
-                    ⭐⭐⭐⭐⭐
+
+                    {"⭐".repeat(t.rating)}
+
                   </div>
 
                 </div>
@@ -163,9 +190,11 @@ export default function Testimonials() {
             </AnimatePresence>
 
             {/* DOT INDICATOR */}
+
             <div className="flex gap-2 mt-6 justify-center">
 
               {data.map((_, i) => (
+
                 <button
                   key={i}
                   onClick={() => {
@@ -179,6 +208,7 @@ export default function Testimonials() {
                       : "w-2 bg-neutral-300"
                   }`}
                 />
+
               ))}
 
             </div>
@@ -188,6 +218,7 @@ export default function Testimonials() {
         </div>
 
       </div>
+
     </section>
   );
 }

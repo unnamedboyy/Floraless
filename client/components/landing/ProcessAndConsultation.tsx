@@ -16,38 +16,38 @@ type Step = {
 const steps: Step[] = [
   {
     key: "konsultasi",
-    label: "Step 1 – Consultation",
-    title: "Consultation",
-    desc: "Kami memulai dengan sesi konsultasi untuk memahami konsep acara, tema dekorasi, serta kebutuhan teknis Anda. Tim Floraless akan membantu menyempurnakan ide agar sesuai dengan lokasi.",
+    label: "Langkah 1 – Konsultasi",
+    title: "Konsultasi Awal",
+    desc: "Kami memulai dengan sesi konsultasi untuk memahami konsep acara, tema dekorasi, serta kebutuhan teknis Anda. Tim Floraless akan membantu menyempurnakan ide agar sesuai dengan lokasi acara dan menciptakan suasana yang elegan.",
     image: "/process.jpg",
-    ctaText: "Talk to us!",
+    ctaText: "Konsultasi Sekarang",
     ctaHref: "/kontak",
   },
   {
     key: "perencanaan",
-    label: "Step 2 – Creative Planning",
-    title: "Creative Planning",
-    desc: "Kami menyusun perencanaan detail mulai dari desain dekorasi, layout area, pencahayaan, hingga rundown produksi agar semua berjalan terstruktur dan elegan.",
+    label: "Langkah 2 – Perencanaan Kreatif",
+    title: "Perencanaan Kreatif",
+    desc: "Kami menyusun perencanaan secara detail mulai dari desain dekorasi, tata letak area, pencahayaan, hingga konsep visual keseluruhan agar setiap elemen acara tampil harmonis dan berkesan.",
     image: "/gal-2.jpg",
-    ctaText: "Start Planning",
+    ctaText: "Mulai Perencanaan",
     ctaHref: "/kontak",
   },
   {
     key: "produksi",
-    label: "Step 3 – Production",
-    title: "Production",
-    desc: "Tim produksi kami menangani pemasangan dekorasi, pengaturan lighting & sound system, serta koordinasi vendor agar seluruh elemen berjalan sempurna.",
+    label: "Langkah 3 – Produksi",
+    title: "Proses Produksi",
+    desc: "Tim produksi kami menangani seluruh proses persiapan dan pemasangan dekorasi dengan profesional. Mulai dari instalasi dekorasi, pengaturan lighting, hingga koordinasi vendor agar semua berjalan lancar.",
     image: "/package-3.jpg",
-    ctaText: "Book Now",
+    ctaText: "Pesan Sekarang",
     ctaHref: "/kontak",
   },
   {
     key: "hari-acara",
-    label: "Step 4 – Event Day!",
-    title: "Event Day!",
-    desc: "Hari istimewa Anda telah tiba. Nikmati momen tanpa khawatir karena tim Floraless memastikan setiap detail berjalan sempurna dan sesuai rencana.",
+    label: "Langkah 4 – Hari Acara",
+    title: "Hari Acara",
+    desc: "Hari istimewa Anda telah tiba. Nikmati setiap momen tanpa khawatir karena tim Floraless memastikan seluruh dekorasi dan detail acara berjalan sempurna sesuai dengan rencana.",
     image: "/package-1.jpg",
-    ctaText: "Talk to us!",
+    ctaText: "Hubungi Kami",
     ctaHref: "/kontak",
   },
 ];
@@ -66,13 +66,14 @@ export default function ProcessAndConsultation() {
 
         {/* Heading */}
         <h2 className="text-center text-4xl font-semibold text-black md:text-5xl">
-          Seamless Event Planning with Floraless
+          Proses Perencanaan Acara Bersama Floraless
         </h2>
 
         <p className="mx-auto mt-6 max-w-3xl text-center text-[#C9AE63] text-base md:text-lg">
-          Floraless goes beyond decoration — we craft unforgettable
-          experiences. Our simple steps ensure your event runs smoothly
-          from concept to celebration.
+          Floraless tidak hanya menghadirkan dekorasi, tetapi juga menciptakan
+          pengalaman acara yang berkesan. Dengan proses yang terstruktur,
+          kami memastikan setiap tahap berjalan lancar dari perencanaan hingga
+          hari pelaksanaan.
         </p>
 
         {/* Layout */}
@@ -99,7 +100,7 @@ export default function ProcessAndConsultation() {
                   </h3>
 
                   <p className="mt-3 text-sm opacity-80">
-                    Click to view details.
+                    Klik untuk melihat detail proses.
                   </p>
                 </button>
               );
@@ -110,14 +111,18 @@ export default function ProcessAndConsultation() {
           <div className="md:col-span-8">
 
             {/* Image */}
-            <div className="relative w-full overflow-hidden rounded-3xl shadow-lg aspect-[16/7]">
+            <div className="group relative w-full overflow-hidden rounded-3xl shadow-lg aspect-[16/7]">
+
               <Image
                 src={active.image}
                 alt={active.title}
                 fill
-                className="object-cover"
+                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                 priority
               />
+
+              <div className="pointer-events-none absolute inset-0 bg-black/0 transition duration-500 group-hover:bg-black/10" />
+
             </div>
 
             {/* Title */}

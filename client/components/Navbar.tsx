@@ -50,7 +50,7 @@ export default function Navbar() {
           {[
             ["Beranda", "/"],
             ["Tentang", "/tentang"],
-            ["Layanan", "/#packages"],
+            ["Layanan", "/layanan"],
             ["FAQ", "/faq"],
             ["Kontak", "/kontak"],
             // ["Galeri", "/#schedule"],

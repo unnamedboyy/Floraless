@@ -9,7 +9,6 @@ type Layanan = {
   nama_layanan: string;
   deskripsi?: string;
   gambar?: string;
-  fitur?: string[];
 };
 
 export default function Packages() {
@@ -33,89 +32,134 @@ export default function Packages() {
 
   return (
     <section id="packages" className="bg-white">
-      <div className="mx-auto max-w-6xl px-4 py-12">
-        {/* HEADER */}
-        <div className="grid gap-6 md:grid-cols-12 md:items-start">
-          <div className="md:col-span-6">
-            {/* <h2 className="text-2xl font-semibold">
-              Pilih Paket Dekorasi <br /> Sesuai Kebutuhan
-            </h2> */}
 
-            <h2 className="text-left text-4xl font-semibold text-black md:text-5xl">
+      <div className="mx-auto max-w-7xl px-6 py-24">
+
+        {/* HEADER (TETAP SEPERTI SEBELUMNYA) */}
+
+        <div className="grid md:grid-cols-12 gap-10 items-start">
+
+          <div className="md:col-span-6">
+
+            <h2 className="text-4xl md:text-5xl font-semibold leading-tight">
               Pilih Paket Dekorasi <br /> Sesuai Kebutuhan
             </h2>
+
           </div>
+
           <div className="md:col-span-6">
-            <p className="text-sm leading-relaxed text-neutral-600">
-              Kami menyediakan berbagai pilihan layanan dekorasi gereja dan event
-              yang dapat disesuaikan dengan kebutuhan dan konsep acara Anda.
+
+            <p className="text-neutral-600 leading-relaxed">
+              Kami menyediakan berbagai pilihan layanan dekorasi gereja dan
+              event yang dapat disesuaikan dengan kebutuhan dan konsep acara
+              Anda.
             </p>
+
           </div>
+
         </div>
 
         {/* LOADING */}
+
         {loading && (
-          <div className="mt-10 text-center text-neutral-500">
+          <div className="mt-16 text-center text-neutral-400">
             Loading packages...
           </div>
         )}
 
-        {/* LIST LAYANAN */}
+        {/* GRID */}
+
         {!loading && (
-          <div className="mt-8 grid gap-6 md:grid-cols-3">
-            {layananList.map((layanan) => (
+
+          <div className="mt-16 grid gap-10 md:grid-cols-3">
+
+            {layananList.map((layanan) => {
+
+              const points =
+                layanan.deskripsi?.split("\n") || [];
+
+              return (
               <div
                 key={layanan._id}
-                className="group relative overflow-hidden rounded-2xl border border-neutral-200 shadow-sm transition hover:shadow-lg"
+                className="group overflow-hidden rounded-3xl shadow-lg transition hover:-translate-y-2 hover:shadow-xl"
               >
+
                 {/* IMAGE */}
-                <div className="relative h-[420px]">
+                <div className="relative h-[550px]">
+
                   <Image
                     src={layanan.gambar || "/package-1.jpg"}
                     alt={layanan.nama_layanan}
                     fill
                     className="object-cover"
                   />
-                  <div className="absolute inset-0 bg-black/50" />
-                </div>
 
-                {/* CONTENT */}
-                <div className="absolute inset-x-0 bottom-0 flex justify-center pb-8 px-6">
+                  {/* OVERLAY */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
-                  <div className="text-center text-white max-w-sm">
+                  {/* CONTENT */}
+                  <div className="absolute inset-0 flex flex-col justify-end p-6 text-white">
 
                     <h3 className="text-xl font-semibold">
                       {layanan.nama_layanan}
                     </h3>
 
-                    {layanan.deskripsi && (
-                      <p className="mt-2 text-sm text-white/85 line-clamp-2">
-                        {layanan.deskripsi}
+                    {points[0] && (
+                      <p className="mt-2 text-sm text-white/80">
+                        {points[0]}
                       </p>
                     )}
 
+                    {/* TAGS */}
+                    <div className="mt-3 flex flex-wrap gap-2">
+
+                      {points.slice(1, 5).map((p,i) => (
+                        <span
+                          key={i}
+                          className="rounded-full bg-white/20 px-3 py-1 text-xs backdrop-blur"
+                        >
+                          {p}
+                        </span>
+                      ))}
+
+                    </div>
+
+                    {/* BUTTON */}
                     <a
-                      href="/login"
-                      className="mt-4 inline-block rounded-full bg-[#C9AE63] px-6 py-2 text-xs font-semibold hover:opacity-90 transition"
+                      href="/layanan"
+                      className="mt-6 inline-flex items-center justify-center rounded-full bg-white text-black px-6 py-2 text-sm font-medium hover:bg-neutral-200 transition"
                     >
-                      Booking Sekarang
+                      Lihat Selengkapnya
                     </a>
 
                   </div>
 
                 </div>
-              </div>
-            ))}
 
-            {/* EMPTY STATE */}
-            {layananList.length === 0 && (
-              <div className="col-span-full text-center text-neutral-500">
-                Belum ada paket tersedia.
               </div>
+
+              );
+
+            })}
+
+            {/* EMPTY */}
+
+            {layananList.length === 0 && (
+
+              <div className="col-span-full text-center text-neutral-400">
+
+                Belum ada paket tersedia.
+
+              </div>
+
             )}
+
           </div>
+
         )}
+
       </div>
+
     </section>
   );
 }

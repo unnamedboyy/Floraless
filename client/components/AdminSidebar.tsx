@@ -3,7 +3,7 @@
 import Link from "next/link";
 import {
   LayoutDashboard,
-  Calendar,
+  Star,
   Ticket,
   CreditCard,
   Package,
@@ -45,6 +45,10 @@ export default function AdminSidebar() {
 
         <Link href="/admin/payments">
           <CreditCard className="text-neutral-400 hover:text-white transition" />
+        </Link>
+
+        <Link href="/admin/testimoni">
+          <Star className="text-neutral-400 hover:text-white transition" />
         </Link>
 
         <Link href="/admin/settings">

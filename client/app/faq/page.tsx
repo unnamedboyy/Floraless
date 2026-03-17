@@ -56,7 +56,7 @@ export default function FaqPage() {
     <div className="bg-white text-neutral-900">
 
       {/* HERO */}
-      <section className="relative h-[420px] w-full overflow-hidden">
+      {/* <section className="relative h-[420px] w-full overflow-hidden">
 
         <div
           className="absolute inset-0 scale-110"
@@ -91,6 +91,34 @@ export default function FaqPage() {
           </div>
         </div>
 
+      </section> */}
+
+      {/* HERO PARALLAX */}
+      <section className="relative h-[520px] w-full overflow-hidden">
+
+        <div
+          className="absolute inset-0 scale-110"
+          style={{
+            transform: `translateY(${offset * 0.35}px)`
+          }}
+        >
+          <Image
+            src="/hero.jpg"
+            alt="Contact Floraless"
+            fill
+            className="object-cover"
+            priority
+          />
+        </div>
+
+        <div className="absolute inset-0 bg-black/50" />
+
+        <div className="absolute inset-0 flex items-center justify-center text-center px-6">
+          <h1 className="text-5xl md:text-7xl font-semibold text-white leading-tight tracking-tight">
+            Frequently Asked Questions
+          </h1>
+        </div>
+
       </section>
 
       {/* QUICK HELP */}
@@ -98,20 +126,26 @@ export default function FaqPage() {
 
         <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-6">
 
-          <HelpCard
-            title="Booking Acara"
-            text="Gunakan fitur kalender untuk memilih tanggal yang tersedia dan melakukan permintaan booking secara langsung."
-          />
+          <div className="rounded-3xl border border-neutral-200 p-10 shadow-sm">
+            <h2 className="text-2xl font-semibold">Booking Acara</h2>
+            <p className="mt-6 text-neutral-600 leading-relaxed">
+              Gunakan fitur kalender untuk memilih tanggal yang tersedia dan melakukan permintaan booking secara langsung.
+            </p>
+          </div>
 
-          <HelpCard
-            title="Status Pesanan"
-            text="Semua status booking dapat dipantau melalui halaman tiket pada dashboard akun Anda."
-          />
+          <div className="rounded-3xl border border-neutral-200 p-10 shadow-sm">
+            <h2 className="text-2xl font-semibold">Status Pesanan</h2>
+            <p className="mt-6 text-neutral-600 leading-relaxed">
+              Semua status booking dapat dipantau melalui halaman tiket pada dashboard akun Anda.
+            </p>
+          </div>
 
-          <HelpCard
-            title="Butuh Bantuan?"
-            text="Anda dapat langsung menghubungi admin melalui fitur live chat untuk mendapatkan bantuan lebih lanjut."
-          />
+          <div className="rounded-3xl border border-neutral-200 p-10 shadow-sm">
+            <h2 className="text-2xl font-semibold">Butuh Bantuan?</h2>
+            <p className="mt-6 text-neutral-600 leading-relaxed">
+              Anda dapat langsung menghubungi admin melalui fitur live chat untuk mendapatkan bantuan lebih lanjut.
+            </p>
+          </div>
 
         </div>
 
@@ -200,32 +234,6 @@ export default function FaqPage() {
         </div>
 
       </section>
-
-    </div>
-  );
-}
-
-/* ======================
-   HELP CARD
-====================== */
-
-function HelpCard({
-  title,
-  text,
-}: {
-  title: string;
-  text: string;
-}) {
-  return (
-    <div className="border rounded-2xl p-6 bg-white shadow-sm">
-
-      <h3 className="font-semibold text-lg">
-        {title}
-      </h3>
-
-      <p className="text-sm text-neutral-600 mt-3 leading-relaxed">
-        {text}
-      </p>
 
     </div>
   );

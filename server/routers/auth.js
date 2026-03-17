@@ -6,10 +6,11 @@ const Admin = require("../models/Admin");
 const Pelanggan = require("../models/Pelanggan");
 const { signToken, verifyToken } = require("../utils/jwt");
 
+
 // GET CURRENT USER
-// GET /auth/me
 router.get("/me", async (req, res) => {
   try {
+
     const token = req.cookies.token;
     if (!token) return res.status(401).json({ message: "Unauthorized" });
 
@@ -30,7 +31,7 @@ router.get("/me", async (req, res) => {
     res.json({
       id: user._id,
       username: user.username,
-      role: payload.role,
+      role: payload.role
     });
 
   } catch (err) {
@@ -38,15 +39,14 @@ router.get("/me", async (req, res) => {
   }
 });
 
-// LOGIN
-// POST /auth/login
-router.post("/login", async (req, res) => {
-  try {
-    const { username, password } = req.body || {};
 
-    if (!username || !password) {
-      return res.status(400).json({ message: "username & password wajib" });
-    }
+
+// LOGIN
+router.post("/login", async (req, res) => {
+
+  try {
+
+    const { username, password } = req.body;
 
     let user = await Admin.findOne({ username });
     let role = "admin";
@@ -57,23 +57,28 @@ router.post("/login", async (req, res) => {
     }
 
     if (!user) {
-      return res.status(401).json({ message: "User tidak ditemukan" });
+      return res.status(401).json({
+        message: "Username tidak ditemukan"
+      });
     }
 
     const match = await bcrypt.compare(password, user.password);
+
     if (!match) {
-      return res.status(401).json({ message: "Password salah" });
+      return res.status(401).json({
+        message: "Password salah"
+      });
     }
 
     const token = signToken({
       id: user._id,
-      role,
+      role
     });
 
     res.cookie("token", token, {
       httpOnly: true,
       sameSite: "lax",
-      secure: false,
+      secure: false
     });
 
     res.json({
@@ -81,69 +86,78 @@ router.post("/login", async (req, res) => {
       user: {
         _id: user._id,
         username: user.username,
-        role,
-      },
+        role
+      }
     });
 
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Server error" });
   }
+
 });
 
+
+
 // LOGOUT
-// POST /auth/logout
 router.post("/logout", (req, res) => {
-  console.log("LOGOUT COOKIE BEFORE:", req.cookies);
+
   res.clearCookie("token", {
     httpOnly: true,
     sameSite: "lax",
-    secure: false,
+    secure: false
   });
 
-  console.log("LOGOUT CLEAR CALLED");
   res.json({ message: "Logout berhasil" });
+
 });
 
+
+
 // REGISTER
-// POST /auth/register
 router.post("/register", async (req, res) => {
+
   try {
-    const { nama, email, no_telepon, username, password } = req.body || {};
 
-    if (!nama || !no_telepon || !username || !password) {
-      return res.status(400).json({
-        message: "Nama, No Telepon, Username, dan Password wajib diisi",
-      });
-    }
-
-    if (password.length < 6) {
-      return res.status(400).json({
-        message: "Password minimal 6 karakter",
-      });
-    }
+    const { nama, email, no_telepon, username, password } = req.body;
 
     const existing = await Pelanggan.findOne({
       $or: [
         { username },
         { no_telepon },
-        ...(email ? [{ email }] : []),
-      ],
+        ...(email ? [{ email }] : [])
+      ]
     });
 
     if (existing) {
-      return res.status(400).json({
-        message: "Username / No Telepon / Email sudah digunakan",
-      });
+
+      if (existing.username === username) {
+        return res.status(400).json({
+          message: "Username sudah digunakan"
+        });
+      }
+
+      if (existing.no_telepon === no_telepon) {
+        return res.status(400).json({
+          message: "Nomor telepon sudah terdaftar"
+        });
+      }
+
+      if (existing.email === email) {
+        return res.status(400).json({
+          message: "Email sudah digunakan"
+        });
+      }
+
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const pelanggan = await Pelanggan.create({
       nama,
-      email: email || undefined,
+      email,
       no_telepon,
       username,
-      password: hashedPassword,
+      password: hashedPassword
     });
 
     const token = signToken({
@@ -154,7 +168,7 @@ router.post("/register", async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       sameSite: "lax",
-      secure: false,
+      secure: false
     });
 
     res.status(201).json({
@@ -162,14 +176,16 @@ router.post("/register", async (req, res) => {
       user: {
         _id: pelanggan._id,
         username: pelanggan.username,
-        role: "pelanggan",
-      },
+        role: "pelanggan"
+      }
     });
 
   } catch (err) {
-    console.error("REGISTER ERROR:", err);
-    res.status(500).json({ message: "Terjadi kesalahan server" });
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
+
 });
+
 
 module.exports = router;
