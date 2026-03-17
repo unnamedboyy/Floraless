@@ -75,25 +75,35 @@ router.post("/", adminOnly, upload.single("gambar"), async (req, res) => {
 // PATCH /api/layanan/:id
 router.patch("/:id", adminOnly, upload.single("gambar"), async (req, res) => {
   try {
-    const updateData = {
-      ...req.body,
-    };
+
+    const layanan = await Layanan.findById(req.params.id);
+
+    if (!layanan) {
+      return res.status(404).json({
+        message: "Layanan tidak ditemukan",
+      });
+    }
+
+    if (req.body.nama_layanan !== undefined) {
+      layanan.nama_layanan = req.body.nama_layanan;
+    }
+
+    if (req.body.deskripsi !== undefined) {
+      layanan.deskripsi = req.body.deskripsi;
+    }
+
+    if (req.body.harga !== undefined) {
+      layanan.harga = req.body.harga;
+    }
 
     if (req.file) {
-      updateData.gambar = `/uploads/${req.file.filename}`;
+      layanan.gambar = `/uploads/${req.file.filename}`;
     }
 
-    const updated = await Layanan.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true, runValidators: true }
-    );
+    await layanan.save();
 
-    if (!updated) {
-      return res.status(404).json({ message: "Layanan tidak ditemukan" });
-    }
+    res.json(layanan);
 
-    res.json(updated);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

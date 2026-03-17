@@ -54,9 +54,7 @@ export default function Hero() {
           <div className="absolute left-16 top-1/2 max-w-xl -translate-y-1/2 text-white">
 
             <h1 className="text-5xl font-semibold leading-[1.1] md:text-6xl">
-              Dekorasi Gereja
-              <br />
-              Elegan & Sakral
+              Jasa Dekorasi Gereja & Event
             </h1>
 
             <p className="mt-6 text-base text-white/80 leading-relaxed">
@@ -76,7 +74,7 @@ export default function Hero() {
                 href="/kontak"
                 className="rounded-full border border-white px-6 py-3 text-sm font-semibold text-white hover:bg-white/10"
               >
-                Konsultasi gratis
+                Konsultasi
               </Link>
             </div>
 

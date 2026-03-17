@@ -223,7 +223,7 @@ export default function AuthPage() {
           <div className="absolute bottom-12 left-10 right-10 text-white">
 
             <h2 className="text-4xl font-semibold leading-tight">
-              Wujudkan Dekorasi Impian Anda
+              Wujudkan Dekorasi Impian Anda Bersama Kami
             </h2>
 
             <p className="mt-4 text-white/80">
