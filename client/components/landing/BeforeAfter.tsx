@@ -91,12 +91,12 @@ export default function BeforeAfterSection() {
           {/* Labels */}
           <div className="absolute left-5 top-5 z-20">
             <span className="rounded-full bg-black/55 px-4 py-2 text-sm font-semibold text-white backdrop-blur">
-              Before
+              Konsep Awal
             </span>
           </div>
           <div className="absolute right-5 top-5 z-20">
             <span className="rounded-full bg-black/55 px-4 py-2 text-sm font-semibold text-white backdrop-blur">
-              After
+              Hasil Eksekusi
             </span>
           </div>
 
