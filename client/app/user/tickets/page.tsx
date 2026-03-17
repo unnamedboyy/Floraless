@@ -5,6 +5,7 @@ import Image from "next/image";
 import { apiFetch } from "@/lib/api";
 import { Search, Clock } from "lucide-react";
 import TicketDetailModal from "@/components/TicketDetailModal";
+import TestimoniModal from "@/components/TestimoniModal";
 
 type TicketType = {
   _id: string;
@@ -13,7 +14,12 @@ type TicketType = {
     gambar?: string;
   };
   info_acara?: string;
-  status: "pending" | "approved" | "rejected";
+  status:
+    | "pending"
+    | "approved"
+    | "rejected"
+    | "fully_paid"
+    | "selesai";
   createdAt?: string;
   tanggal_acara?: string;
 };
@@ -29,20 +35,21 @@ export default function UserTicketsPage() {
 
   const [offset, setOffset] = useState(0);
   const [selectedTicket, setSelectedTicket] = useState<TicketType | null>(null);
+  const [testimoniTicket, setTestimoniTicket] = useState<string | null>(null);
+
+  async function loadTickets() {
+    try {
+      const data = await apiFetch("/ticket/user/my");
+      setTickets(data);
+      setFilteredTickets(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    async function loadTickets() {
-      try {
-        const data = await apiFetch("/ticket/user/my");
-        setTickets(data);
-        setFilteredTickets(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
     loadTickets();
   }, []);
 
@@ -86,6 +93,10 @@ export default function UserTicketsPage() {
         return "text-amber-600";
       case "rejected":
         return "text-red-600";
+      case "fully_paid":
+        return "text-blue-600";
+      case "selesai":
+        return "text-neutral-700";
       default:
         return "text-neutral-500";
     }
@@ -99,6 +110,10 @@ export default function UserTicketsPage() {
         return "Menunggu";
       case "rejected":
         return "Ditolak";
+      case "fully_paid":
+        return "Lunas";
+      case "selesai":
+        return "Selesai";
       default:
         return status;
     }
@@ -111,8 +126,8 @@ export default function UserTicketsPage() {
   return (
     <div className="bg-white">
 
-      {/* HERO PARALLAX */}
-      <section className="relative h-[420px] overflow-hidden">
+      {/* HERO */}
+      {/* <section className="relative h-[420px] overflow-hidden">
 
         <div
           className="absolute inset-0 scale-110"
@@ -147,6 +162,34 @@ export default function UserTicketsPage() {
           </div>
         </div>
 
+      </section> */}
+
+      {/* HERO PARALLAX */}
+      <section className="relative h-[520px] w-full overflow-hidden">
+
+        <div
+          className="absolute inset-0 scale-110"
+          style={{
+            transform: `translateY(${offset * 0.35}px)`
+          }}
+        >
+          <Image
+            src="/hero.jpg"
+            alt="Contact Floraless"
+            fill
+            className="object-cover"
+            priority
+          />
+        </div>
+
+        <div className="absolute inset-0 bg-black/50" />
+
+        <div className="absolute inset-0 flex items-center justify-center text-center px-6">
+          <h1 className="text-5xl md:text-7xl font-semibold text-white leading-tight tracking-tight">
+            Transaksi Anda
+          </h1>
+        </div>
+
       </section>
 
       {/* CONTENT */}
@@ -178,6 +221,8 @@ export default function UserTicketsPage() {
             <option value="pending">Menunggu</option>
             <option value="approved">Disetujui</option>
             <option value="rejected">Ditolak</option>
+            <option value="fully_paid">Lunas</option>
+            <option value="selesai">Selesai</option>
           </select>
 
           <select
@@ -192,15 +237,17 @@ export default function UserTicketsPage() {
                 {l}
               </option>
             ))}
+
           </select>
 
         </div>
 
         {/* LIST HEADER */}
         <div className="hidden md:grid grid-cols-12 text-xs text-neutral-400 pb-3 border-b mb-2">
-          <div className="col-span-6">Layanan</div>
+          <div className="col-span-5">Layanan</div>
           <div className="col-span-3">Tanggal Dibuat</div>
-          <div className="col-span-3 text-right">Status</div>
+          <div className="col-span-2 text-right">Status</div>
+          <div className="col-span-2 text-right">Action</div>
         </div>
 
         {/* LIST */}
@@ -221,12 +268,14 @@ export default function UserTicketsPage() {
           {filteredTickets.map((ticket) => (
             <div
               key={ticket._id}
-              onClick={() => setSelectedTicket(ticket)}
-              className="grid md:grid-cols-12 gap-4 items-center py-6 border-b border-neutral-200 hover:bg-neutral-50 cursor-pointer transition"
+              className="grid md:grid-cols-12 gap-4 items-center py-6 border-b border-neutral-200 hover:bg-neutral-50 transition"
             >
 
-              <div className="md:col-span-6">
-
+              {/* LAYANAN */}
+              <div
+                className="md:col-span-5 cursor-pointer"
+                onClick={() => setSelectedTicket(ticket)}
+              >
                 <p className="font-medium">
                   {ticket.layanan?.nama_layanan || "Booking Acara"}
                 </p>
@@ -234,9 +283,9 @@ export default function UserTicketsPage() {
                 <p className="text-sm text-neutral-500">
                   ID #{ticket._id.slice(-6)}
                 </p>
-
               </div>
 
+              {/* TANGGAL */}
               <div className="md:col-span-3 flex items-center gap-2 text-neutral-500 text-sm">
 
                 <Clock size={14} />
@@ -246,7 +295,8 @@ export default function UserTicketsPage() {
 
               </div>
 
-              <div className="md:col-span-3 text-left md:text-right">
+              {/* STATUS */}
+              <div className="md:col-span-2 text-right">
 
                 <span
                   className={`text-sm font-medium ${statusBadge(
@@ -255,6 +305,26 @@ export default function UserTicketsPage() {
                 >
                   {statusText(ticket.status)}
                 </span>
+
+              </div>
+
+              {/* ACTION */}
+              <div className="md:col-span-2 text-right">
+
+                {ticket.status === "fully_paid" && (
+                  <button
+                    onClick={() => setTestimoniTicket(ticket._id)}
+                    className="text-xs px-3 py-1 bg-[#C9AE63] text-white rounded-full hover:opacity-90"
+                  >
+                    Berikan Testimoni
+                  </button>
+                )}
+
+                {ticket.status === "selesai" && (
+                  <span className="text-xs text-neutral-400">
+                    Testimoni terkirim
+                  </span>
+                )}
 
               </div>
 
@@ -270,6 +340,15 @@ export default function UserTicketsPage() {
         <TicketDetailModal
           ticket={selectedTicket}
           onClose={() => setSelectedTicket(null)}
+        />
+      )}
+
+      {/* TESTIMONI MODAL */}
+      {testimoniTicket && (
+        <TestimoniModal
+          ticketId={testimoniTicket}
+          onClose={() => setTestimoniTicket(null)}
+          onSuccess={loadTickets}
         />
       )}
 

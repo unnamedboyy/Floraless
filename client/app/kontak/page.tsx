@@ -30,8 +30,8 @@ export default function KontakPage() {
             }}
           >
             <Image
-              src="/about.jpg"
-              alt="Contact Floraless"
+              src="/hero.jpg"
+              alt="Kontak Floraless"
               fill
               className="object-cover"
               priority
@@ -42,8 +42,7 @@ export default function KontakPage() {
 
           <div className="absolute inset-0 flex items-center justify-center text-center px-6">
             <h1 className="text-5xl md:text-7xl font-semibold text-white leading-tight tracking-tight">
-              Let’s Create Something <br className="hidden md:block" />
-              Beautiful Together
+              Kontak Kami
             </h1>
           </div>
 
@@ -57,7 +56,7 @@ export default function KontakPage() {
             <div className="md:col-span-6 h-full flex">
               <div className="rounded-3xl bg-white p-14 shadow-2xl border border-neutral-200 w-full h-full flex flex-col items-center justify-center">
                 <h3 className="text-2xl font-semibold text-center">
-                  Leave Your Message
+                  Tinggalkan Pesan Anda
                 </h3>
               </div>
             </div>
@@ -71,31 +70,31 @@ export default function KontakPage() {
 
               <div className="mb-10">
                 <h2 className="text-4xl md:text-6xl font-semibold leading-tight tracking-tight text-black">
-                  Don’t hesitate to <br className="hidden md:block" />
-                  contact us
+                  Jangan ragu untuk <br className="hidden md:block" />
+                  menghubungi kami
                 </h2>
               </div>
 
               <div className="mt-8 grid gap-5 md:grid-cols-2">
 
                 <div className="rounded-2xl bg-neutral-100 p-8 shadow-sm transition hover:shadow-md">
-                  <h4 className="text-lg font-semibold">Office</h4>
+                  <h4 className="text-lg font-semibold">Alamat Kantor</h4>
                   <p className="mt-3 text-base text-neutral-600">
                     Yogyakarta, Indonesia
                   </p>
                 </div>
 
                 <div className="rounded-2xl bg-neutral-100 p-8 shadow-sm transition hover:shadow-md">
-                  <h4 className="text-lg font-semibold">Phone</h4>
+                  <h4 className="text-lg font-semibold">Telepon</h4>
                   <p className="mt-3 text-base text-neutral-600">
                     +62 812-3456-7890
                   </p>
                 </div>
 
                 <div className="rounded-2xl bg-neutral-100 p-8 shadow-sm transition hover:shadow-md">
-                  <h4 className="text-lg font-semibold">Work Hours</h4>
+                  <h4 className="text-lg font-semibold">Jam Operasional</h4>
                   <p className="mt-3 text-base text-neutral-600">
-                    Everyday 09:00 – 19:00
+                    Setiap hari 09:00 – 19:00
                   </p>
                 </div>
 
@@ -111,7 +110,7 @@ export default function KontakPage() {
               {/* SOCIAL */}
               <div className="mt-14">
                 <p className="text-sm text-neutral-500 uppercase tracking-widest">
-                  Social Media
+                  Media Sosial
                 </p>
 
                 <div className="mt-6 flex gap-5">

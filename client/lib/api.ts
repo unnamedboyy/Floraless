@@ -1,40 +1,40 @@
 export async function apiFetch(url: string, options: RequestInit = {}) {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
-  if (!baseUrl) {
-    throw new Error("NEXT_PUBLIC_API_URL belum diset");
-  }
+  const fullUrl = `${baseUrl.replace(/\/$/, "")}/${url.replace(/^\//, "")}`;
 
-  const fullUrl =
-    `${baseUrl.replace(/\/$/, "")}/${url.replace(/^\//, "")}`;
+  try {
+    const res = await fetch(fullUrl, {
+      ...options,
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+      },
+    });
 
-  const res = await fetch(fullUrl, {
-    ...options,
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
-  });
+    // baca response text dulu
+    const text = await res.text();
 
-  if (!res.ok) {
-    let errorMessage = "Request gagal";
-
-    try {
-      const errorData = await res.json();
-      errorMessage = errorData?.message || errorMessage;
-    } catch {}
-
-    if (res.status !== 401) {
-      console.error("API ERROR:", {
-        fullUrl,
-        status: res.status,
-        message: errorMessage,
-      });
+    // convert ke json jika ada
+    let data = null;
+    if (text) {
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = text;
+      }
     }
 
-    throw new Error(errorMessage);
-  }
+    // jika error dari server
+    if (!res.ok) {
+      throw new Error(data?.message || "Terjadi kesalahan server");
+    }
 
-  return res.json();
+    return data;
+  } catch (err) {
+    console.error("API FETCH ERROR:", err);
+    throw err;
+  }
 }

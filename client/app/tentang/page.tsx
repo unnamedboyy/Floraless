@@ -21,7 +21,7 @@ export default function TentangPage() {
       <main>
 
       {/* HERO */}
-      <section className="relative h-[420px] w-full overflow-hidden">
+      {/* <section className="relative h-[420px] w-full overflow-hidden">
 
         <div
           className="absolute inset-0 scale-110"
@@ -55,6 +55,34 @@ export default function TentangPage() {
             </p>
 
           </div>
+        </div>
+
+      </section> */}
+
+      {/* HERO PARALLAX */}
+      <section className="relative h-[520px] w-full overflow-hidden">
+
+        <div
+          className="absolute inset-0 scale-110"
+          style={{
+            transform: `translateY(${offset * 0.35}px)`
+          }}
+        >
+          <Image
+            src="/hero.jpg"
+            alt="Contact Floraless"
+            fill
+            className="object-cover"
+            priority
+          />
+        </div>
+
+        <div className="absolute inset-0 bg-black/50" />
+
+        <div className="absolute inset-0 flex items-center justify-center text-center px-6">
+          <h1 className="text-5xl md:text-7xl font-semibold text-white leading-tight tracking-tight">
+            Tentang Kami
+          </h1>
         </div>
 
       </section>

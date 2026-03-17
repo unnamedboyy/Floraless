@@ -1,6 +1,35 @@
 import Image from "next/image";
 
-const imgs = ["/gal-1.jpg", "/gal-2.jpg", "/gal-3.jpg", "/gal-4.jpg"];
+const imgs = [
+  { src: "/gal-1.jpg", title: "Elegant Bouquet" },
+  { src: "/gal-2.jpg", title: "Wedding Arrangement" },
+  { src: "/gal-3.jpg", title: "Luxury Floral Design" },
+  { src: "/gal-4.jpg", title: "Special Moments" },
+];
+
+function Item({ img }: any) {
+  return (
+    <div className="group relative h-[260px] overflow-hidden rounded-2xl md:h-[320px]">
+      {/* Image */}
+      <Image
+        src={img.src}
+        alt={img.title}
+        fill
+        className="object-cover transition duration-700 ease-out group-hover:scale-110"
+      />
+
+      {/* Gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-0 transition duration-500 group-hover:opacity-100" />
+
+      {/* Text */}
+      <div className="pointer-events-none absolute bottom-6 left-6 translate-y-4 text-white opacity-0 transition duration-500 group-hover:translate-y-0 group-hover:opacity-100">
+        <p className="text-lg font-semibold tracking-wide">
+          {img.title}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export default function Gallery() {
   return (
@@ -12,27 +41,19 @@ export default function Gallery() {
 
         <div className="mt-8 grid gap-4 md:grid-cols-12">
           <div className="md:col-span-8">
-            <div className="relative h-[260px] overflow-hidden rounded-2xl md:h-[320px]">
-              <Image src={imgs[0]} alt="Gallery 1" fill className="object-cover" />
-            </div>
+            <Item img={imgs[0]} />
           </div>
 
           <div className="md:col-span-4">
-            <div className="relative h-[260px] overflow-hidden rounded-2xl md:h-[320px]">
-              <Image src={imgs[1]} alt="Gallery 2" fill className="object-cover" />
-            </div>
+            <Item img={imgs[1]} />
           </div>
 
           <div className="md:col-span-4">
-            <div className="relative h-[260px] overflow-hidden rounded-2xl md:h-[320px]">
-              <Image src={imgs[2]} alt="Gallery 3" fill className="object-cover" />
-            </div>
+            <Item img={imgs[2]} />
           </div>
 
           <div className="md:col-span-8">
-            <div className="relative h-[260px] overflow-hidden rounded-2xl md:h-[320px]">
-              <Image src={imgs[3]} alt="Gallery 4" fill className="object-cover" />
-            </div>
+            <Item img={imgs[3]} />
           </div>
         </div>
       </div>

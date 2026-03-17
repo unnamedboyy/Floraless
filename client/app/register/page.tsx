@@ -25,7 +25,7 @@ export default function RegisterPage() {
       if (user.role === "admin") {
         router.replace("/admin/dashboard");
       } else {
-        router.replace("/user/dashboard");
+        router.replace("/");
       }
     }
   }, [user, loading, router]);
@@ -64,7 +64,7 @@ export default function RegisterPage() {
         role: data.user.role,
       });
 
-      router.replace("/user/dashboard");
+      router.replace("/");
 
     } catch (err: any) {
       setError(err.message);

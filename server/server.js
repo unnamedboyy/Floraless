@@ -46,6 +46,7 @@ app.use("/api/log", require("./routers/log_aktivitas"));
 app.use("/api/room-chat", require("./routers/room_chat"));
 app.use("/api/chat", require("./routers/chat"));
 app.use("/api/pembayaran", require("./routers/pembayaran"));
+app.use("/api/testimoni", require("./routers/testimoni"));
 
 app.get("/api/health", (req, res) => {
   res.json({ ok: true });
