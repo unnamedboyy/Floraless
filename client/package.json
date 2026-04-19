@@ -1,29 +1,19 @@
 {
-  "name": "client",
-  "version": "0.1.0",
-  "private": true,
+  "name": "floraless-backend",
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "dev": "nodemon src/app.js",
+    "start": "node src/app.js"
   },
   "dependencies": {
-    "date-fns": "^4.1.0",
-    "next": "16.0.7",
-    "react": "19.2.0",
-    "react-big-calendar": "^1.19.4",
-    "react-dom": "19.2.0",
-    "socket.io-client": "^4.7.5"
+    "bcrypt": "^5.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.0",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.0.0"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.0.7",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "nodemon": "^3.1.14"
   }
 }

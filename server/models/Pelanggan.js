@@ -1,38 +1,11 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const pelangganSchema = new mongoose.Schema(
-  {
-    nama: {
-      type: String,
-      required: true,
-    },
+const pelangganSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  nama: String,
+  no_telp: String
+});
 
-    email: {
-      type: String,
-      unique: true,
-      sparse: true,
-    },
+pelangganSchema.index({ userId: 1 });
 
-    no_telepon: {
-      type: String,
-      required: true,
-      unique: true,
-      index: true,
-    },
-
-    username: {
-      type: String,
-      required: true,
-      unique: true,
-      index: true,
-    },
-
-    password: {
-      type: String,
-      required: true,
-    },
-  },
-  { timestamps: true }
-);
-
-module.exports = mongoose.model("Pelanggan", pelangganSchema);
+export default mongoose.model("Pelanggan", pelangganSchema);

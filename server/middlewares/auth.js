@@ -1,29 +1,27 @@
-const { verifyToken } = require("../utils/jwt");
+import jwt from "jsonwebtoken";
 
-function protect(req, res, next) {
+const authMiddleware = (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    const header = req.headers.authorization;
 
-    if (!token) {
-      return res.status(401).json({ message: "Unauthorized" });
+    if (!header) {
+      return res.status(401).json({ message: "No token" });
     }
 
-    const decoded = verifyToken(token);
+    const token = header.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({ message: "Invalid token format" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
     req.user = decoded;
 
     next();
   } catch (err) {
-    res.status(401).json({ message: "Invalid token" });
+    return res.status(401).json({ message: "Invalid token" });
   }
-}
+};
 
-function authorize(role) {
-  return (req, res, next) => {
-    if (req.user.role !== role) {
-      return res.status(403).json({ message: "Forbidden" });
-    }
-    next();
-  };
-}
-
-module.exports = { protect, authorize };
+export default authMiddleware;

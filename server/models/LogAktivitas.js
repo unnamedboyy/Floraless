@@ -1,41 +1,12 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const changeSchema = new mongoose.Schema(
-  {
-    field: String,
-    before: mongoose.Schema.Types.Mixed,
-    after: mongoose.Schema.Types.Mixed,
-  },
-  { _id: false }
-);
+const logSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  aktivitas: String,
+  waktu: { type: Date, default: Date.now }
+});
 
-const logSchema = new mongoose.Schema(
-  {
-    ticket: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "TicketPemesanan",
-      required: true,
-      index: true,
-    },
+logSchema.index({ userId: 1 });
+logSchema.index({ waktu: -1 });
 
-    actor: {
-      id: mongoose.Schema.Types.ObjectId,
-      role: String,
-    },
-
-    action: {
-      type: String,
-      required: true,
-    },
-
-    changes: {
-      type: [changeSchema],
-      default: [],
-    },
-
-    message: String,
-  },
-  { timestamps: true }
-);
-
-module.exports = mongoose.model("LogAktivitas", logSchema);
+export default mongoose.model("LogAktivitas", logSchema);

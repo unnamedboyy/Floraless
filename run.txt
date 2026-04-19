@@ -3,7 +3,7 @@ cd C:\MongoDB\bin
 mongod --dbpath C:\MongoDB\data
 
 # backend
-cd server
+cd serverz
 npm run dev
 
 # frontend

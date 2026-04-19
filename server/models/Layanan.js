@@ -1,31 +1,12 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const layananSchema = new mongoose.Schema(
-  {
-    nama_layanan: {
-      type: String,
-      required: true,
-    },
+const layananSchema = new mongoose.Schema({
+  nama: String,
+  deskripsi: String,
+  harga: Number,
+});
 
-    deskripsi: {
-      type: String,
-    },
+layananSchema.index({ status: 1 });
+layananSchema.index({ nama: "text" });
 
-    harga: {
-      type: Number,
-      required: true,
-    },
-
-    gambar: {
-      type: String,
-    },
-
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
-  },
-  { timestamps: true }
-);
-
-module.exports = mongoose.model("Layanan", layananSchema);
+export default mongoose.model("Layanan", layananSchema);

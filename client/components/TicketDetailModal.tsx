@@ -157,8 +157,6 @@ export default function TicketDetailModal({
             {detail && (
 
               <div className="grid grid-cols-2 gap-y-5 text-sm">
-
-
                 <div className="space-y-1">
                   <p className="text-neutral-500 flex items-center gap-2">
                     <Ticket size={14} />

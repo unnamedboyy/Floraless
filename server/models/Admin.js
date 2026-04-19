@@ -1,44 +1,10 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const adminSchema = new mongoose.Schema(
-  {
-    nama: {
-      type: String,
-      required: true,
-    },
+const adminSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  nama: String
+});
 
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      index: true,
-    },
+adminSchema.index({ userId: 1 });
 
-    no_telepon: {
-      type: String,
-      required: true,
-      unique: true,
-      index: true,
-    },
-
-    username: {
-      type: String,
-      required: true,
-      unique: true,
-      index: true,
-    },
-
-    password: {
-      type: String,
-      required: true,
-    },
-
-    role: {
-      type: String,
-      default: "admin",
-    },
-  },
-  { timestamps: true }
-);
-
-module.exports = mongoose.model("Admin", adminSchema);
+export default mongoose.model("Admin", adminSchema);
