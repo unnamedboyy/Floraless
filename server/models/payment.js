@@ -20,9 +20,18 @@ const paymentSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ["paid"],
-    default: "paid"
-  }
+    enum: ["pending", "approved", "rejected"],
+    default: "pending"
+  },
+
+  approvedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Pegawai"
+  },
+
+  approvedAt: Date,
+
+  catatan: String
 
 }, { timestamps: true });
 
