@@ -7,7 +7,7 @@ import cors from "cors";
 import connectDB from "./config/db.js";
 
 import authRoutes from "./routes/auth.router.js";
-import orderRoutes from "./routes/order.router.js";
+import ticketRoutes from "./routes/ticket.router.js";
 import paymentRoutes from "./routes/payment.router.js";
 import voucherRoutes from "./routes/voucher.router.js";
 import layananRoutes from "./routes/layanan.router.js";
@@ -23,10 +23,10 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
-app.use("/api/orders", orderRoutes);
+app.use("/api/tickets", ticketRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/vouchers", voucherRoutes);
-app.use("/api/layanan", layananRoutes);
+app.use("/api/layanans", layananRoutes);
 
 app.use(errorHandler);
 

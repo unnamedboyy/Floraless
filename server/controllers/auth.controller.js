@@ -5,7 +5,6 @@ import Pelanggan from "../models/pelanggan.js";
 import Admin from "../models/admin.js";
 import Pegawai from "../models/pegawai.js";
 
-
 const createUser = async (username, password, role) => {
   const hash = await bcrypt.hash(password, 10);
 
@@ -40,7 +39,6 @@ export const registerPelanggan = async (req, res, next) => {
   }
 };
 
-
 // REGISTER PEGAWAI
 export const registerPegawai = async (req, res, next) => {
   try {
@@ -65,7 +63,6 @@ export const registerPegawai = async (req, res, next) => {
   }
 };
 
-
 // REGISTER ADMIN
 export const registerAdmin = async (req, res, next) => {
   try {
@@ -89,7 +86,6 @@ export const registerAdmin = async (req, res, next) => {
     next(err);
   }
 };
-
 
 // LOGIN
 export const login = async (req, res, next) => {

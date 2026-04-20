@@ -1,22 +1,31 @@
 import mongoose from "mongoose";
 
 const paymentSchema = new mongoose.Schema({
-  orderId: { type: mongoose.Schema.Types.ObjectId, ref: "Order" },
+  ticketId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Ticket",
+    required: true
+  },
+
   tipe: {
     type: String,
-    enum: ["DP1", "DP2", "FULL"]
+    enum: ["DP1", "DP2", "PELUNASAN"],
+    required: true
   },
-  nominal: Number,
+
+  jumlah: {
+    type: Number,
+    required: true
+  },
+
   status: {
     type: String,
-    enum: ["pending", "approved", "rejected"],
-    default: "pending"
-  },
-  tanggal: Date
-});
+    enum: ["paid"],
+    default: "paid"
+  }
 
-paymentSchema.index({ orderId: 1 });
-paymentSchema.index({ status: 1 });
-paymentSchema.index({ tipe: 1 });
+}, { timestamps: true });
+
+paymentSchema.index({ ticketId: 1 });
 
 export default mongoose.model("Payment", paymentSchema);
