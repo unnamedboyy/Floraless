@@ -1,14 +1,24 @@
+
+
 import express from "express";
+import {
+  createLayanan,
+  getLayanan,
+  getLayananById,
+  updateLayanan,
+  deleteLayanan
+} from "../controllers/layanan.controller.js";
+
 import auth from "../middlewares/auth.js";
 import role from "../middlewares/role.js";
-import {
-    createLayanan,
-    getLayanan
-} from "../controllers/layanan.controller.js";
 
 const router = express.Router();
 
-router.post("/", auth, role("admin"), createLayanan);
 router.get("/", getLayanan);
+router.get("/:id", getLayananById);
+
+router.post("/", auth, role("admin"), createLayanan);
+router.put("/:id", auth, role("admin"), updateLayanan);
+router.delete("/:id", auth, role("admin"), deleteLayanan);
 
 export default router;

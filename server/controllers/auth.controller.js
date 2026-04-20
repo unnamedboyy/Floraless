@@ -6,6 +6,16 @@ import Admin from "../models/admin.js";
 import Pegawai from "../models/pegawai.js";
 
 
+const createUser = async (username, password, role) => {
+  const hash = await bcrypt.hash(password, 10);
+
+  return await User.create({
+    username,
+    password: hash,
+    role
+  });
+};
+
 // REGISTER PELANGGAN
 export const registerPelanggan = async (req, res, next) => {
   try {
@@ -16,13 +26,7 @@ export const registerPelanggan = async (req, res, next) => {
       throw { status: 400, message: "Username sudah digunakan" };
     }
 
-    const hash = await bcrypt.hash(password, 10);
-
-    const user = await User.create({
-      username,
-      password: hash,
-      role: "pelanggan"
-    });
+    const user = await createUser(username, password, "pelanggan");
 
     const pelanggan = await Pelanggan.create({
       userId: user._id,
@@ -47,13 +51,7 @@ export const registerPegawai = async (req, res, next) => {
       throw { status: 400, message: "Username sudah digunakan" };
     }
 
-    const hash = await bcrypt.hash(password, 10);
-
-    const user = await User.create({
-      username,
-      password: hash,
-      role: "pegawai"
-    });
+    const user = await createUser(username, password, "pegawai");
 
     const pegawai = await Pegawai.create({
       userId: user._id,
@@ -78,13 +76,7 @@ export const registerAdmin = async (req, res, next) => {
       throw { status: 400, message: "Username sudah digunakan" };
     }
 
-    const hash = await bcrypt.hash(password, 10);
-
-    const user = await User.create({
-      username,
-      password: hash,
-      role: "admin"
-    });
+    const user = await createUser(username, password, "admin");
 
     const admin = await Admin.create({
       userId: user._id,
@@ -124,6 +116,89 @@ export const login = async (req, res, next) => {
     );
 
     res.json({ token });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// GET ALL USER BY ROLE 
+export const getUsersByRole = async (req, res, next) => {
+  try {
+    const { role } = req.params;
+
+    let Model;
+    if (role === "pelanggan") Model = Pelanggan;
+    else if (role === "pegawai") Model = Pegawai;
+    else if (role === "admin") Model = Admin;
+    else throw { status: 400, message: "Role tidak valid" };
+
+    const data = await Model.find().populate("userId", "username role");
+
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// GET BY ID
+export const getUserById = async (req, res, next) => {
+  try {
+    const { role, id } = req.params;
+
+    let Model;
+    if (role === "pelanggan") Model = Pelanggan;
+    else if (role === "pegawai") Model = Pegawai;
+    else if (role === "admin") Model = Admin;
+    else throw { status: 400, message: "Role tidak valid" };
+
+    const data = await Model.findById(id).populate("userId");
+
+    if (!data) throw { status: 404, message: "Data tidak ditemukan" };
+
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// UPDATE
+export const updateUser = async (req, res, next) => {
+  try {
+    const { role, id } = req.params;
+
+    let Model;
+    if (role === "pelanggan") Model = Pelanggan;
+    else if (role === "pegawai") Model = Pegawai;
+    else if (role === "admin") Model = Admin;
+    else throw { status: 400, message: "Role tidak valid" };
+
+    const data = await Model.findByIdAndUpdate(id, req.body, { new: true });
+
+    if (!data) throw { status: 404, message: "Data tidak ditemukan" };
+
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// DELETE
+export const deleteUser = async (req, res, next) => {
+  try {
+    const { role, id } = req.params;
+
+    let Model;
+    if (role === "pelanggan") Model = Pelanggan;
+    else if (role === "pegawai") Model = Pegawai;
+    else if (role === "admin") Model = Admin;
+    else throw { status: 400, message: "Role tidak valid" };
+
+    const data = await Model.findByIdAndDelete(id);
+    if (!data) throw { status: 404, message: "Data tidak ditemukan" };
+
+    await User.findByIdAndDelete(data.userId);
+
+    res.json({ message: "Berhasil dihapus" });
   } catch (err) {
     next(err);
   }
