@@ -7,6 +7,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ["admin", "pegawai", "pelanggan"],
     required: true
+  },
+  isActive: {
+    type: Boolean,
+    default: true
   }
 }, { timestamps: true });
 

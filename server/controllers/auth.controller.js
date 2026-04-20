@@ -125,6 +125,7 @@ export const login = async (req, res, next) => {
 export const getUsersByRole = async (req, res, next) => {
   try {
     const { role } = req.params;
+    const { page = 1, limit = 10, search = "" } = req.query;
 
     let Model;
     if (role === "pelanggan") Model = Pelanggan;
@@ -132,9 +133,25 @@ export const getUsersByRole = async (req, res, next) => {
     else if (role === "admin") Model = Admin;
     else throw { status: 400, message: "Role tidak valid" };
 
-    const data = await Model.find().populate("userId", "username role");
+    const filter = {
+      isActive: true,
+      nama: { $regex: search, $options: "i" }
+    };
 
-    res.json(data);
+    const data = await Model.find(filter)
+      .populate("userId", "username role")
+      .skip((page - 1) * limit)
+      .limit(Number(limit));
+
+    const total = await Model.countDocuments(filter);
+
+    res.json({
+      data,
+      total,
+      page: Number(page),
+      totalPages: Math.ceil(total / limit)
+    });
+
   } catch (err) {
     next(err);
   }
@@ -184,6 +201,28 @@ export const updateUser = async (req, res, next) => {
 
 // DELETE
 export const deleteUser = async (req, res, next) => {
+  try {
+    const { role, id } = req.params;
+
+    let Model;
+    if (role === "pelanggan") Model = Pelanggan;
+    else if (role === "pegawai") Model = Pegawai;
+    else if (role === "admin") Model = Admin;
+    else throw { status: 400, message: "Role tidak valid" };
+
+    const data = await Model.findByIdAndUpdate(id, { isActive: false });
+    if (!data) throw { status: 404, message: "Data tidak ditemukan" };
+
+    await Model.findByIdAndUpdate(id, { isActive: false });
+
+    res.json({ message: "Berhasil dihapus" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// DELETE (Permanent)
+export const deleteUserPermanent = async (req, res, next) => {
   try {
     const { role, id } = req.params;
 
