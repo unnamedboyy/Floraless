@@ -11,6 +11,7 @@ import ticketRoutes from "./routes/ticket.router.js";
 import paymentRoutes from "./routes/payment.router.js";
 import voucherRoutes from "./routes/voucher.router.js";
 import layananRoutes from "./routes/layanan.router.js";
+import logRoutes from "./routes/log.router.js";
 
 import errorHandler from "./middlewares/errorHandler.js";
 
@@ -27,6 +28,7 @@ app.use("/api/tickets", ticketRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/vouchers", voucherRoutes);
 app.use("/api/layanans", layananRoutes);
+app.use("/api/log", logRoutes);
 
 app.use(errorHandler);
 

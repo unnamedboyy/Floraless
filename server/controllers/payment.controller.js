@@ -1,6 +1,7 @@
 import Payment from "../models/payment.js";
 import Ticket from "../models/ticket.js";
 import Layanan from "../models/layanan.js";
+import { logActivity } from "../utils/logger.js";
 
 
 // CREATE PAYMENT (USER)
@@ -19,7 +20,6 @@ export const createPayment = async (req, res, next) => {
     if (!layanan) throw { status: 404, message: "Layanan tidak ditemukan" };
 
     const harga = layanan.harga;
-
     const payments = await Payment.find({ ticketId });
 
     const approvedPayments = payments.filter(p => p.status === "approved");
@@ -71,6 +71,13 @@ export const createPayment = async (req, res, next) => {
       jumlah
     });
 
+    await logActivity({
+      userId: req.user.id,
+      ticketId: ticket._id,
+      action: "CREATE_PAYMENT",
+      meta: { tipe }
+    });
+
     res.json({
       message: "Payment dibuat, menunggu approval",
       payment
@@ -113,6 +120,23 @@ export const approvePayment = async (req, res, next) => {
 
     await payment.save();
 
+    if (status === "rejected") {
+      await logActivity({
+        userId: req.user.id,
+        ticketId: ticket._id,
+        action: "REJECT_PAYMENT",
+        customDescription: `PIC ${req.user.username} menolak pembayaran ${payment.tipe}`,
+        meta: { tipe: payment.tipe },
+      });
+    } else {
+      await logActivity({
+        userId: req.user.id,
+        ticketId: ticket._id,
+        action: "APPROVE_PAYMENT",
+        customDescription: `PIC ${req.user.username} menyetujui pembayaran ${payment.tipe}`,
+        meta: { tipe: payment.tipe },
+      });
+    }
     // ================= CEK LUNAS =================
 
     if (status === "approved") {

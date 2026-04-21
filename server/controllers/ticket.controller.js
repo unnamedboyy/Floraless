@@ -6,6 +6,7 @@ import HistoryStatus from "../models/historyStatus.js";
 import Pelanggan from "../models/pelanggan.js";
 import Layanan from "../models/layanan.js";
 import Pegawai from "../models/pegawai.js";
+import Payment from "../models/payment.js";
 
 // CREATE TICKET
 export const createTicket = async (req, res, next) => {
@@ -112,8 +113,6 @@ export const getTickets = async (req, res, next) => {
       .skip(skip)
       .limit(Number(limit));
 
-
-
       if (tanggal) {
       const jadwals = await Jadwal.find({
         tanggal_acara: new Date(tanggal)
@@ -152,6 +151,7 @@ export const getTicketById = async (req, res, next) => {
 
     if (!ticket) throw { status: 404, message: "Ticket tidak ditemukan" };
 
+    const summary = await getPaymentSummary(ticket);
     const detail = await DetailTicket.findOne({ ticketId: id });
     const jadwal = await Jadwal.findOne({ ticketId: id });
     const history = await HistoryStatus.find({ ticketId: id }).sort({ createdAt: 1 });
@@ -160,7 +160,8 @@ export const getTicketById = async (req, res, next) => {
       ticket,
       detail,
       jadwal,
-      history
+      history,
+      summary
     });
 
   } catch (err) {
@@ -249,6 +250,61 @@ export const updateStatusTicket = async (req, res, next) => {
       message: "Status berhasil diupdate",
       ticket
     });
+
+  } catch (err) {
+    next(err);
+  }
+};
+
+// 💰 PAYMENT SUMMARY
+const getPaymentSummary = async (ticket) => {
+
+  // ambil harga layanan
+  const layanan = await Layanan.findById(ticket.layananId);
+  if (!layanan) {
+    throw { status: 404, message: "Layanan tidak ditemukan" };
+  }
+
+  const totalTagihan = layanan.harga;
+  const payments = await Payment.find({
+    ticketId: ticket._id,
+    status: "approved"
+  });
+
+  const totalDibayar = payments.reduce(
+    (sum, p) => sum + p.jumlah,
+    0
+  );
+
+  const sisaTagihan = totalTagihan - totalDibayar;
+  let statusPembayaran = "unpaid";
+
+  if (totalDibayar === 0) {
+    statusPembayaran = "unpaid";
+  } else if (totalDibayar < totalTagihan) {
+    statusPembayaran = "partial";
+  } else if (totalDibayar === totalTagihan) {
+    statusPembayaran = "paid";
+  }
+
+  return {
+    totalTagihan,
+    totalDibayar,
+    sisaTagihan,
+    statusPembayaran,
+    jumlahPembayaran: payments.length
+  };
+};
+
+export const getPaymentSummaryByTicket = async (req, res, next) => {
+  try {
+
+    const ticket = await Ticket.findById(req.params.id);
+
+    if (!ticket) throw { status: 404, message: "Ticket tidak ditemukan" };
+
+    const summary = await getPaymentSummary(ticket);
+    res.json(summary);
 
   } catch (err) {
     next(err);

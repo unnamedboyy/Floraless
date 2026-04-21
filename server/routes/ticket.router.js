@@ -7,7 +7,8 @@ import {
   getTickets,
   getTicketById,
   approveTicket,
-  updateStatusTicket
+  updateStatusTicket,
+  getPaymentSummaryByTicket
 } from "../controllers/ticket.controller.js";
 
 const router = express.Router();
@@ -17,5 +18,6 @@ router.get("/", auth, getTickets);
 router.get("/:id", auth, role("pelanggan"), getTicketById); 
 router.patch("/:id/approve", auth, role("admin", "pegawai"), approveTicket);
 router.patch("/:id/status",auth,role("admin", "pegawai"), updateStatusTicket);
+router.get("/:id/paymentSummary", auth, getPaymentSummaryByTicket);
 
 export default router;
