@@ -12,6 +12,12 @@ import paymentRoutes from "./routes/payment.router.js";
 import voucherRoutes from "./routes/voucher.router.js";
 import layananRoutes from "./routes/layanan.router.js";
 import logRoutes from "./routes/log.router.js";
+import cashbackRoutes from "./routes/cashback.router.js";
+import reviewRoutes from "./routes/review.router.js";
+import portfolioRoutes from "./routes/portfolio.router.js";
+import fotoPortfolioRoutes from "./routes/fotoPortfolio.router.js";
+import detailRoutes from "./routes/detail.router.js";
+import jadwalRoutes from "./routes/jadwal.router.js";
 
 import errorHandler from "./middlewares/errorHandler.js";
 
@@ -29,6 +35,13 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/vouchers", voucherRoutes);
 app.use("/api/layanans", layananRoutes);
 app.use("/api/log", logRoutes);
+app.use("/api/cashback", cashbackRoutes);
+app.use("/api/review", reviewRoutes);
+app.use("/api/voucher", voucherRoutes);
+app.use("/api/portfolio", portfolioRoutes);
+app.use("/api/portfolio-images", fotoPortfolioRoutes);
+app.use("/api/detail", detailRoutes);
+app.use("/api/jadwal", jadwalRoutes);
 
 app.use(errorHandler);
 

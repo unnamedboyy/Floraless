@@ -1,0 +1,39 @@
+import mongoose from "mongoose";
+
+const cashbackClaimSchema = new mongoose.Schema({
+  voucherId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Voucher",
+    required: true
+  },
+  pelangganId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Pelanggan",
+    required: true
+  },
+  kode_voucher: String,
+
+  nama_rekening: String,
+  nomor_rekening: String,
+  bank: String,
+
+  status: {
+    type: String,
+    enum: ["pending", "approved", "rejected"],
+    default: "pending"
+  },
+
+  alasan: String,
+
+  bukti_tf: String,
+
+  approvedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  },
+
+  approvedAt: Date
+
+}, { timestamps: true });
+
+export default mongoose.model("CashbackClaim", cashbackClaimSchema);

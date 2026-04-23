@@ -8,7 +8,8 @@ import {
   getTicketById,
   approveTicket,
   updateStatusTicket,
-  getPaymentSummaryByTicket
+  getPaymentSummaryByTicket,
+  getTicketFullById
 } from "../controllers/ticket.controller.js";
 
 const router = express.Router();
@@ -16,6 +17,7 @@ const router = express.Router();
 router.post("/", auth, role("pelanggan"), createTicket);
 router.get("/", auth, getTickets);
 router.get("/:id", auth, role("pelanggan"), getTicketById); 
+router.get("/:id/full", auth, getTicketFullById);
 router.patch("/:id/approve", auth, role("admin", "pegawai"), approveTicket);
 router.patch("/:id/status",auth,role("admin", "pegawai"), updateStatusTicket);
 router.get("/:id/paymentSummary", auth, getPaymentSummaryByTicket);

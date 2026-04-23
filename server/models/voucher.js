@@ -1,13 +1,25 @@
 import mongoose from "mongoose";
 
 const voucherSchema = new mongoose.Schema({
-  kode: { type: String, unique: true },
-  nominal: Number,
-  expired_at: Date,
-  is_used: { type: Boolean, default: false }
-});
-
-voucherSchema.index({ kode: 1 }, { unique: true });
-voucherSchema.index({ expired_at: 1 });
+  code: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  pelangganId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Pelanggan",
+    required: true
+  },
+  amount: {
+    type: Number,
+    required: true
+  },
+  isUsed: {
+    type: Boolean,
+    default: false
+  },
+  expiredAt: Date
+}, { timestamps: true });
 
 export default mongoose.model("Voucher", voucherSchema);

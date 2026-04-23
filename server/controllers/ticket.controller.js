@@ -7,6 +7,9 @@ import Pelanggan from "../models/pelanggan.js";
 import Layanan from "../models/layanan.js";
 import Pegawai from "../models/pegawai.js";
 import Payment from "../models/payment.js";
+import Review from "../models/review.js";
+import CashbackClaim from "../models/cashbackClaim.js";
+import LogActivity from "../models/logAktivitas.js";
 
 // CREATE TICKET
 export const createTicket = async (req, res, next) => {
@@ -305,6 +308,100 @@ export const getPaymentSummaryByTicket = async (req, res, next) => {
 
     const summary = await getPaymentSummary(ticket);
     res.json(summary);
+
+  } catch (err) {
+    next(err);
+  }
+};
+
+// GET FULL DETAIL BY ID (TICKET + DETAIL + JADWAL + PAYMENT + REVIEW + VOUCHER + CLAIMS)
+export const getTicketFullById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    // ================= TICKET =================
+    const ticket = await Ticket.findById(id)
+      .populate("pelangganId", "nama no_telp")
+      .populate("pegawaiId", "nama")
+      .populate("layananId", "nama harga");
+
+    if (!ticket) throw { status: 404, message: "Ticket tidak ditemukan" };
+
+    // ================= DETAIL =================
+    const detail = await DetailTicket.findOne({ ticketId: id });
+
+    // ================= JADWAL =================
+    const jadwal = await Jadwal.findOne({ ticketId: id });
+
+    // ================= PAYMENTS =================
+    const payments = await Payment.find({ ticketId: id }).sort({ createdAt: 1 });
+
+    // ================= PAYMENT SUMMARY =================
+    let totalHarga = 0;
+    let totalDibayar = 0;
+
+    if (ticket.layananId) {
+      totalHarga = ticket.layananId.harga;
+    }
+
+    payments.forEach(p => {
+      if (p.status === "approved") {
+        totalDibayar += p.jumlah;
+      }
+    });
+
+    const sisa = totalHarga - totalDibayar;
+
+    let paymentStatus = "unpaid";
+
+    if (totalDibayar > 0 && totalDibayar < totalHarga) {
+      paymentStatus = "partial";
+    }
+
+    if (totalDibayar >= totalHarga) {
+      paymentStatus = "paid";
+    }
+
+    const paymentSummary = {
+      totalHarga,
+      totalDibayar,
+      sisa,
+      status: paymentStatus
+    };
+
+    // ================= REVIEW =================
+    const review = await Review.findOne({ ticketId: id });
+
+    // ================= VOUCHER =================
+    let voucher = null;
+    if (review) {
+      voucher = await Voucher.findOne({
+        pelangganId: ticket.pelangganId._id
+      }).sort({ createdAt: -1 });
+    }
+
+    // ================= CLAIM =================
+    const claims = await CashbackClaim.find({
+      pelangganId: ticket.pelangganId._id
+    }).sort({ createdAt: -1 });
+
+    // ================= LOG =================
+    const logs = await LogActivity.find({
+      ticketId: id
+    }).sort({ createdAt: -1 });
+
+    // ================= RESPONSE =================
+    res.json({
+      ticket,
+      detail,
+      jadwal,
+      payments,
+      paymentSummary,
+      review,
+      voucher,
+      claims,
+      logs
+    });
 
   } catch (err) {
     next(err);
