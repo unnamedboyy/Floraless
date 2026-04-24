@@ -26,4 +26,9 @@ const portfolioSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
+portfolioSchema.index(
+  { ticketId: 1 },
+  { unique: true, partialFilterExpression: { ticketId: { $exists: true } } }
+);
+
 export default mongoose.model("Portfolio", portfolioSchema);

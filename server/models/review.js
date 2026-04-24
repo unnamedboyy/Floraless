@@ -21,4 +21,6 @@ const reviewSchema = new mongoose.Schema({
   komentar: String
 }, { timestamps: true });
 
+reviewSchema.index({ ticketId: 1 }, { unique: true });
+
 export default mongoose.model("Review", reviewSchema);

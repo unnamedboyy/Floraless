@@ -14,7 +14,7 @@ const jadwalSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ["booked", "ongoing", "done"],
+    enum: ["booked", "ongoing", "done"], 
     default: "booked"
   }
 
