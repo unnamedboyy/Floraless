@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 import Ticket from "../models/ticket.js";
 import DetailTicket from "../models/detailTicket.js";
 import Jadwal from "../models/jadwal.js";
-import HistoryStatus from "../models/historyStatus.js";
 import Pelanggan from "../models/pelanggan.js";
 import Layanan from "../models/layanan.js";
 import Pegawai from "../models/pegawai.js";
@@ -68,11 +67,12 @@ export const createTicket = async (req, res, next) => {
     });
 
     // HISTORY
-    await HistoryStatus.create({
-      ticketId: ticket._id,
-      status: "pending",
-      keterangan: "Ticket dibuat"
-    });
+  await LogActivity.create({
+    ticketId: ticket._id,
+    action: "CREATE_TICKET",
+    status: "pending",
+    description: "Ticket dibuat"
+  });
 
     res.json({
       message: "Ticket berhasil dibuat",
@@ -157,13 +157,13 @@ export const getTicketById = async (req, res, next) => {
     const summary = await getPaymentSummary(ticket);
     const detail = await DetailTicket.findOne({ ticketId: id });
     const jadwal = await Jadwal.findOne({ ticketId: id });
-    const history = await HistoryStatus.find({ ticketId: id }).sort({ createdAt: 1 });
-
-    res.json({
+    const logs = await LogActivity.find({ ticketId: id }).sort({ createdAt: 1 });
+    
+      res.json({
       ticket,
       detail,
       jadwal,
-      history,
+      logs,
       summary
     });
 
@@ -192,8 +192,9 @@ export const approveTicket = async (req, res, next) => {
 
     await ticket.save();
 
-    await HistoryStatus.create({
+    await LogActivity.create({
       ticketId: ticket._id,
+      action: "APPROVED_TICKET",
       status: "approved",
       keterangan: "Ticket disetujui & PIC ditentukan"
     });
@@ -243,10 +244,11 @@ export const updateStatusTicket = async (req, res, next) => {
     await ticket.save();
 
     // HISTORY LOG
-    await HistoryStatus.create({
+    await LogActivity.create({
       ticketId: ticket._id,
+      action: "UPDATE_STATUS",
       status,
-      keterangan: `Status diubah ke ${status}`
+      description: `Status diubah ke ${status}`
     });
 
     res.json({
