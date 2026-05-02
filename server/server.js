@@ -18,6 +18,9 @@ import portfolioRoutes from "./routes/portfolio.router.js";
 import fotoPortfolioRoutes from "./routes/fotoPortfolio.router.js";
 import detailRoutes from "./routes/detail.router.js";
 import jadwalRoutes from "./routes/jadwal.router.js";
+import dashboardRoutes from "./routes/dashboard.router.js";
+import pegawaiRouter from "./routes/pegawai.router.js";
+import pelangganRouter from "./routes/pelanggan.router.js";
 
 import errorHandler from "./middlewares/errorHandler.js";
 
@@ -42,6 +45,9 @@ app.use("/api/portfolio", portfolioRoutes);
 app.use("/api/portfolio-images", fotoPortfolioRoutes);
 app.use("/api/detail", detailRoutes);
 app.use("/api/jadwal", jadwalRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/pegawai", pegawaiRouter);
+app.use("/api/pelanggan", pelangganRouter);
 
 app.use(errorHandler);
 

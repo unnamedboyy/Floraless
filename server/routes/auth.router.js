@@ -1,18 +1,32 @@
 import express from "express";
 import auth from "../middlewares/auth.js";
 import role from "../middlewares/role.js";
-import { 
-    login, 
-    registerPelanggan, 
-    registerPegawai, 
-    registerAdmin 
+
+import {
+  login,
+  registerPelanggan,
+  registerPegawai,
+  registerAdmin,
+  getUsersByRole,
+  getUserById,
+  updateUser,
+  deleteUser,
 } from "../controllers/auth.controller.js";
 
 const router = express.Router();
 
-router.post("/registerPelanggan", registerPelanggan);
-router.post("/registerAdmin", auth, role("admin"), registerAdmin);
-router.post("/registerPegawai", auth, role("admin"), registerPegawai);
+/* ================= AUTH ================= */
 router.post("/login", login);
+
+/* ================= REGISTER ================= */
+router.post("/registerPelanggan", registerPelanggan);
+router.post("/registerPegawai", auth, role("admin"), registerPegawai);
+router.post("/registerAdmin", auth, role("admin"), registerAdmin);
+
+/* ================= USERS ================= */
+router.get("/users/:role", auth, getUsersByRole);
+router.get("/users/:role/:id", auth, getUserById);
+router.put("/users/:role/:id", auth, role("admin"), updateUser);
+router.patch("/users/:role/:id", auth, role("admin"), deleteUser);
 
 export default router;

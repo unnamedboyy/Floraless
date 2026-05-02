@@ -135,7 +135,7 @@ export const getUsersByRole = async (req, res, next) => {
     };
 
     const data = await Model.find(filter)
-      .populate("userId", "username role")
+      .populate("userId")
       .skip((page - 1) * limit)
       .limit(Number(limit));
 

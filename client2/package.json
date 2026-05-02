@@ -2,8 +2,8 @@
   "name": "floraless-backend",
   "type": "module",
   "scripts": {
-    "dev": "nodemon src/app.js",
-    "start": "node src/app.js"
+    "dev": "nodemon app.js",
+    "start": "node app.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.0",
