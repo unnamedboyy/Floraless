@@ -175,33 +175,32 @@ export const getTicketById = async (req, res, next) => {
 // APPROVE (ASSIGN PIC)
 export const approveTicket = async (req, res, next) => {
   try {
+    const { id } = req.params;
     const { pegawaiId } = req.body;
 
-    const ticket = await Ticket.findById(req.params.id);
-    if (!ticket) throw { status: 404, message: "Ticket tidak ditemukan" };
-
-    if (ticket.status !== "pending") {
-      throw { status: 400, message: "Ticket sudah diproses" };
+    if (!pegawaiId) {
+      return res.status(400).json({ message: "pegawaiId wajib diisi" });
     }
 
-    const pegawai = await Pegawai.findById(pegawaiId);
-    if (!pegawai) throw { status: 404, message: "Pegawai tidak ditemukan" };
+    const updated = await Ticket.findByIdAndUpdate(
+      id,
+      {
+        pegawaiId,
+        status: "approved",
+      },
+      { new: true }
+    )
+      .populate("pegawaiId", "nama")
+      .populate("pelangganId", "nama")
+      .populate("layananId", "nama harga");
 
-    ticket.pegawaiId = pegawaiId;
-    ticket.status = "approved";
+    if (!updated) {
+      return res.status(404).json({ message: "Ticket tidak ditemukan" });
+    }
 
-    await ticket.save();
-
-    await LogActivity.create({
-      ticketId: ticket._id,
-      action: "APPROVED_TICKET",
-      status: "approved",
-      keterangan: "Ticket disetujui & PIC ditentukan"
-    });
-
-    res.json(ticket);
-
+    res.json(updated); 
   } catch (err) {
+    console.error("APPROVE ERROR:", err);
     next(err);
   }
 };

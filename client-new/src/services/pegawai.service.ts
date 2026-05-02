@@ -11,3 +11,6 @@ export const updatePegawai = (id: string, data: any) =>
 
 export const deletePegawai = (id: string) =>
   api.delete(`/pegawai/${id}`);
+
+export const getPegawaiList = () =>
+  api.get("/auth/users/pegawai?limit=100");
