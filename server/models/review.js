@@ -18,7 +18,11 @@ const reviewSchema = new mongoose.Schema({
     max: 5,
     required: true
   },
-  komentar: String
+  komentar: String,
+  isActive: {
+    type: Boolean,
+    default: true
+  }
 }, { timestamps: true });
 
 reviewSchema.index({ ticketId: 1 }, { unique: true });

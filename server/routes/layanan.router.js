@@ -6,7 +6,8 @@ import {
   getLayanan,
   getLayananById,
   updateLayanan,
-  deleteLayanan
+  deleteLayanan,
+  toggleLayanan
 } from "../controllers/layanan.controller.js";
 
 import auth from "../middlewares/auth.js";
@@ -20,5 +21,6 @@ router.get("/:id", getLayananById);
 router.post("/", auth, role("admin"), createLayanan);
 router.put("/:id", auth, role("admin"), updateLayanan);
 router.delete("/:id", auth, role("admin"), deleteLayanan);
+router.patch("/:id/toggle", auth, role("admin"), toggleLayanan);
 
 export default router;

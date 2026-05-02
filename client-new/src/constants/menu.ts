@@ -35,6 +35,18 @@ export const adminMenu: MenuItem[] = [
     path: "/admin/ticket",
     roles: ["admin"],
   },
+
+  {
+    label: "Review",
+    path: "/admin/review",
+    roles: ["admin"],
+  },
+
+  {
+    label: "Layanan",
+    path: "/admin/layanan",
+    roles: ["admin"],
+  },
 ];
 
 /* ================= PEGAWAI MENU ================= */

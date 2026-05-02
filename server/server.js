@@ -39,7 +39,7 @@ app.use("/api/vouchers", voucherRoutes);
 app.use("/api/layanans", layananRoutes);
 app.use("/api/log", logRoutes);
 app.use("/api/cashback", cashbackRoutes);
-app.use("/api/review", reviewRoutes);
+app.use("/api/reviews", reviewRoutes);
 app.use("/api/voucher", voucherRoutes);
 app.use("/api/portfolio", portfolioRoutes);
 app.use("/api/portfolio-images", fotoPortfolioRoutes);

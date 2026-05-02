@@ -66,11 +66,29 @@ export const updateLayanan = async (req, res, next) => {
 // DELETE
 export const deleteLayanan = async (req, res, next) => {
   try {
-    const data = await Layanan.findByIdAndDelete(req.params.id);
+    const data = await Layanan.findByIdAndUpdate(
+      req.params.id,
+      { isActive: false },
+      { new: true }
+    );
 
     if (!data) throw { status: 404, message: "Layanan tidak ditemukan" };
 
-    res.json({ message: "Layanan berhasil dihapus" });
+    res.json({ message: "Layanan dinonaktifkan" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const toggleLayanan = async (req, res, next) => {
+  try {
+    const layanan = await Layanan.findById(req.params.id);
+    if (!layanan) throw { status: 404, message: "Tidak ditemukan" };
+
+    layanan.isActive = !layanan.isActive;
+    await layanan.save();
+
+    res.json(layanan);
   } catch (err) {
     next(err);
   }

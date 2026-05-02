@@ -4,6 +4,10 @@ const layananSchema = new mongoose.Schema({
   nama: String,
   deskripsi: String,
   harga: Number,
+  isActive: {
+    type: Boolean,
+    default: true
+  }
 });
 
 layananSchema.index({ status: 1 });

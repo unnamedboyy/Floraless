@@ -95,3 +95,63 @@ export const getReviewByTicket = async (req, res, next) => {
     next(err);
   }
 };
+
+export const getAllReviews = async (req, res, next) => {
+  try {
+    const data = await Review.find()
+    .populate("pelangganId", "nama")
+    .populate({
+      path: "ticketId",
+      populate: {
+        path: "layananId",
+        select: "nama"
+      }
+    });
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const toggleReviewStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const review = await Review.findById(id);
+    if (!review) throw { status: 404, message: "Review tidak ditemukan" };
+
+    review.isActive = !review.isActive;
+    await review.save();
+
+    await logActivity({
+      userId: req.user.id,
+      action: "TOGGLE_REVIEW",
+      meta: { reviewId: id },
+      customDescription: `Admin mengubah status review menjadi ${review.isActive}`
+    });
+
+    res.json({ message: "Status updated", review });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteReview = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const review = await Review.findByIdAndDelete(id);
+    if (!review) throw { status: 404, message: "Review tidak ditemukan" };
+
+    await logActivity({
+      userId: req.user.id,
+      action: "DELETE_REVIEW",
+      meta: { reviewId: id },
+      customDescription: "Admin menghapus review"
+    });
+
+    res.json({ message: "Review deleted" });
+  } catch (err) {
+    next(err);
+  }
+};
