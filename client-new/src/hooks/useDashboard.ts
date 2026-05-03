@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { getAdminDashboard } from "@/services/dashboard.service";
 
-export const useAdminDashboard = () => {
+export const useAdminDashboard = (query: any) => {
   const [data, setData] = useState<any>(null);
 
   const fetchData = async () => {
     try {
-      const res = await getAdminDashboard();
+      const res = await getAdminDashboard(query);
       setData(res);
     } catch (err) {
       console.error("DASHBOARD ERROR:", err);
@@ -15,7 +15,7 @@ export const useAdminDashboard = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [JSON.stringify(query)]);
 
   return { data };
 };

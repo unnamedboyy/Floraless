@@ -1,7 +1,7 @@
 import api from "@/lib/axios";
 
-export const getAdminDashboard = async () => {
-  const res = await api.get("/dashboard/admin");
+export const getAdminDashboard = async (params?: any) => {
+  const res = await api.get("/dashboard/admin", { params });
   return res.data;
 };
 

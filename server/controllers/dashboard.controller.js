@@ -1,32 +1,53 @@
 import Ticket from "../models/ticket.js";
 import Pelanggan from "../models/pelanggan.js";
 import CashbackClaim from "../models/cashbackClaim.js";
-import Jadwal from "../models/jadwal.js";
-import Payment from "../models/payment.js"; // 🔥 TAMBAH
+import Payment from "../models/payment.js";
 
 export const getAdminDashboard = async (req, res, next) => {
   try {
+    const { month, year } = req.query;
+
+    /* ================= DATE FILTER ================= */
+
+    let dateFilter = {};
+
+    if (month && year) {
+      const start = new Date(year, month - 1, 1);
+      const end = new Date(year, month, 1);
+
+      dateFilter = {
+        createdAt: {
+          $gte: start,
+          $lt: end,
+        },
+      };
+    }
+
     /* ================= BASIC ================= */
 
     const totalUser = await Pelanggan.countDocuments();
-    const totalTicket = await Ticket.countDocuments();
+
+    const totalTicket = await Ticket.countDocuments(dateFilter);
 
     const pendingTicket = await Ticket.countDocuments({
+      ...dateFilter,
       status: "pending",
     });
 
     const completedTicket = await Ticket.countDocuments({
+      ...dateFilter,
       status: "done",
     });
 
     /* ================= PAYMENT ================= */
 
     const paymentPending = await Payment.countDocuments({
+      ...dateFilter,
       status: "pending",
     });
 
     const totalRevenueAgg = await Payment.aggregate([
-      { $match: { status: "approved" } },
+      { $match: { status: "approved", ...dateFilter } },
       { $group: { _id: null, total: { $sum: "$jumlah" } } },
     ]);
 
@@ -35,37 +56,37 @@ export const getAdminDashboard = async (req, res, next) => {
     /* ================= CASHBACK ================= */
 
     const pendingCashback = await CashbackClaim.countDocuments({
+      ...dateFilter,
       status: "pending",
     });
 
     const approvedCashback = await CashbackClaim.countDocuments({
+      ...dateFilter,
       status: "approved",
     });
 
-    /* ================= CHART REVENUE ================= */
+    /* ================= CHART ================= */
 
     const revenueChartRaw = await Payment.aggregate([
-      { $match: { status: "approved" } },
+      { $match: { status: "approved", ...dateFilter } },
       {
         $group: {
-          _id: {
-            year: { $year: "$createdAt" },
-            month: { $month: "$createdAt" },
-          },
+          _id: { day: { $dayOfMonth: "$createdAt" } },
           total: { $sum: "$jumlah" },
         },
       },
-      { $sort: { "_id.year": 1, "_id.month": 1 } },
+      { $sort: { "_id.day": 1 } },
     ]);
 
     const revenueChart = revenueChartRaw.map((r) => ({
-      month: `${r._id.month}/${r._id.year}`,
+      day: r._id.day,
       total: r.total,
     }));
 
-    /* ================= TICKET STATUS ================= */
+    /* ================= STATUS ================= */
 
     const ticketStatusRaw = await Ticket.aggregate([
+      { $match: dateFilter },
       {
         $group: {
           _id: "$status",

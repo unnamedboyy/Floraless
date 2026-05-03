@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useAdminDashboard } from "@/hooks/useDashboard";
 import {
   BarChart,
@@ -14,12 +15,28 @@ import {
 } from "recharts";
 
 export default function AdminDashboardPage() {
-  const { data } = useAdminDashboard();
+  /* ================= FILTER MODE ================= */
+
+  const [useFilter, setUseFilter] = useState(false);
+
+  const [query, setQuery] = useState({
+    month: new Date().getMonth() + 1,
+    year: new Date().getFullYear(),
+  });
+
+  const { data } = useAdminDashboard(
+    useFilter ? query : {}
+  );
 
   if (!data) return <p>Loading...</p>;
 
+  /* ================= SUMMARY ================= */
+
   const summary = [
-    { label: "Revenue", value: `Rp ${data.totalRevenue.toLocaleString()}` },
+    {
+      label: "Revenue",
+      value: `Rp ${data.totalRevenue.toLocaleString()}`,
+    },
     { label: "Total Ticket", value: data.totalTicket },
     { label: "Pending Ticket", value: data.pendingTicket },
     { label: "Payment Pending", value: data.paymentPending },
@@ -31,10 +48,58 @@ export default function AdminDashboardPage() {
     value: data.ticketStatus[key],
   }));
 
+  /* ================= UI ================= */
+
   return (
     <div className="space-y-6">
 
       <h1 className="text-2xl font-bold">Dashboard Admin</h1>
+
+      {/* 🔥 FILTER */}
+      <div className="flex gap-3 items-center">
+
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={useFilter}
+            onChange={(e) => setUseFilter(e.target.checked)}
+          />
+          Filter Bulan
+        </label>
+
+        {useFilter && (
+          <>
+            <select
+              value={query.month}
+              onChange={(e) =>
+                setQuery({
+                  ...query,
+                  month: Number(e.target.value),
+                })
+              }
+              className="border p-2"
+            >
+              {[...Array(12)].map((_, i) => (
+                <option key={i} value={i + 1}>
+                  Bulan {i + 1}
+                </option>
+              ))}
+            </select>
+
+            <input
+              type="number"
+              value={query.year}
+              onChange={(e) =>
+                setQuery({
+                  ...query,
+                  year: Number(e.target.value),
+                })
+              }
+              className="border p-2 w-[100px]"
+            />
+          </>
+        )}
+      </div>
 
       {/* SUMMARY */}
       <div className="grid grid-cols-5 gap-4">
@@ -51,11 +116,13 @@ export default function AdminDashboardPage() {
 
         {/* REVENUE */}
         <div className="bg-white p-4 shadow rounded">
-          <h2 className="font-bold mb-4">Revenue</h2>
+          <h2 className="font-bold mb-4">
+            Revenue {useFilter ? "(Filtered)" : "(All)"}
+          </h2>
 
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={data.revenueChart}>
-              <XAxis dataKey="month" />
+              <XAxis dataKey="day" />
               <YAxis />
               <Tooltip />
               <Bar dataKey="total" />
@@ -69,7 +136,7 @@ export default function AdminDashboardPage() {
 
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
-              <Pie data={pieData} dataKey="value" nameKey="name">
+              <Pie data={pieData} dataKey="value">
                 {pieData.map((_, i) => (
                   <Cell key={i} />
                 ))}
