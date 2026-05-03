@@ -196,3 +196,39 @@ export const getPaymentById = async (req, res, next) => {
     next(err);
   }
 };
+
+export const getPayments = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 10, status } = req.query;
+
+    const filter = {};
+
+    if (status) {
+      filter.status = status;
+    }
+
+    const data = await Payment.find(filter)
+      .populate({
+        path: "ticketId",
+        populate: {
+          path: "pelangganId",
+          select: "nama"
+        }
+      })
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(Number(limit));
+
+    const total = await Payment.countDocuments(filter);
+
+    res.json({
+      data,
+      total,
+      page: Number(page),
+      totalPages: Math.ceil(total / limit)
+    });
+
+  } catch (err) {
+    next(err);
+  }
+};

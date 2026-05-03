@@ -36,3 +36,77 @@ export const updateJadwal = async (req, res, next) => {
     next(err);
   }
 };
+
+export const createJadwal = async (req, res, next) => {
+  try {
+    const { tanggal_acara, pegawaiId, title, lokasi } = req.body;
+
+    // 🔥 CEK BENTROK PER PEGAWAI
+    if (pegawaiId) {
+      const bentrok = await Jadwal.findOne({
+        tanggal_acara,
+        pegawaiId
+      });
+
+      if (bentrok) {
+        throw { status: 400, message: "Pegawai sudah ada jadwal di tanggal ini" };
+      }
+    }
+
+    const jadwal = await Jadwal.create({
+      tanggal_acara,
+      pegawaiId,
+      title,
+      lokasi
+    });
+
+    res.json(jadwal);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getJadwal = async (req, res, next) => {
+  try {
+    const { start, end, pegawaiId } = req.query;
+
+    const filter = {};
+
+    if (start && end) {
+      filter.tanggal_acara = {
+        $gte: new Date(start),
+        $lte: new Date(end)
+      };
+    }
+
+    if (pegawaiId) {
+      filter.pegawaiId = pegawaiId;
+    }
+
+    const data = await Jadwal.find(filter)
+      .populate("pegawaiId", "nama")
+      .populate("ticketId");
+
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteJadwal = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const jadwal = await Jadwal.findById(id);
+
+    if (!jadwal) {
+      throw { status: 404, message: "Jadwal tidak ditemukan" };
+    }
+
+    await jadwal.deleteOne();
+
+    res.json({ message: "Jadwal berhasil dihapus" });
+  } catch (err) {
+    next(err);
+  }
+};

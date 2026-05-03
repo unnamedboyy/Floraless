@@ -4,8 +4,21 @@ const jadwalSchema = new mongoose.Schema({
   ticketId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Ticket",
-    required: true
+    default: null
   },
+
+  pegawaiId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Pegawai",
+    default: null
+  },
+
+  title: {
+    type: String,
+    default: ""
+  },
+
+  lokasi: String,
 
   tanggal_acara: {
     type: Date,
@@ -14,13 +27,13 @@ const jadwalSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ["booked", "ongoing", "done"], 
-    default: "booked"
+    enum: ["available", "booked", "ongoing", "done"],
+    default: "available"
   }
 
 }, { timestamps: true });
 
 jadwalSchema.index({ tanggal_acara: 1 });
-jadwalSchema.index({ ticketId: 1 });
+jadwalSchema.index({ pegawaiId: 1 });
 
 export default mongoose.model("Jadwal", jadwalSchema);

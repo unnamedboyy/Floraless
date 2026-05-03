@@ -6,15 +6,16 @@ import {
   createPayment,
   approvePayment,
   getPaymentsByTicket,
-  getPaymentById
+  getPaymentById,
+  getPayments 
 } from "../controllers/payment.controller.js";
 
 const router = express.Router();
-
 
 router.post("/", auth, role("pelanggan"), createPayment);
 router.patch("/:id/approve", auth, role("pegawai"), approvePayment);
 router.get("/ticket/:ticketId", auth, getPaymentsByTicket);
 router.get("/:id", auth, getPaymentById);
+router.get("/", auth, getPayments);
 
 export default router;

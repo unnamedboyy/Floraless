@@ -47,6 +47,30 @@ export const adminMenu: MenuItem[] = [
     path: "/admin/layanan",
     roles: ["admin"],
   },
+
+  {
+    label: "Jadwal",
+    path: "/admin/jadwal",
+    roles: ["admin"],
+  },
+
+  {
+    label: "Payment",
+    path: "/admin/payment",
+    roles: ["admin"],
+  },
+
+  {
+    label: "Cashback",
+    path: "/admin/cashback",
+    roles: ["admin"],
+  },
+
+  {
+    label: "Voucher",
+    path: "/admin/voucher",
+    roles: ["admin"],
+  }
 ];
 
 /* ================= PEGAWAI MENU ================= */
