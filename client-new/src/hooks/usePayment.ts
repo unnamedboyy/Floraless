@@ -8,8 +8,8 @@ export const usePayment = (query: any) => {
   const fetchData = async () => {
     try {
       const res = await getPayments(query);
-      setData(res.data.data);
-      setTotal(res.data.total);
+      setData(res.data);
+      setTotal(res.total);
     } catch (err) {
       console.error("PAYMENT ERROR:", err);
     }
@@ -17,11 +17,7 @@ export const usePayment = (query: any) => {
 
   useEffect(() => {
     fetchData();
-  }, [JSON.stringify(query)]);
+  }, [query]);
 
-  return {
-    data,
-    total,
-    reload: fetchData,
-  };
+  return { data, total, reload: fetchData };
 };

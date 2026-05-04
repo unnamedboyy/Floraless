@@ -1,13 +1,14 @@
 import Ticket from "../models/ticket.js";
-import Pelanggan from "../models/pelanggan.js";
-import CashbackClaim from "../models/cashbackClaim.js";
 import Payment from "../models/payment.js";
+import Cashback from "../models/cashbackClaim.js";
+import Jadwal from "../models/jadwal.js";
+import Pegawai from "../models/pegawai.js";
 
-export const getAdminDashboard = async (req, res, next) => {
+/* ================= ADMIN DASHBOARD ================= */
+
+export const getAdminDashboard = async (req, res) => {
   try {
     const { month, year } = req.query;
-
-    /* ================= DATE FILTER ================= */
 
     let dateFilter = {};
 
@@ -23,9 +24,7 @@ export const getAdminDashboard = async (req, res, next) => {
       };
     }
 
-    /* ================= BASIC ================= */
-
-    const totalUser = await Pelanggan.countDocuments();
+    /* ================= SUMMARY ================= */
 
     const totalTicket = await Ticket.countDocuments(dateFilter);
 
@@ -34,129 +33,140 @@ export const getAdminDashboard = async (req, res, next) => {
       status: "pending",
     });
 
-    const completedTicket = await Ticket.countDocuments({
-      ...dateFilter,
-      status: "done",
-    });
-
-    /* ================= PAYMENT ================= */
-
     const paymentPending = await Payment.countDocuments({
-      ...dateFilter,
       status: "pending",
     });
 
-    const totalRevenueAgg = await Payment.aggregate([
-      { $match: { status: "approved", ...dateFilter } },
-      { $group: { _id: null, total: { $sum: "$jumlah" } } },
-    ]);
-
-    const totalRevenue = totalRevenueAgg[0]?.total || 0;
-
-    /* ================= CASHBACK ================= */
-
-    const pendingCashback = await CashbackClaim.countDocuments({
-      ...dateFilter,
+    const pendingCashback = await Cashback.countDocuments({
       status: "pending",
     });
 
-    const approvedCashback = await CashbackClaim.countDocuments({
-      ...dateFilter,
+    /* ================= REVENUE ================= */
+
+    const payments = await Payment.find({
       status: "approved",
+      ...dateFilter,
     });
 
-    /* ================= CHART ================= */
+    const totalRevenue = payments.reduce(
+      (sum, p) => sum + p.jumlah,
+      0
+    );
 
-    const revenueChartRaw = await Payment.aggregate([
-      { $match: { status: "approved", ...dateFilter } },
-      {
-        $group: {
-          _id: { day: { $dayOfMonth: "$createdAt" } },
-          total: { $sum: "$jumlah" },
-        },
-      },
-      { $sort: { "_id.day": 1 } },
-    ]);
+    /* ================= CHART (PER DAY) ================= */
 
-    const revenueChart = revenueChartRaw.map((r) => ({
-      day: r._id.day,
-      total: r.total,
+    const revenueMap = {};
+
+    payments.forEach((p) => {
+      const day = new Date(p.createdAt).getDate();
+
+      if (!revenueMap[day]) revenueMap[day] = 0;
+      revenueMap[day] += p.jumlah;
+    });
+
+    const revenueChart = Object.keys(revenueMap).map((day) => ({
+      day,
+      total: revenueMap[day],
     }));
 
     /* ================= STATUS ================= */
 
-    const ticketStatusRaw = await Ticket.aggregate([
-      { $match: dateFilter },
-      {
-        $group: {
-          _id: "$status",
-          count: { $sum: 1 },
-        },
-      },
-    ]);
+    const ticketStatus = {
+      pending: await Ticket.countDocuments({ status: "pending" }),
+      approved: await Ticket.countDocuments({ status: "approved" }),
+      in_progress: await Ticket.countDocuments({ status: "in_progress" }),
+      done: await Ticket.countDocuments({ status: "done" }),
+    };
 
-    const ticketStatus = {};
-    ticketStatusRaw.forEach((t) => {
-      ticketStatus[t._id] = t.count;
-    });
-
-    /* ================= RESPONSE ================= */
-
-    res.json({
-      totalUser,
+    return res.json({
       totalTicket,
       pendingTicket,
-      completedTicket,
-
       paymentPending,
-      totalRevenue,
-
       pendingCashback,
-      approvedCashback,
-
+      totalRevenue,
       revenueChart,
       ticketStatus,
     });
 
   } catch (err) {
-    next(err);
+    console.error("ADMIN DASHBOARD ERROR:", err);
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: err.message,
+    });
   }
 };
 
-export const getPegawaiDashboard = async (req, res, next) => {
-  try {
-    const userId = req.user.id;
+/* ================= PEGAWAI DASHBOARD ================= */
 
-    const assignedTicket = await Ticket.countDocuments({
-      pegawaiId: userId,
+export const getPegawaiDashboard = async (req, res) => {
+  try {
+    console.log("USER:", req.user);
+
+    if (!req.user?.id) {
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
+    }
+
+    /* ================= AMBIL DATA PEGAWAI ================= */
+
+    const pegawai = await Pegawai.findOne({
+      userId: req.user.id,
+    });
+
+    console.log("PEGAWAI:", pegawai);
+
+    if (!pegawai) {
+      return res.status(404).json({
+        message: "Pegawai tidak ditemukan",
+      });
+    }
+
+    /* ================= SUMMARY ================= */
+
+    const assigned = await Ticket.countDocuments({
+      pegawaiId: pegawai._id,
     });
 
     const inProgress = await Ticket.countDocuments({
-      pegawaiId: userId,
+      pegawaiId: pegawai._id,
       status: "in_progress",
     });
 
     const completed = await Ticket.countDocuments({
-      pegawaiId: userId,
+      pegawaiId: pegawai._id,
       status: "done",
     });
+
+    /* ================= TODAY SCHEDULE ================= */
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
     const todaySchedule = await Jadwal.countDocuments({
-      pegawaiId: userId,
-      tanggal_acara: today,
+      pegawaiId: pegawai._id,
+      tanggal_acara: {
+        $gte: today,
+        $lt: tomorrow,
+      },
     });
 
-    res.json({
-      assignedTicket,
+    return res.json({
+      assigned,
       inProgress,
       completed,
       todaySchedule,
     });
 
   } catch (err) {
-    next(err);
+    console.error("DASHBOARD PEGAWAI ERROR:", err);
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: err.message,
+    });
   }
 };

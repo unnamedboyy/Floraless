@@ -1,10 +1,11 @@
 import Payment from "../models/payment.js";
 import Ticket from "../models/ticket.js";
 import Layanan from "../models/layanan.js";
+import Pegawai from "../models/pegawai.js";
 import { logActivity } from "../utils/logger.js";
 
+/* ================= CREATE PAYMENT (PELANGGAN) ================= */
 
-// CREATE PAYMENT (USER)
 export const createPayment = async (req, res, next) => {
   try {
     const { ticketId, tipe } = req.body;
@@ -12,7 +13,7 @@ export const createPayment = async (req, res, next) => {
     const ticket = await Ticket.findById(ticketId);
     if (!ticket) throw { status: 404, message: "Ticket tidak ditemukan" };
 
-    if (ticket.status !== "approved" && ticket.status !== "in_progress") {
+    if (!["approved", "in_progress"].includes(ticket.status)) {
       throw { status: 400, message: "Ticket belum siap pembayaran" };
     }
 
@@ -20,6 +21,7 @@ export const createPayment = async (req, res, next) => {
     if (!layanan) throw { status: 404, message: "Layanan tidak ditemukan" };
 
     const harga = layanan.harga;
+
     const payments = await Payment.find({ ticketId });
 
     const approvedPayments = payments.filter(p => p.status === "approved");
@@ -33,7 +35,7 @@ export const createPayment = async (req, res, next) => {
       throw { status: 400, message: `${tipe} masih menunggu approval` };
     }
 
-    // ================= VALIDASI FLOW =================
+    /* ================= VALIDASI FLOW ================= */
 
     if (tipe === "DP1" && approvedTypes.includes("DP1")) {
       throw { status: 400, message: "DP1 sudah dibayar" };
@@ -57,7 +59,7 @@ export const createPayment = async (req, res, next) => {
       }
     }
 
-    // ================= HITUNG NOMINAL =================
+    /* ================= HITUNG NOMINAL ================= */
 
     let jumlah = 0;
 
@@ -68,19 +70,19 @@ export const createPayment = async (req, res, next) => {
     const payment = await Payment.create({
       ticketId,
       tipe,
-      jumlah
+      jumlah,
     });
 
     await logActivity({
       userId: req.user.id,
       ticketId: ticket._id,
       action: "CREATE_PAYMENT",
-      meta: { tipe }
+      meta: { tipe },
     });
 
     res.json({
       message: "Payment dibuat, menunggu approval",
-      payment
+      payment,
     });
 
   } catch (err) {
@@ -88,8 +90,8 @@ export const createPayment = async (req, res, next) => {
   }
 };
 
+/* ================= APPROVE / REJECT (PEGAWAI PIC) ================= */
 
-// APPROVE / REJECT (PIC)
 export const approvePayment = async (req, res, next) => {
   try {
     const { status, catatan } = req.body;
@@ -107,42 +109,44 @@ export const approvePayment = async (req, res, next) => {
 
     const ticket = await Ticket.findById(payment.ticketId);
 
-    // ================= VALIDASI PIC =================
+    /* ================= VALIDASI PIC ================= */
 
-    // if (ticket.pegawaiId?.toString() !== req.user.id) {
-    //   throw { status: 403, message: "Hanya PIC yang bisa approve" };
-    // }
+    const pegawai = await Pegawai.findOne({
+      userId: req.user.id,
+    });
+
+    if (!pegawai) {
+      throw { status: 404, message: "Pegawai tidak ditemukan" };
+    }
+
+    if (ticket.pegawaiId?.toString() !== pegawai._id.toString()) {
+      throw { status: 403, message: "Hanya PIC yang bisa approve" };
+    }
+
+    /* ================= UPDATE PAYMENT ================= */
 
     payment.status = status;
-    payment.approvedBy = req.user.id;
+    payment.approvedBy = pegawai._id;
     payment.approvedAt = new Date();
     payment.catatan = catatan;
 
     await payment.save();
 
-    if (status === "rejected") {
-      await logActivity({
-        userId: req.user.id,
-        ticketId: ticket._id,
-        action: "REJECT_PAYMENT",
-        customDescription: `PIC ${req.user.username} menolak pembayaran ${payment.tipe}`,
-        meta: { tipe: payment.tipe },
-      });
-    } else {
-      await logActivity({
-        userId: req.user.id,
-        ticketId: ticket._id,
-        action: "APPROVE_PAYMENT",
-        customDescription: `PIC ${req.user.username} menyetujui pembayaran ${payment.tipe}`,
-        meta: { tipe: payment.tipe },
-      });
-    }
-    // ================= CEK LUNAS =================
+    /* ================= LOG ================= */
+
+    await logActivity({
+      userId: req.user.id,
+      ticketId: ticket._id,
+      action: status === "approved" ? "APPROVE_PAYMENT" : "REJECT_PAYMENT",
+      meta: { tipe: payment.tipe },
+    });
+
+    /* ================= AUTO UPDATE TICKET ================= */
 
     if (status === "approved") {
       const payments = await Payment.find({
         ticketId: payment.ticketId,
-        status: "approved"
+        status: "approved",
       });
 
       const types = payments.map(p => p.tipe);
@@ -159,7 +163,7 @@ export const approvePayment = async (req, res, next) => {
 
     res.json({
       message: `Payment ${status}`,
-      payment
+      payment,
     });
 
   } catch (err) {
@@ -167,23 +171,22 @@ export const approvePayment = async (req, res, next) => {
   }
 };
 
+/* ================= GET PAYMENT BY TICKET ================= */
 
-// GET PAYMENT BY TICKET
 export const getPaymentsByTicket = async (req, res, next) => {
   try {
     const data = await Payment.find({
-      ticketId: req.params.ticketId
+      ticketId: req.params.ticketId,
     }).sort({ createdAt: 1 });
 
     res.json(data);
-
   } catch (err) {
     next(err);
   }
 };
 
+/* ================= GET PAYMENT BY ID ================= */
 
-// GET PAYMENT BY ID
 export const getPaymentById = async (req, res, next) => {
   try {
     const data = await Payment.findById(req.params.id);
@@ -191,29 +194,54 @@ export const getPaymentById = async (req, res, next) => {
     if (!data) throw { status: 404, message: "Payment tidak ditemukan" };
 
     res.json(data);
-
   } catch (err) {
     next(err);
   }
 };
 
+/* ================= GET PAYMENTS (LIST) ================= */
+
 export const getPayments = async (req, res, next) => {
   try {
     const { page = 1, limit = 10, status } = req.query;
 
-    const filter = {};
+    let filter = {};
 
     if (status) {
       filter.status = status;
     }
+
+    /* ================= FILTER PEGAWAI ================= */
+
+    if (req.user.role === "pegawai") {
+      const pegawai = await Pegawai.findOne({
+        userId: req.user.id,
+      });
+
+      if (!pegawai) {
+        return res.status(404).json({
+          message: "Pegawai tidak ditemukan",
+        });
+      }
+
+      const tickets = await Ticket.find({
+        pegawaiId: pegawai._id,
+      });
+
+      const ticketIds = tickets.map(t => t._id);
+
+      filter.ticketId = { $in: ticketIds };
+    }
+
+    /* ================= QUERY ================= */
 
     const data = await Payment.find(filter)
       .populate({
         path: "ticketId",
         populate: {
           path: "pelangganId",
-          select: "nama"
-        }
+          select: "nama",
+        },
       })
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
@@ -225,7 +253,7 @@ export const getPayments = async (req, res, next) => {
       data,
       total,
       page: Number(page),
-      totalPages: Math.ceil(total / limit)
+      totalPages: Math.ceil(total / limit),
     });
 
   } catch (err) {

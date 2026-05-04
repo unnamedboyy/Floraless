@@ -10,172 +10,185 @@ import Layanan from "./models/layanan.js";
 import Ticket from "./models/ticket.js";
 import DetailTicket from "./models/detailTicket.js";
 import Jadwal from "./models/jadwal.js";
-import HistoryStatus from "./models/historyStatus.js";
 import Payment from "./models/payment.js";
+import Voucher from "./models/voucher.js";
+import Cashback from "./models/cashbackClaim.js";
 
 dotenv.config();
-
 await mongoose.connect(process.env.MONGODB_URI);
+
+console.log("DB NAME:", mongoose.connection.name);
 console.log("✅ DB Connected");
 
-// RESET DB
+/* ================= RESET DB ================= */
 const collections = await mongoose.connection.db.collections();
 for (let c of collections) {
   await c.deleteMany({});
 }
 console.log("🧹 DB Cleared");
 
-// HASH PASSWORD
+/* ================= HELPER ================= */
+
 const hash = await bcrypt.hash("123456", 10);
 
-// CREATE ADMIN
+const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+const randomTicketStatus = () =>
+  random(["pending", "approved", "in_progress", "done"]);
+
+const randomPaymentStatus = () =>
+  random(["pending", "approved", "rejected"]);
+
+/* ================= ADMIN ================= */
+
 const adminUser = await User.create({
   username: "admin",
   password: hash,
-  role: "admin"
+  role: "admin",
 });
 
 await Admin.create({
   userId: adminUser._id,
   nama: "Admin Utama",
-  no_telp: "0811111111"
 });
 
-// CREATE PEGAWAI (5)
+/* ================= PEGAWAI ================= */
+
 const pegawais = [];
 
-for (let i = 1; i <= 5; i++) {
+for (let i = 1; i <= 8; i++) {
   const user = await User.create({
     username: `pegawai${i}`,
     password: hash,
-    role: "pegawai"
+    role: "pegawai",
   });
 
   const pegawai = await Pegawai.create({
     userId: user._id,
     nama: `Pegawai ${i}`,
-    no_telp: `08222${i}${i}${i}${i}`
   });
 
   pegawais.push(pegawai);
 }
 
-// CREATE PELANGGAN (10)
+/* ================= PELANGGAN ================= */
+
 const pelanggans = [];
 
-for (let i = 1; i <= 10; i++) {
+for (let i = 1; i <= 25; i++) {
   const user = await User.create({
     username: `pelanggan${i}`,
     password: hash,
-    role: "pelanggan"
+    role: "pelanggan",
   });
 
   const pelanggan = await Pelanggan.create({
     userId: user._id,
     nama: `Pelanggan ${i}`,
-    no_telp: `08333${i}${i}${i}${i}`
   });
 
   pelanggans.push(pelanggan);
 }
 
-// CREATE LAYANAN
-const layananList = [];
+/* ================= LAYANAN ================= */
 
-const layananData = [
+const layananList = await Layanan.insertMany([
   { nama: "Wedding Basic", harga: 5000000 },
   { nama: "Wedding Premium", harga: 10000000 },
   { nama: "Engagement", harga: 3000000 },
-  { nama: "Birthday Party", harga: 2000000 }
-];
+  { nama: "Birthday Party", harga: 2000000 },
+]);
 
-for (let data of layananData) {
-  const layanan = await Layanan.create(data);
-  layananList.push(layanan);
-}
+/* ================= TICKETS ================= */
 
-// CREATE TICKETS (20)
-const tickets = [];
+for (let i = 0; i < 100; i++) {
+  const pelanggan = random(pelanggans);
+  const pegawai = random(pegawais);
+  const layanan = random(layananList);
 
-for (let i = 0; i < 20; i++) {
-  const pelanggan = pelanggans[i % pelanggans.length];
-  const layanan = layananList[i % layananList.length];
-  const pegawai = pegawais[i % pegawais.length];
+  const status = randomTicketStatus();
 
   const ticket = await Ticket.create({
     pelangganId: pelanggan._id,
     layananId: layanan._id,
     pegawaiId: pegawai._id,
-    status: "approved"
+    status,
   });
 
-  tickets.push(ticket);
+  const tanggal = new Date(
+    2026,
+    Math.floor(Math.random() * 3), // Jan–Mar
+    Math.floor(Math.random() * 28) + 1
+  );
 
-  const tanggal = new Date(2026, 4, i + 1);
-
-  // DETAIL
   await DetailTicket.create({
     ticketId: ticket._id,
     nama_acara: `Event ${i + 1}`,
     lokasi: "Jakarta",
-    tanggal_acara: tanggal
+    tanggal_acara: tanggal,
   });
 
-  // JADWAL
   await Jadwal.create({
     ticketId: ticket._id,
-    tanggal_acara: tanggal
+    pegawaiId: pegawai._id,
+    tanggal_acara: tanggal,
+    status: random(["booked", "ongoing", "done"]),
   });
 
-  // HISTORY
-  await HistoryStatus.create({
-    ticketId: ticket._id,
-    status: "approved",
-    keterangan: "Seed data"
-  });
+  /* ================= PAYMENT ================= */
 
-
-  // PAYMENT (random progress)
   const harga = layanan.harga;
 
-  // DP1
-  const dp1 = await Payment.create({
+  await Payment.create({
     ticketId: ticket._id,
     tipe: "DP1",
     jumlah: harga * 0.2,
-    status: "approved",
-    approvedBy: pegawai._id,
-    approvedAt: new Date()
+    status: randomPaymentStatus(),
   });
 
-  // random apakah lanjut DP2
-  if (i % 2 === 0) {
-    const dp2 = await Payment.create({
+  if (Math.random() > 0.3) {
+    await Payment.create({
       ticketId: ticket._id,
       tipe: "DP2",
       jumlah: harga * 0.3,
-      status: "approved",
-      approvedBy: pegawai._id,
-      approvedAt: new Date()
+      status: randomPaymentStatus(),
+    });
+  }
+
+  if (Math.random() > 0.5) {
+    await Payment.create({
+      ticketId: ticket._id,
+      tipe: "PELUNASAN",
+      jumlah: harga * 0.5,
+      status: randomPaymentStatus(),
+    });
+  }
+
+  /* ================= VOUCHER ================= */
+
+  if (Math.random() > 0.6) {
+    const voucher = await Voucher.create({
+      code: `VC-${Math.random().toString(36).slice(2, 8)}`,
+      pelangganId: pelanggan._id,
+      amount: 50000,
+      expiredAt: new Date(2026, 11, 31),
     });
 
-    // random pelunasan
-    if (i % 3 === 0) {
-      await Payment.create({
-        ticketId: ticket._id,
-        tipe: "PELUNASAN",
-        jumlah: harga * 0.5,
-        status: "approved",
-        approvedBy: pegawai._id,
-        approvedAt: new Date()
-      });
+    /* ================= CASHBACK ================= */
 
-      ticket.status = "in_progress";
-      await ticket.save();
+    if (Math.random() > 0.5) {
+      await Cashback.create({
+        voucherId: voucher._id,
+        pelangganId: pelanggan._id,
+        kode_voucher: voucher.code, // 🔥 FIXED
+        nama_rekening: "Budi",
+        nomor_rekening: "12345678",
+        bank: "BCA",
+        status: random(["pending", "approved", "rejected"]),
+      });
     }
   }
 }
 
-// DONE
 console.log("🚀 SEEDING SELESAI");
 process.exit();

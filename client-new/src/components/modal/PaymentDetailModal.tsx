@@ -20,16 +20,18 @@ export default function PaymentDetailModal({
   const [payments, setPayments] = useState<any[]>([]);
 
   useEffect(() => {
-    if (open && data?.ticketId?._id) {
-      fetchPayments();
+    if (open && data) {
+      const ticketId = data?.ticketId?._id || data?.ticketId;
+
+      if (ticketId) {
+        fetchPayments(ticketId);
+      }
     }
   }, [open, data]);
 
-  const fetchPayments = async () => {
+  const fetchPayments = async (ticketId: string) => {
     try {
-      const res = await api.get(
-        `/payments/ticket/${data.ticketId._id}`
-      );
+      const res = await api.get(`/payments/ticket/${ticketId}`);
       setPayments(res.data);
     } catch (err) {
       console.error(err);
@@ -37,6 +39,15 @@ export default function PaymentDetailModal({
   };
 
   if (!open || !data) return null;
+
+  /* ================= SUMMARY ================= */
+
+  const total = payments.reduce((s, p) => s + p.jumlah, 0);
+  const approved = payments
+    .filter((p) => p.status === "approved")
+    .reduce((s, p) => s + p.jumlah, 0);
+
+  const sisa = total - approved;
 
   return (
     <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
@@ -46,10 +57,16 @@ export default function PaymentDetailModal({
           Detail Pembayaran
         </h2>
 
-        {/* ================= INFO UTAMA ================= */}
+        {/* ================= INFO ================= */}
         <div className="text-sm space-y-1">
-          <p><b>Pelanggan:</b> {data.ticketId?.pelangganId?.nama}</p>
-          <p><b>Ticket ID:</b> {data.ticketId?._id}</p>
+          <p>
+            <b>Pelanggan:</b>{" "}
+            {data.ticketId?.pelangganId?.nama || "-"}
+          </p>
+          <p>
+            <b>Ticket ID:</b>{" "}
+            {data.ticketId?._id || data.ticketId}
+          </p>
         </div>
 
         <hr />
@@ -77,6 +94,7 @@ export default function PaymentDetailModal({
             >
               <div className="flex justify-between">
                 <p><b>{p.tipe}</b></p>
+
                 <span
                   className={`text-xs px-2 py-1 rounded ${
                     p.status === "approved"
@@ -105,6 +123,13 @@ export default function PaymentDetailModal({
               )}
             </div>
           ))}
+        </div>
+
+        {/* ================= SUMMARY ================= */}
+        <div className="border p-3 rounded bg-gray-50">
+          <p><b>Total:</b> {formatRupiah(total)}</p>
+          <p><b>Approved:</b> {formatRupiah(approved)}</p>
+          <p><b>Sisa:</b> {formatRupiah(sisa)}</p>
         </div>
 
         {/* ================= CLOSE ================= */}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useAdminDashboard } from "@/hooks/useDashboard";
+import { useDashboard } from "@/hooks/useDashboard";
 import {
   BarChart,
   Bar,
@@ -15,8 +15,6 @@ import {
 } from "recharts";
 
 export default function AdminDashboardPage() {
-  /* ================= FILTER MODE ================= */
-
   const [useFilter, setUseFilter] = useState(false);
 
   const [query, setQuery] = useState({
@@ -24,13 +22,12 @@ export default function AdminDashboardPage() {
     year: new Date().getFullYear(),
   });
 
-  const { data } = useAdminDashboard(
+  const { data } = useDashboard(
+    "admin",
     useFilter ? query : {}
   );
 
   if (!data) return <p>Loading...</p>;
-
-  /* ================= SUMMARY ================= */
 
   const summary = [
     {
@@ -48,14 +45,12 @@ export default function AdminDashboardPage() {
     value: data.ticketStatus[key],
   }));
 
-  /* ================= UI ================= */
-
   return (
     <div className="space-y-6">
 
       <h1 className="text-2xl font-bold">Dashboard Admin</h1>
 
-      {/* 🔥 FILTER */}
+      {/* FILTER */}
       <div className="flex gap-3 items-center">
 
         <label className="flex items-center gap-2">
@@ -114,7 +109,6 @@ export default function AdminDashboardPage() {
       {/* CHART */}
       <div className="grid grid-cols-2 gap-6">
 
-        {/* REVENUE */}
         <div className="bg-white p-4 shadow rounded">
           <h2 className="font-bold mb-4">
             Revenue {useFilter ? "(Filtered)" : "(All)"}
@@ -130,7 +124,6 @@ export default function AdminDashboardPage() {
           </ResponsiveContainer>
         </div>
 
-        {/* STATUS */}
         <div className="bg-white p-4 shadow rounded">
           <h2 className="font-bold mb-4">Ticket Status</h2>
 

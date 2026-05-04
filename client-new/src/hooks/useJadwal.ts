@@ -1,17 +1,21 @@
 import { useEffect, useState } from "react";
-import { getJadwal } from "@/services/jadwal.service";
+import api from "@/lib/axios";
 
 export const useJadwal = (query: any) => {
   const [data, setData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await getJadwal(query);
-      setData(res.data); // backend kamu return array
+
+      const res = await api.get("/jadwal", {
+        params: query,
+      });
+
+      setData(res.data);
     } catch (err) {
-      console.error("ERROR JADWAL:", err);
+      console.error("JADWAL ERROR:", err);
     } finally {
       setLoading(false);
     }
@@ -19,7 +23,7 @@ export const useJadwal = (query: any) => {
 
   useEffect(() => {
     fetchData();
-  }, [JSON.stringify(query)]);
+  }, [query.start, query.end]);
 
   return {
     data,

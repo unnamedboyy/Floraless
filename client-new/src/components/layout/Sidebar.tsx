@@ -2,75 +2,67 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Cookies from "js-cookie";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-/* ================= TYPES ================= */
-
-type Role = "admin" | "pegawai";
-
-type MenuItem = {
-  label: string;
-  path: string;
-  roles: Role[];
-};
-
-type Props = {
-  title: string;
-  menu: MenuItem[];
-  onLogout: () => void;
-};
-
-/* ================= COMPONENT ================= */
-
-export default function Sidebar({ title, menu, onLogout }: Props) {
+export default function Sidebar({ menu }: { menu: any[] }) {
   const pathname = usePathname();
-
-  const [mounted, setMounted] = useState(false);
-  const [role, setRole] = useState<Role | null>(null);
-
-  useEffect(() => {
-    setMounted(true);
-    const r = Cookies.get("role") as Role | undefined;
-    setRole(r ?? null);
-  }, []);
-
-  if (!mounted) return null;
-
-  const filteredMenu = menu.filter((item) =>
-    role ? item.roles.includes(role) : false
-  );
+  const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <aside className="w-64 bg-white shadow-md p-4 min-h-screen">
-      <h2 className="text-xl font-bold mb-6">{title}</h2>
+    <div
+      className={`h-screen bg-white border-r transition-all duration-300 relative
+      ${collapsed ? "w-[80px]" : "w-[240px]"}`}
+    >
+      {/* HEADER */}
+      <div className="flex items-center justify-between p-4 border-b">
+        {!collapsed && (
+          <h1 className="font-bold text-lg">Floraless</h1>
+        )}
 
-      <nav className="flex flex-col gap-2">
-        {filteredMenu.map((item) => {
-          const isActive = pathname === item.path;
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="text-sm px-2 py-1 border rounded"
+        >
+          {collapsed ? ">" : "<"}
+        </button>
+      </div>
+
+      {/* MENU */}
+      <div className="p-2 space-y-1">
+        {menu.map((item) => {
+          const active = pathname === item.path;
 
           return (
             <Link
               key={item.path}
               href={item.path}
-              className={`p-2 rounded transition ${
-                isActive
-                  ? "bg-blue-500 text-white"
-                  : "hover:bg-gray-200"
-              }`}
+              className={`group flex items-center gap-3 p-3 rounded transition relative
+                ${active ? "bg-blue-500 text-white" : "hover:bg-gray-100"}
+              `}
             >
-              {item.label}
+              {/* ICON */}
+              <span>{item.icon}</span>
+
+              {/* TEXT */}
+              {!collapsed && <span>{item.label}</span>}
+
+              {/* TOOLTIP */}
+              {collapsed && (
+                <span className="absolute left-[70px] bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100">
+                  {item.label}
+                </span>
+              )}
             </Link>
           );
         })}
-      </nav>
+      </div>
 
-      <button
-        onClick={onLogout}
-        className="mt-6 bg-red-500 text-white px-4 py-2 rounded w-full"
-      >
-        Logout
-      </button>
-    </aside>
+      {/* LOGOUT */}
+      <div className="absolute bottom-0 w-full p-3">
+        <button className="w-full bg-red-500 text-white py-2 rounded">
+          {collapsed ? "⎋" : "Logout"}
+        </button>
+      </div>
+    </div>
   );
 }

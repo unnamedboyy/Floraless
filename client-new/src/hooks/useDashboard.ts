@@ -1,13 +1,26 @@
-import { useEffect, useState } from "react";
-import { getAdminDashboard } from "@/services/dashboard.service";
+"use client";
 
-export const useAdminDashboard = (query: any) => {
+import { useEffect, useState } from "react";
+import api from "@/lib/axios";
+
+export const useDashboard = (
+  role: "admin" | "pegawai",
+  query?: any
+) => {
   const [data, setData] = useState<any>(null);
 
   const fetchData = async () => {
     try {
-      const res = await getAdminDashboard(query);
-      setData(res);
+      const url =
+        role === "admin"
+          ? "/dashboard/admin"
+          : "/dashboard/pegawai";
+
+      const res = await api.get(url, {
+        params: query,
+      });
+
+      setData(res.data);
     } catch (err) {
       console.error("DASHBOARD ERROR:", err);
     }
@@ -15,7 +28,7 @@ export const useAdminDashboard = (query: any) => {
 
   useEffect(() => {
     fetchData();
-  }, [JSON.stringify(query)]);
+  }, [role, JSON.stringify(query)]);
 
   return { data };
 };

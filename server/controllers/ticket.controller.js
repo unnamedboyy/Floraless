@@ -102,6 +102,20 @@ export const getTickets = async (req, res, next) => {
       filter.pelangganId = req.user.id;
     }
 
+    if (req.user.role === "pegawai") {
+      const pegawai = await Pegawai.findOne({
+        userId: req.user.id,
+      });
+
+      if (!pegawai) {
+        return res.status(404).json({
+          message: "Pegawai tidak ditemukan",
+        });
+      }
+
+      filter.pegawaiId = pegawai._id;
+    }
+
     if (status) {
       filter.status = status;
     }

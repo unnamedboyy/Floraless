@@ -1,22 +1,20 @@
 "use client";
 
-import { ReactNode } from "react";
-import { useAuth } from "@/hooks/useAuth";
 import Sidebar from "@/components/layout/Sidebar";
 import { adminMenu } from "@/constants/menu";
 
-type Props = {
-  children: ReactNode;
-};
-
-export default function AdminLayout({ children }: Props) {
-  const { logout } = useAuth();
-
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <div className="min-h-screen flex bg-gray-100">
-      <Sidebar title="Admin Panel" menu={adminMenu} onLogout={logout} />
+    <div className="flex">
+      <Sidebar menu={adminMenu} />
 
-      <main className="flex-1 p-6">{children}</main>
+      <div className="flex-1 bg-gray-50 min-h-screen p-6">
+        {children}
+      </div>
     </div>
   );
 }
