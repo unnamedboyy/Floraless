@@ -12,27 +12,55 @@ export default function Pagination({ page, total, limit, onChange }: Props) {
 
   if (totalPages <= 1) return null;
 
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+
   return (
-    <div className="flex gap-2 mt-4">
-      <button
-        disabled={page === 1}
-        onClick={() => onChange(page - 1)}
-        className="px-3 py-1 border"
-      >
-        Prev
-      </button>
+    <div className="flex items-center justify-between mt-6">
 
-      <span className="px-3 py-1">
-        {page} / {totalPages}
-      </span>
+      {/* LEFT INFO */}
+      <p className="text-sm text-gray-500">
+        Page {page} of {totalPages}
+      </p>
 
-      <button
-        disabled={page === totalPages}
-        onClick={() => onChange(page + 1)}
-        className="px-3 py-1 border"
-      >
-        Next
-      </button>
+      {/* PAGINATION */}
+      <div className="flex items-center gap-2">
+
+        {/* PREV */}
+        <button
+          disabled={page === 1}
+          onClick={() => onChange(page - 1)}
+          className="px-3 py-2 rounded-lg border text-sm hover:bg-gray-100 disabled:opacity-40"
+        >
+          Prev
+        </button>
+
+        {/* NUMBERS */}
+        {pages.map((p) => (
+          <button
+            key={p}
+            onClick={() => onChange(p)}
+            className={`px-3 py-2 rounded-lg text-sm transition
+              ${
+                p === page
+                  ? "bg-black text-white"
+                  : "hover:bg-gray-100 text-gray-600"
+              }
+            `}
+          >
+            {p}
+          </button>
+        ))}
+
+        {/* NEXT */}
+        <button
+          disabled={page === totalPages}
+          onClick={() => onChange(page + 1)}
+          className="px-3 py-2 rounded-lg border text-sm hover:bg-gray-100 disabled:opacity-40"
+        >
+          Next
+        </button>
+
+      </div>
     </div>
   );
 }

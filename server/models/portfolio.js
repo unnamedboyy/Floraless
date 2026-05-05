@@ -9,7 +9,6 @@ const portfolioSchema = new mongoose.Schema({
 
   title: String,
   content: String,
-
   rating: Number,
   review: String,
 

@@ -5,7 +5,7 @@ const reviewSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Ticket",
     required: true,
-    unique: true // 1 ticket = 1 review
+    // unique: true
   },
   pelangganId: {
     type: mongoose.Schema.Types.ObjectId,

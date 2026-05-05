@@ -1,116 +1,119 @@
 "use client";
 
-import React from "react";
+import AvatarCell from "./AvatarCell";
 
-/* ================= TYPES ================= */
-
-type Column<T> = {
+type Column = {
   label: string;
-  key: string; // 🔥 ubah ke string supaya support nested
+  key: string;
 };
 
-type Props<T> = {
-  columns: Column<T>[];
-  data: T[];
-  onEdit?: (row: T) => void;
-  onDelete?: (row: T) => void;
-  onView?: (row: T) => void; 
+type Props = {
+  columns: Column[];
+  data: any[];
+
+  onView?: (row: any) => void;
+  onEdit?: (row: any) => void;
+  onDelete?: (row: any) => void;
 };
 
-/* ================= HELPER ================= */
-
-// 🔥 ambil value nested: "userId.username"
-const getValue = (obj: any, path: string) => {
-  return path.split(".").reduce((o, key) => o?.[key], obj);
-};
-
-/* ================= COMPONENT ================= */
-
-export default function DataTable<T extends { _id: string }>({
+export default function DataTable({
   columns,
   data,
   onView,
   onEdit,
   onDelete,
-}: Props<T>) {
+}: Props) {
+  /* ================= HELPER ================= */
+
+  const getValue = (obj: any, path: string) => {
+    return path.split(".").reduce((acc, key) => acc?.[key], obj);
+  };
+
+  /* ================= UI ================= */
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border border-gray-200 rounded-lg overflow-hidden">
-        {/* HEADER */}
-        <thead>
-          <tr className="bg-gray-100">
-            {columns.map((col) => (
-              <th
-                key={col.key}
-                className="p-3 text-left text-sm font-semibold"
-              >
-                {col.label}
-              </th>
-            ))}
-            <th className="p-3 text-sm font-semibold">Action</th>
-          </tr>
-        </thead>
+    <div className="bg-white rounded-xl border overflow-hidden">
 
-        {/* BODY */}
-        <tbody>
-          {data.length === 0 && (
-            <tr>
-              <td
-                colSpan={columns.length + 1}
-                className="text-center p-4 text-gray-500"
-              >
-                Tidak ada data
-              </td>
-            </tr>
+      {/* HEADER */}
+      <div className="grid grid-cols-12 px-4 py-3 text-sm font-medium text-gray-500 border-b">
+        {columns.map((col) => (
+          <div key={col.key} className="col-span-4">
+            {col.label}
+          </div>
+        ))}
+
+        {(onView || onEdit || onDelete) && (
+          <div className="col-span-4 text-right">Action</div>
+        )}
+      </div>
+
+      {/* BODY */}
+      {data.map((row, i) => (
+        <div
+          key={i}
+          className="grid grid-cols-12 px-4 py-3 items-center border-b hover:bg-gray-50"
+        >
+          {columns.map((col) => {
+            const value = getValue(row, col.key);
+
+            return (
+              <div key={col.key} className="col-span-4 text-sm">
+
+                {/* 🔥 KHUSUS NAMA → PAKAI AVATAR */}
+                {col.key === "nama" ? (
+                  <AvatarCell
+                    name={value || row.userId?.username}
+                  />
+                ) : (
+                  value || "-"
+                )}
+
+              </div>
+            );
+          })}
+
+          {/* ACTION */}
+          {(onView || onEdit || onDelete) && (
+            <div className="col-span-4 text-right text-sm space-x-2">
+
+              {onView && (
+                <button
+                  onClick={() => onView(row)}
+                  className="text-blue-500"
+                >
+                  Detail
+                </button>
+              )}
+
+              {onEdit && (
+                <button
+                  onClick={() => onEdit(row)}
+                  className="text-green-500"
+                >
+                  Edit
+                </button>
+              )}
+
+              {onDelete && (
+                <button
+                  onClick={() => onDelete(row)}
+                  className="text-red-500"
+                >
+                  Delete
+                </button>
+              )}
+
+            </div>
           )}
+        </div>
+      ))}
 
-          {data.map((row) => (
-            <tr key={row._id} className="border-t hover:bg-gray-50">
-              {columns.map((col) => {
-                const value = getValue(row, col.key);
-
-                return (
-                  <td key={col.key} className="p-3 text-sm">
-                    {value !== undefined && value !== null
-                      ? String(value)
-                      : "-"}
-                  </td>
-                );
-              })}
-
-              {/* ACTION */}
-              <td className="p-3 space-x-2">
-                {onView && (
-                  <button
-                    onClick={() => onView(row)}
-                    className="text-green-600 hover:underline"
-                  >
-                    Detail
-                  </button>
-                )}
-
-                {onEdit && (
-                  <button
-                    onClick={() => onEdit(row)}
-                    className="text-blue-500 hover:underline"
-                  >
-                    Edit
-                  </button>
-                )}
-
-                {onDelete && (
-                  <button
-                    onClick={() => onDelete(row)}
-                    className="text-red-500 hover:underline"
-                  >
-                    Delete
-                  </button>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {/* EMPTY */}
+      {data.length === 0 && (
+        <div className="p-6 text-center text-sm text-gray-500">
+          Tidak ada data
+        </div>
+      )}
     </div>
   );
 }
