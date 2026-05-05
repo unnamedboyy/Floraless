@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import TableWrapper from "@/components/table/TableWrapper";
 import { useTickets } from "@/hooks/useTickets";
-import Pagination from "@/components/table/Pagination";
 import { updateStatusTicket } from "@/services/ticket.service";
 
 export default function PegawaiTugasPage() {
+  /* ================= STATE ================= */
+
   const [query, setQuery] = useState({
     page: 1,
     limit: 5,
@@ -13,7 +15,7 @@ export default function PegawaiTugasPage() {
     search: "",
   });
 
-  const { data, total, reload } = useTickets(query);
+  const { data = [], total = 0, reload } = useTickets(query);
 
   /* ================= ACTION ================= */
 
@@ -29,53 +31,28 @@ export default function PegawaiTugasPage() {
     reload();
   };
 
-  /* ================= ACTION BUTTON ================= */
-
-  const renderAction = (row: any) => {
-    if (row.status === "approved") {
-      return (
-        <button
-          onClick={() => handleStatus(row)}
-          className="text-yellow-600"
-        >
-          Start
-        </button>
-      );
-    }
-
-    if (row.status === "in_progress") {
-      return (
-        <button
-          onClick={() => handleStatus(row)}
-          className="text-green-600"
-        >
-          Done
-        </button>
-      );
-    }
-
-    return "-";
-  };
+  /* ================= UI ================= */
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-bold">Tugas Saya</h1>
+    <div className="p-6 space-y-4">
 
-      {/* SEARCH + FILTER */}
-      <div className="flex gap-2">
-        <input
-          placeholder="Cari pelanggan..."
-          onChange={(e) =>
-            setQuery({ ...query, search: e.target.value })
-          }
-          className="border p-2"
-        />
+      {/* HEADER */}
+      <h1 className="text-xl font-semibold">
+        Tugas Saya
+      </h1>
 
+      {/* FILTER */}
+      <div className="flex gap-3">
         <select
+          value={query.status}
           onChange={(e) =>
-            setQuery({ ...query, status: e.target.value })
+            setQuery({
+              ...query,
+              status: e.target.value,
+              page: 1,
+            })
           }
-          className="border p-2"
+          className="border px-3 py-2 rounded-xl text-sm"
         >
           <option value="">Semua</option>
           <option value="approved">Approved</option>
@@ -84,36 +61,52 @@ export default function PegawaiTugasPage() {
         </select>
       </div>
 
-      {/* TABLE */}
-      <table className="w-full border">
-        <thead>
-          <tr>
-            <th>Pelanggan</th>
-            <th>Layanan</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {data.map((row: any) => (
-            <tr key={row._id}>
-              <td>{row.pelangganId?.nama}</td>
-              <td>{row.layananId?.nama}</td>
-              <td>{row.status}</td>
-              <td>{renderAction(row)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* PAGINATION */}
-      <Pagination
-        page={query.page}
+      {/* TABLE SYSTEM */}
+      <TableWrapper
+        data={data}
         total={total}
-        limit={query.limit}
-        onChange={(p) => setQuery({ ...query, page: p })}
+        query={query}
+        setQuery={setQuery}
+
+        columns={[
+          { label: "Pelanggan", key: "pelangganId.nama" },
+          { label: "Layanan", key: "layananId.nama" },
+          { label: "Status", key: "status" },
+        ]}
+
+        actions={[
+          {
+            label: "Start",
+            show: (row) => row.status === "approved",
+            onClick: handleStatus,
+          },
+          {
+            label: "Done",
+            show: (row) => row.status === "in_progress",
+            onClick: handleStatus,
+          },
+        ]}
+
+        /* GRID VIEW */
+        renderItem={(row) => (
+          <div className="bg-white border rounded-xl p-4 space-y-2">
+
+            <p className="font-semibold">
+              {row.pelangganId?.nama || "-"}
+            </p>
+
+            <p className="text-sm text-gray-500">
+              {row.layananId?.nama || "-"}
+            </p>
+
+            <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+              {row.status}
+            </span>
+
+          </div>
+        )}
       />
+
     </div>
   );
 }

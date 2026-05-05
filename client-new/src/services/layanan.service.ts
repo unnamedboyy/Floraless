@@ -1,17 +1,21 @@
 import api from "@/lib/axios";
 
-export const layananService = {
-  getAll: (params?: any) => api.get("/layanans", { params }),
+/* ================= GET ALL ================= */
+export const getAllLayanan = (params?: any) =>
+  api.get("/layanans", { params });
 
-  create: (data: any) => api.post("/layanans", data),
+/* ================= CREATE ================= */
+export const createLayanan = (data: any) =>
+  api.post("/layanans", data);
 
-  update: (id: string, data: any) =>
-    api.put(`/layanans/${id}`, data),
+/* ================= UPDATE ================= */
+export const updateLayanan = (id: string, data: any) =>
+  api.put(`/layanans/${id}`, data);
 
-  toggle: (id: string) =>
-  api.patch(`/layanans/${id}/toggle`),
+/* ================= TOGGLE ================= */
+export const toggleLayanan = (id: string) =>
+  api.patch(`/layanans/${id}/toggle`);
 
-  remove: (id: string) =>
-    api.delete(`/layanans/${id}`)
-
-};
+/* ================= DELETE ================= */
+export const deleteLayanan = (id: string) =>
+  api.delete(`/layanans/${id}`);

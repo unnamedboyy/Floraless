@@ -1,66 +1,56 @@
 "use client";
 
-type Props = {
+export default function Pagination({
+  page,
+  total,
+  limit,
+  onChange,
+}: {
   page: number;
   total: number;
   limit: number;
-  onChange: (page: number) => void;
-};
-
-export default function Pagination({ page, total, limit, onChange }: Props) {
+  onChange: (p: number) => void;
+}) {
   const totalPages = Math.ceil(total / limit);
 
   if (totalPages <= 1) return null;
 
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
-
   return (
-    <div className="flex items-center justify-between mt-6">
+    <div className="flex justify-end gap-2 mt-4">
 
-      {/* LEFT INFO */}
-      <p className="text-sm text-gray-500">
-        Page {page} of {totalPages}
-      </p>
+      <button
+        disabled={page === 1}
+        onClick={() => onChange(page - 1)}
+        className="px-3 py-1 border rounded"
+      >
+        Prev
+      </button>
 
-      {/* PAGINATION */}
-      <div className="flex items-center gap-2">
-
-        {/* PREV */}
-        <button
-          disabled={page === 1}
-          onClick={() => onChange(page - 1)}
-          className="px-3 py-2 rounded-lg border text-sm hover:bg-gray-100 disabled:opacity-40"
-        >
-          Prev
-        </button>
-
-        {/* NUMBERS */}
-        {pages.map((p) => (
+      {[...Array(totalPages)].map((_, i) => {
+        const p = i + 1;
+        return (
           <button
             key={p}
             onClick={() => onChange(p)}
-            className={`px-3 py-2 rounded-lg text-sm transition
-              ${
-                p === page
-                  ? "bg-black text-white"
-                  : "hover:bg-gray-100 text-gray-600"
-              }
-            `}
+            className={`px-3 py-1 rounded ${
+              p === page
+                ? "bg-black text-white"
+                : "border"
+            }`}
           >
             {p}
           </button>
-        ))}
+        );
+      })}
 
-        {/* NEXT */}
-        <button
-          disabled={page === totalPages}
-          onClick={() => onChange(page + 1)}
-          className="px-3 py-2 rounded-lg border text-sm hover:bg-gray-100 disabled:opacity-40"
-        >
-          Next
-        </button>
+      <button
+        disabled={page === totalPages}
+        onClick={() => onChange(page + 1)}
+        className="px-3 py-1 border rounded"
+      >
+        Next
+      </button>
 
-      </div>
     </div>
   );
 }

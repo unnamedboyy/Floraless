@@ -1,22 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import TableWrapper from "@/components/table/TableWrapper";
 import { usePayment } from "@/hooks/usePayment";
 import {
   approvePayment,
   rejectPayment,
 } from "@/services/payment.service";
 import PaymentDetailModal from "@/components/modal/PaymentDetailModal";
-import Pagination from "@/components/table/Pagination";
 
 export default function PaymentPage() {
+  /* ================= STATE ================= */
+
   const [query, setQuery] = useState({
     page: 1,
     limit: 5,
     status: "",
+    search: "",
   });
 
-  const { data, total, reload } = usePayment(query);
+  const { data = [], total = 0, reload } = usePayment(query);
 
   const [selected, setSelected] = useState<any>(null);
 
@@ -50,109 +53,99 @@ export default function PaymentPage() {
     return map[status] || "bg-gray-100";
   };
 
+  /* ================= UI ================= */
+
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-bold">Kelola Pembayaran</h1>
+    <div className="p-6 space-y-4">
 
-      {/* FILTER */}
-      <select
-        value={query.status}
-        onChange={(e) =>
-          setQuery({
-            ...query,
-            status: e.target.value,
-            page: 1,
-          })
-        }
-        className="border p-2"
-      >
-        <option value="">Semua</option>
-        <option value="pending">Pending</option>
-        <option value="approved">Approved</option>
-        <option value="rejected">Rejected</option>
-      </select>
+      {/* HEADER */}
+      <h1 className="text-xl font-semibold">
+        Kelola Pembayaran
+      </h1>
 
-      {/* TABLE */}
-      <table className="w-full border text-sm">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="p-2">Pelanggan</th>
-            <th className="p-2">Tipe</th>
-            <th className="p-2">Jumlah</th>
-            <th className="p-2">Status</th>
-            <th className="p-2">Tanggal</th>
-            <th className="p-2">Action</th>
-          </tr>
-        </thead>
+      {/* FILTER STATUS */}
+      <div className="flex gap-3">
+        <select
+          value={query.status}
+          onChange={(e) =>
+            setQuery({
+              ...query,
+              status: e.target.value,
+              page: 1,
+            })
+          }
+          className="border px-3 py-2 rounded-xl text-sm"
+        >
+          <option value="">Semua</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
 
-        <tbody>
-          {data.map((row) => (
-            <tr key={row._id} className="border-t">
-
-              <td className="p-2">
-                {row.ticketId?.pelangganId?.nama || "-"}
-              </td>
-
-              <td className="p-2">{row.tipe}</td>
-
-              <td className="p-2">
-                Rp {row.jumlah?.toLocaleString()}
-              </td>
-
-              <td className="p-2">
-                <span
-                  className={`px-2 py-1 rounded text-xs ${getStatusBadge(
-                    row.status
-                  )}`}
-                >
-                  {row.status}
-                </span>
-              </td>
-
-              <td className="p-2">
-                {new Date(row.createdAt).toLocaleString()}
-              </td>
-
-              <td className="p-2 space-x-2">
-
-                <button
-                  onClick={() => setSelected(row)}
-                  className="text-green-600"
-                >
-                  Detail
-                </button>
-
-                {row.status === "pending" && (
-                  <>
-                    <button
-                      onClick={() => handleApprove(row._id)}
-                      className="text-blue-500"
-                    >
-                      Approve
-                    </button>
-
-                    <button
-                      onClick={() => handleReject(row._id)}
-                      className="text-red-500"
-                    >
-                      Reject
-                    </button>
-                  </>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* PAGINATION */}
-      <Pagination
-        page={query.page}
+      {/* TABLE SYSTEM */}
+      <TableWrapper
+        data={data}
         total={total}
-        limit={query.limit}
-        onChange={(p) =>
-          setQuery({ ...query, page: p })
-        }
+        query={query}
+        setQuery={setQuery}
+
+        columns={[
+          { label: "Pelanggan", key: "ticketId.pelangganId.nama" },
+          { label: "Tipe", key: "tipe" },
+          { label: "Jumlah", key: "jumlah" },
+          { label: "Status", key: "status" },
+          { label: "Tanggal", key: "createdAt" },
+        ]}
+
+        actions={[
+          {
+            label: "Detail",
+            onClick: (row) => setSelected(row),
+          },
+          {
+            label: "Approve",
+            show: (row) => row.status === "pending",
+            onClick: (row) => handleApprove(row._id),
+          },
+          {
+            label: "Reject",
+            show: (row) => row.status === "pending",
+            onClick: (row) => handleReject(row._id),
+          },
+        ]}
+
+        /* GRID VIEW */
+        renderItem={(row) => (
+          <div className="bg-white border rounded-xl p-4 space-y-2">
+
+            <p className="font-semibold">
+              {row.ticketId?.pelangganId?.nama || "-"}
+            </p>
+
+            <p className="text-sm text-gray-500">
+              {row.tipe}
+            </p>
+
+            <p className="text-sm font-medium">
+              Rp {row.jumlah?.toLocaleString()}
+            </p>
+
+            <span
+              className={`inline-block px-2 py-1 rounded text-xs ${getStatusBadge(
+                row.status
+              )}`}
+            >
+              {row.status}
+            </span>
+
+            <p className="text-xs text-gray-400">
+              {row.createdAt
+                ? new Date(row.createdAt).toLocaleString()
+                : "-"}
+            </p>
+          </div>
+        )}
       />
 
       {/* MODAL */}
@@ -161,6 +154,7 @@ export default function PaymentPage() {
         data={selected}
         onClose={() => setSelected(null)}
       />
+
     </div>
   );
 }

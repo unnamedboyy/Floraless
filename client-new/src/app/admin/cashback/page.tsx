@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import TableWrapper from "@/components/table/TableWrapper";
 import { useCashback } from "@/hooks/useCashback";
 import {
   approveCashback,
@@ -9,11 +10,16 @@ import {
 import CashbackDetailModal from "@/components/modal/CashbackDetailModal";
 
 export default function CashbackPage() {
-  const { data, reload } = useCashback();
+  /* ================= STATE ================= */
+
+  const { data = [], reload } = useCashback();
   const [selected, setSelected] = useState<any>(null);
+
+  /* ================= ACTION ================= */
 
   const handleApprove = async (id: string, bukti: string) => {
     if (!bukti) return alert("Bukti wajib diisi");
+
     await approveCashback(id, bukti);
     reload();
     setSelected(null);
@@ -21,47 +27,72 @@ export default function CashbackPage() {
 
   const handleReject = async (id: string, alasan: string) => {
     if (!alasan) return alert("Alasan wajib diisi");
+
     await rejectCashback(id, alasan);
     reload();
     setSelected(null);
   };
 
+  /* ================= UI ================= */
+
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-bold">Cashback Claim</h1>
+    <div className="p-6 space-y-4">
 
-      <table className="w-full border text-sm">
-        <thead>
-          <tr className="bg-gray-100">
-            <th>Pelanggan</th>
-            <th>Kode</th>
-            <th>Bank</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
+      {/* HEADER */}
+      <h1 className="text-xl font-semibold">
+        Cashback Claim
+      </h1>
 
-        <tbody>
-          {data.map((row) => (
-            <tr key={row._id} className="border-t">
-              <td>{row.pelangganId?.nama}</td>
-              <td>{row.kode_voucher}</td>
-              <td>{row.bank}</td>
-              <td>{row.status}</td>
+      {/* TABLE SYSTEM */}
+      <TableWrapper
+        data={data}
+        total={data.length} // 🔥 karena tidak pakai pagination server
+        query={{
+          page: 1,
+          limit: data.length,
+          search: "",
+        }}
+        setQuery={() => {}} // 🔥 tidak dipakai di sini
 
-              <td>
-                <button
-                  onClick={() => setSelected(row)}
-                  className="text-blue-500"
-                >
-                  Detail
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        columns={[
+          { label: "Pelanggan", key: "pelangganId.nama" },
+          { label: "Kode", key: "kode_voucher" },
+          { label: "Bank", key: "bank" },
+          { label: "Status", key: "status" },
+        ]}
 
+        actions={[
+          {
+            label: "Detail",
+            onClick: (row) => setSelected(row),
+          },
+        ]}
+
+        /* GRID VIEW */
+        renderItem={(row) => (
+          <div className="bg-white border rounded-xl p-4 space-y-2">
+
+            <p className="font-semibold">
+              {row.pelangganId?.nama || "-"}
+            </p>
+
+            <p className="text-sm text-gray-500">
+              {row.kode_voucher}
+            </p>
+
+            <p className="text-sm">
+              {row.bank}
+            </p>
+
+            <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+              {row.status}
+            </span>
+
+          </div>
+        )}
+      />
+
+      {/* MODAL */}
       <CashbackDetailModal
         open={!!selected}
         data={selected}
@@ -69,6 +100,7 @@ export default function CashbackPage() {
         onApprove={handleApprove}
         onReject={handleReject}
       />
+
     </div>
   );
 }

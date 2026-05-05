@@ -1,49 +1,46 @@
 "use client";
 
-import AvatarCell from "./AvatarCell";
-
 type Column = {
   label: string;
   key: string;
 };
 
+type Action = {
+  label: string;
+  onClick: (row: any) => void;
+  show?: (row: any) => boolean;
+};
+
 type Props = {
   columns: Column[];
   data: any[];
-
-  onView?: (row: any) => void;
-  onEdit?: (row: any) => void;
-  onDelete?: (row: any) => void;
+  actions?: Action[];
 };
+
+function getValue(obj: any, path: string) {
+  return path.split(".").reduce((acc, key) => acc?.[key], obj);
+}
 
 export default function DataTable({
   columns,
   data,
-  onView,
-  onEdit,
-  onDelete,
+  actions = [],
 }: Props) {
-  /* ================= HELPER ================= */
-
-  const getValue = (obj: any, path: string) => {
-    return path.split(".").reduce((acc, key) => acc?.[key], obj);
-  };
-
-  /* ================= UI ================= */
-
   return (
-    <div className="bg-white rounded-xl border overflow-hidden">
+    <div className="bg-white border rounded-xl overflow-hidden">
 
       {/* HEADER */}
-      <div className="grid grid-cols-12 px-4 py-3 text-sm font-medium text-gray-500 border-b">
-        {columns.map((col) => (
-          <div key={col.key} className="col-span-4">
+      <div className="grid grid-cols-12 border-b px-4 py-3 text-sm font-medium text-gray-500">
+        {columns.map((col, i) => (
+          <div key={i} className="col-span-2">
             {col.label}
           </div>
         ))}
 
-        {(onView || onEdit || onDelete) && (
-          <div className="col-span-4 text-right">Action</div>
+        {actions.length > 0 && (
+          <div className="col-span-2 text-right">
+            Action
+          </div>
         )}
       </div>
 
@@ -51,69 +48,32 @@ export default function DataTable({
       {data.map((row, i) => (
         <div
           key={i}
-          className="grid grid-cols-12 px-4 py-3 items-center border-b hover:bg-gray-50"
+          className="grid grid-cols-12 border-b px-4 py-3 text-sm items-center"
         >
-          {columns.map((col) => {
-            const value = getValue(row, col.key);
+          {columns.map((col, j) => (
+            <div key={j} className="col-span-2">
+              {getValue(row, col.key) || "-"}
+            </div>
+          ))}
 
-            return (
-              <div key={col.key} className="col-span-4 text-sm">
-
-                {/* 🔥 KHUSUS NAMA → PAKAI AVATAR */}
-                {col.key === "nama" ? (
-                  <AvatarCell
-                    name={value || row.userId?.username}
-                  />
-                ) : (
-                  value || "-"
-                )}
-
-              </div>
-            );
-          })}
-
-          {/* ACTION */}
-          {(onView || onEdit || onDelete) && (
-            <div className="col-span-4 text-right text-sm space-x-2">
-
-              {onView && (
-                <button
-                  onClick={() => onView(row)}
-                  className="text-blue-500"
-                >
-                  Detail
-                </button>
-              )}
-
-              {onEdit && (
-                <button
-                  onClick={() => onEdit(row)}
-                  className="text-green-500"
-                >
-                  Edit
-                </button>
-              )}
-
-              {onDelete && (
-                <button
-                  onClick={() => onDelete(row)}
-                  className="text-red-500"
-                >
-                  Delete
-                </button>
-              )}
-
+          {actions.length > 0 && (
+            <div className="col-span-2 flex justify-end gap-2">
+              {actions
+                .filter((a) => (a.show ? a.show(row) : true))
+                .map((a, k) => (
+                  <button
+                    key={k}
+                    onClick={() => a.onClick(row)}
+                    className="text-blue-500 text-sm"
+                  >
+                    {a.label}
+                  </button>
+                ))}
             </div>
           )}
         </div>
       ))}
 
-      {/* EMPTY */}
-      {data.length === 0 && (
-        <div className="p-6 text-center text-sm text-gray-500">
-          Tidak ada data
-        </div>
-      )}
     </div>
   );
 }

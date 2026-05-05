@@ -5,24 +5,23 @@ import { Search, Filter, Download } from "lucide-react";
 type Props = {
   view: "list" | "grid";
   setView: (v: "list" | "grid") => void;
-  onSearch?: (value: string) => void; // ✅ TAMBAH INI
+  onSearch?: (value: string) => void;
 };
 
 export default function TableToolbar({
   view,
   setView,
-  onSearch, // ✅ TERIMA DI SINI
+  onSearch,
 }: Props) {
   return (
-    <div className="flex items-center justify-between mb-4">
+    <div className="flex items-center justify-between">
 
-      {/* LEFT */}
+      {/* SEARCH */}
       <div className="flex items-center gap-2 bg-white border rounded-xl px-3 py-2 w-[250px]">
         <Search size={16} className="text-gray-400" />
-
         <input
           placeholder="Search..."
-          onChange={(e) => onSearch?.(e.target.value)} // ✅ AMAN
+          onChange={(e) => onSearch?.(e.target.value)}
           className="outline-none text-sm w-full"
         />
       </div>
@@ -38,7 +37,7 @@ export default function TableToolbar({
           <Download size={16} /> Export
         </button>
 
-        {/* TOGGLE VIEW */}
+        {/* TOGGLE */}
         <div className="flex border rounded-xl overflow-hidden">
           <button
             onClick={() => setView("list")}
@@ -48,7 +47,6 @@ export default function TableToolbar({
           >
             List
           </button>
-
           <button
             onClick={() => setView("grid")}
             className={`px-3 py-2 text-sm ${

@@ -1,6 +1,6 @@
 import api from "@/lib/axios";
 
-export const getJadwal = (params: any) =>
+export const getJadwal = (params?: any) =>
   api.get("/jadwal", { params });
 
 export const createJadwal = (data: any) =>

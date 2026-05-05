@@ -1,49 +1,33 @@
-import { useEffect, useState } from "react";
-import { layananService } from "@/services/layanan.service";
+"use client";
 
-export function useLayanan() {
+import { useEffect, useState } from "react";
+import { getAllLayanan } from "@/services/layanan.service";
+
+export const useLayanan = (query: any) => {
   const [data, setData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await layananService.getAll({ search });
-      setData(res.data);
+
+      const res = await getAllLayanan(query);
+
+      // 🔥 sesuaikan dengan response backend kamu
+      setData(res.data.data || res.data || []);
     } catch (err) {
-      console.error(err);
+      console.error("GET LAYANAN ERROR:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const create = async (payload: any) => {
-    await layananService.create(payload);
-    fetchData();
-  };
-
-  const update = async (id: string, payload: any) => {
-    await layananService.update(id, payload);
-    fetchData();
-  };
-
-  const remove = async (id: string) => {
-    await layananService.remove(id);
-    fetchData();
-  };
-
   useEffect(() => {
     fetchData();
-  }, [search]);
+  }, [query]);
 
   return {
     data,
     loading,
-    search,
-    setSearch,
-    create,
-    update,
-    remove
   };
-}
+};

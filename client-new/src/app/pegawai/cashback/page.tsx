@@ -1,10 +1,22 @@
 "use client";
 
+import { useState } from "react";
+import TableWrapper from "@/components/table/TableWrapper";
 import { useCashback } from "@/hooks/useCashback";
 import { processCashback } from "@/services/cashback.service";
 
 export default function CashbackPage() {
-  const { data, loading, reload } = useCashback();
+  /* ================= DATA ================= */
+
+  const { data = [], loading, reload } = useCashback();
+
+  /* ================= STATE ================= */
+
+  const [query, setQuery] = useState({
+    page: 1,
+    limit: data.length || 1, // 🔥 penting supaya tidak error pagination
+    search: "",
+  });
 
   /* ================= ACTION ================= */
 
@@ -29,73 +41,73 @@ export default function CashbackPage() {
     reload();
   };
 
+  /* ================= UI ================= */
+
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-bold">
+    <div className="p-6 space-y-4">
+
+      {/* HEADER */}
+      <h1 className="text-xl font-semibold">
         Verifikasi Cashback
       </h1>
 
-      {/* ================= LOADING ================= */}
+      {/* LOADING */}
       {loading ? (
-        <p>Loading...</p>
+        <div className="bg-white p-6 rounded-xl text-sm text-gray-500">
+          Loading...
+        </div>
       ) : (
-        <table className="w-full border">
-          <thead>
-            <tr>
-              <th>Pelanggan</th>
-              <th>Kode Voucher</th>
-              <th>Bank</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
+        <TableWrapper
+          data={data}
+          total={data.length}
+          query={query}
+          setQuery={setQuery}
 
-          <tbody>
-            {data.length === 0 && (
-              <tr>
-                <td colSpan={5} className="text-center p-4">
-                  Tidak ada data
-                </td>
-              </tr>
-            )}
+          columns={[
+            { label: "Pelanggan", key: "pelangganId.nama" },
+            { label: "Kode Voucher", key: "kode_voucher" },
+            { label: "Bank", key: "bank" },
+            { label: "Status", key: "status" },
+          ]}
 
-            {data?.map((row: any) => (
-              <tr key={row._id}>
-                <td>{row.pelangganId?.nama || "-"}</td>
-                <td>{row.kode_voucher}</td>
-                <td>{row.bank}</td>
-                <td>{row.status}</td>
+          actions={[
+            {
+              label: "Approve",
+              show: (row) => row.status === "pending",
+              onClick: (row) => handleApprove(row._id),
+            },
+            {
+              label: "Reject",
+              show: (row) => row.status === "pending",
+              onClick: (row) => handleReject(row._id),
+            },
+          ]}
 
-                <td className="space-x-2">
-                  {row.status === "pending" && (
-                    <>
-                      <button
-                        onClick={() =>
-                          handleApprove(row._id)
-                        }
-                        className="text-green-600"
-                      >
-                        Approve
-                      </button>
+          /* GRID VIEW */
+          renderItem={(row) => (
+            <div className="bg-white border rounded-xl p-4 space-y-2">
 
-                      <button
-                        onClick={() =>
-                          handleReject(row._id)
-                        }
-                        className="text-red-600"
-                      >
-                        Reject
-                      </button>
-                    </>
-                  )}
+              <p className="font-semibold">
+                {row.pelangganId?.nama || "-"}
+              </p>
 
-                  {row.status !== "pending" && "-"}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+              <p className="text-sm text-gray-500">
+                {row.kode_voucher}
+              </p>
+
+              <p className="text-sm">
+                {row.bank}
+              </p>
+
+              <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                {row.status}
+              </span>
+
+            </div>
+          )}
+        />
       )}
+
     </div>
   );
 }

@@ -1,37 +1,51 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useJadwal } from "@/hooks/useJadwal";
-import JadwalFormModal from "@/components/modal/JadwalFormModal";
+import { useState } from "react";
+import TableWrapper from "@/components/table/TableWrapper";
+import JadwalCalendar from "@/components/jadwal/JadwalCalendar";
+
+import JadwalFormModal from "@/components/form/JadwalFormModal";
+import DetailJadwalModal from "@/components/modal/DetailJadwalModal";
+
 import {
   createJadwal,
   updateJadwal,
   deleteJadwal,
 } from "@/services/jadwal.service";
 
-// 🔥 FullCalendar
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import interactionPlugin from "@fullcalendar/interaction";
+import { useJadwal } from "@/hooks/useJadwal";
 
 export default function JadwalPage() {
+  /* ================= STATE ================= */
+
+  const [view, setView] = useState<"list" | "grid">("list");
+  const [mode, setMode] = useState<"table" | "calendar">("table");
+
   const [query, setQuery] = useState({
+    page: 1,
+    limit: 10,
+    search: "",
     start: "",
     end: "",
   });
 
-  const { data, reload } = useJadwal(query);
-
   const [openForm, setOpenForm] = useState(false);
   const [selected, setSelected] = useState<any>(null);
 
-  const [view, setView] = useState<"table" | "calendar">("table");
+  /* ================= DATA ================= */
+
+  const {
+    data = [],
+    total = 0,
+    loading,
+    reload,
+  } = useJadwal(query);
 
   /* ================= ACTION ================= */
 
   const handleSubmit = async (form: any) => {
     try {
-      if (selected) {
+      if (selected?._id) {
         await updateJadwal(selected._id, form);
       } else {
         await createJadwal(form);
@@ -40,8 +54,9 @@ export default function JadwalPage() {
       setOpenForm(false);
       setSelected(null);
       reload();
-    } catch {
-      alert("Gagal simpan");
+    } catch (err) {
+      console.error(err);
+      alert("Gagal menyimpan");
     }
   };
 
@@ -51,177 +66,168 @@ export default function JadwalPage() {
     try {
       await deleteJadwal(row._id);
       reload();
-    } catch {
-      alert("Gagal hapus");
+    } catch (err) {
+      console.error(err);
+      alert("Gagal menghapus");
     }
   };
 
-  /* ================= CALENDAR EVENTS ================= */
-
-  const events = useMemo(() => {
-    return data.map((row) => ({
-      id: row._id,
-      title:
-        row.title ||
-        row.pegawaiId?.nama ||
-        "Jadwal",
-      date: row.tanggal_acara,
-
-      // 🔥 warna berdasarkan status
-      color:
-        row.status === "available"
-          ? "#22c55e"
-          : row.status === "booked"
-          ? "#3b82f6"
-          : row.status === "ongoing"
-          ? "#f59e0b"
-          : "#6b7280",
-    }));
-  }, [data]);
-
-  /* ================= HANDLER ================= */
-
-  // klik tanggal kosong → create
-  const handleDateClick = (info: any) => {
-    setSelected({
-      tanggal_acara: info.dateStr,
-    });
-    setOpenForm(true);
-  };
-
-  // klik event → edit
-  const handleEventClick = (info: any) => {
-    const found = data.find((d) => d._id === info.event.id);
-    setSelected(found);
-    setOpenForm(true);
-  };
+  /* ================= UI ================= */
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-bold">Kelola Jadwal</h1>
+    <div className="p-6 space-y-4">
 
-      {/* 🔥 TOGGLE VIEW */}
+      {/* HEADER */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold">
+          Kelola Jadwal
+        </h1>
+
+        <button
+          onClick={() => {
+            setSelected(null);
+            setOpenForm(true);
+          }}
+          className="bg-black text-white px-4 py-2 rounded-xl text-sm"
+        >
+          + Tambah
+        </button>
+      </div>
+
+      {/* MODE SWITCH */}
       <div className="flex gap-2">
         <button
-          onClick={() => setView("table")}
-          className={`px-3 py-1 border ${
-            view === "table" && "bg-black text-white"
+          onClick={() => setMode("table")}
+          className={`px-4 py-2 rounded-xl text-sm ${
+            mode === "table" ? "bg-black text-white" : "border"
           }`}
         >
           Table
         </button>
 
         <button
-          onClick={() => setView("calendar")}
-          className={`px-3 py-1 border ${
-            view === "calendar" && "bg-black text-white"
+          onClick={() => setMode("calendar")}
+          className={`px-4 py-2 rounded-xl text-sm ${
+            mode === "calendar" ? "bg-black text-white" : "border"
           }`}
         >
           Calendar
         </button>
       </div>
 
-      {/* ================= TABLE ================= */}
-      {view === "table" && (
-        <>
-        <div className="flex gap-2 items-center">
-            <div>
-                <p className="text-xs">Dari</p>
-                <input
-                type="date"
-                onChange={(e) =>
-                    setQuery({ ...query, start: e.target.value })
-                }
-                className="border p-2"
-                />
-            </div>
+      {/* FILTER DATE */}
+      <div className="flex gap-4">
 
         <div>
-            <p className="text-xs">Sampai</p>
-            <input
+          <p className="text-xs text-gray-500">Dari</p>
+          <input
             type="date"
+            value={query.start}
             onChange={(e) =>
-                setQuery({ ...query, end: e.target.value })
+              setQuery({
+                ...query,
+                start: e.target.value,
+                page: 1,
+              })
             }
-            className="border p-2"
-            />
-        </div>
-
-        <button
-            onClick={() => setOpenForm(true)}
-            className="bg-black text-white px-4 h-[40px]"
-        >
-            + Tambah
-        </button>
-        </div>
-
-          <table className="w-full border text-sm">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="p-2">Tanggal</th>
-                <th className="p-2">Title</th>
-                <th className="p-2">Lokasi</th>
-                <th className="p-2">Pegawai</th>
-                <th className="p-2">Status</th>
-                <th className="p-2">Action</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {data.map((row) => (
-                <tr key={row._id} className="border-t">
-                  <td className="p-2">
-                    {new Date(row.tanggal_acara).toLocaleDateString()}
-                  </td>
-
-                  <td className="p-2">{row.title}</td>
-                  <td className="p-2">{row.lokasi}</td>
-                  <td className="p-2">
-                    {row.pegawaiId?.nama || "-"}
-                  </td>
-                  <td className="p-2">{row.status}</td>
-
-                  <td className="p-2 space-x-2">
-                    <button
-                      onClick={() => {
-                        setSelected(row);
-                        setOpenForm(true);
-                      }}
-                      className="text-blue-500"
-                    >
-                      Edit
-                    </button>
-
-                    <button
-                      onClick={() => handleDelete(row)}
-                      className="text-red-500"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </>
-      )}
-
-      {/* ================= CALENDAR ================= */}
-      {view === "calendar" && (
-        <div className="bg-white p-4 rounded shadow">
-          <FullCalendar
-            plugins={[dayGridPlugin, interactionPlugin]}
-            initialView="dayGridMonth"
-            events={events}
-            height="auto"
-
-            dateClick={handleDateClick}
-            eventClick={handleEventClick}
+            className="border rounded-xl px-3 py-2 text-sm"
           />
         </div>
+
+        <div>
+          <p className="text-xs text-gray-500">Sampai</p>
+          <input
+            type="date"
+            value={query.end}
+            onChange={(e) =>
+              setQuery({
+                ...query,
+                end: e.target.value,
+                page: 1,
+              })
+            }
+            className="border rounded-xl px-3 py-2 text-sm"
+          />
+        </div>
+
+      </div>
+
+      {/* CONTENT */}
+      {mode === "table" ? (
+        <TableWrapper
+          data={data}
+          total={total}
+          query={query}
+          setQuery={setQuery}
+
+          view={view}
+          setView={setView}
+
+          columns={[
+            { label: "Tanggal", key: "tanggal_acara" },
+            { label: "Pegawai", key: "pegawaiId.nama" },
+            { label: "Lokasi", key: "lokasi" },
+          ]}
+
+          actions={[
+            {
+              label: "Detail",
+              onClick: (row) => setSelected(row),
+            },
+            {
+              label: "Edit",
+              onClick: (row) => {
+                setSelected(row);
+                setOpenForm(true);
+              },
+            },
+            {
+              label: "Delete",
+              onClick: handleDelete,
+            },
+          ]}
+
+          renderItem={(row) => (
+            <div className="bg-white border rounded-xl p-4">
+              <p className="font-semibold">
+                {row.tanggal_acara
+                  ? new Date(row.tanggal_acara).toLocaleDateString()
+                  : "-"}
+              </p>
+
+              <p className="text-sm text-gray-500">
+                {row.pegawaiId?.nama || "-"}
+              </p>
+
+              <p className="text-xs text-gray-400">
+                {row.lokasi || "-"}
+              </p>
+            </div>
+          )}
+        />
+      ) : (
+        <JadwalCalendar
+          data={data}
+
+          onSelectDate={(date) => {
+            setSelected({ tanggal_acara: date });
+            setOpenForm(true);
+          }}
+
+          onSelectEvent={(row) => {
+            setSelected(row);
+          }}
+        />
       )}
 
-      {/* ================= MODAL ================= */}
+      {/* LOADING */}
+      {loading && (
+        <p className="text-sm text-gray-500">
+          Loading...
+        </p>
+      )}
+
+      {/* FORM */}
       <JadwalFormModal
         open={openForm}
         onClose={() => {
@@ -231,6 +237,14 @@ export default function JadwalPage() {
         onSubmit={handleSubmit}
         initialData={selected}
       />
+
+      {/* DETAIL */}
+      <DetailJadwalModal
+        open={!!selected && !openForm}
+        data={selected}
+        onClose={() => setSelected(null)}
+      />
+
     </div>
   );
 }

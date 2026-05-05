@@ -1,47 +1,29 @@
 "use client";
 
-import AvatarCell from "./AvatarCell";
+type Props = {
+  data: any[];
+  renderItem?: (row: any) => React.ReactNode;
+};
 
-export default function GridView({ data }: { data: any[] }) {
+export default function GridView({
+  data,
+  renderItem,
+}: Props) {
   return (
     <div className="grid grid-cols-4 gap-4">
-
-      {data.map((row) => {
-        const name =
-          row.nama || row.userId?.username || "User";
-
-        return (
-          <div
-            key={row._id}
-            className="bg-white border rounded-xl p-4 hover:shadow transition"
-          >
-            {/* AVATAR */}
-            <AvatarCell name={name} />
-
-            {/* INFO */}
-            <div className="mt-3 text-sm text-gray-600">
-              <p>
-                <b>Username:</b>{" "}
-                {row.userId?.username || "-"}
-              </p>
+      {data.map((row, i) => (
+        <div key={i}>
+          {renderItem ? (
+            renderItem(row)
+          ) : (
+            <div className="bg-white border rounded-xl p-4">
+              <pre className="text-xs">
+                {JSON.stringify(row, null, 2)}
+              </pre>
             </div>
-
-            {/* ACTION */}
-            <div className="mt-4 flex gap-2 text-sm">
-              <button className="text-blue-500">
-                Detail
-              </button>
-            </div>
-          </div>
-        );
-      })}
-
-      {data.length === 0 && (
-        <p className="text-sm text-gray-500">
-          Tidak ada data
-        </p>
-      )}
-
+          )}
+        </div>
+      ))}
     </div>
   );
 }

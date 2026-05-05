@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import TableWrapper from "@/components/table/TableWrapper";
 import { usePayment } from "@/hooks/usePayment";
 import {
   approvePayment,
@@ -9,13 +10,16 @@ import {
 import PaymentDetailModal from "@/components/modal/PaymentDetailModal";
 
 export default function PaymentPage() {
+  /* ================= STATE ================= */
+
   const [query, setQuery] = useState({
     page: 1,
     limit: 5,
     status: "pending",
+    search: "",
   });
 
-  const { data, total, reload } = usePayment(query);
+  const { data = [], total = 0, reload } = usePayment(query);
 
   const [selected, setSelected] = useState<any>(null);
   const [openDetail, setOpenDetail] = useState(false);
@@ -32,64 +36,73 @@ export default function PaymentPage() {
     reload();
   };
 
+  /* ================= UI ================= */
+
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-bold">
+    <div className="p-6 space-y-4">
+
+      {/* HEADER */}
+      <h1 className="text-xl font-semibold">
         Verifikasi Pembayaran
       </h1>
 
-      {/* TABLE */}
-      <table className="w-full border">
-        <thead>
-          <tr>
-            <th>Pelanggan</th>
-            <th>Tipe</th>
-            <th>Jumlah</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
+      {/* TABLE SYSTEM */}
+      <TableWrapper
+        data={data}
+        total={total}
+        query={query}
+        setQuery={setQuery}
 
-        <tbody>
-          {data.map((row: any) => (
-            <tr key={row._id}>
-              <td>{row.ticketId?.pelangganId?.nama}</td>
-              <td>{row.tipe}</td>
-              <td>Rp {row.jumlah.toLocaleString()}</td>
-              <td>{row.status}</td>
+        columns={[
+          { label: "Pelanggan", key: "ticketId.pelangganId.nama" },
+          { label: "Tipe", key: "tipe" },
+          { label: "Jumlah", key: "jumlah" },
+          { label: "Status", key: "status" },
+        ]}
 
-              <td className="space-x-2">
-                {/* DETAIL */}
-                <button
-                  onClick={() => {
-                    setSelected(row);
-                    setOpenDetail(true);
-                  }}
-                  className="text-blue-500"
-                >
-                  Detail
-                </button>
+        actions={[
+          {
+            label: "Detail",
+            onClick: (row) => {
+              setSelected(row);
+              setOpenDetail(true);
+            },
+          },
+          {
+            label: "Approve",
+            show: (row) => row.status === "pending",
+            onClick: (row) => handleApprove(row._id),
+          },
+          {
+            label: "Reject",
+            show: (row) => row.status === "pending",
+            onClick: (row) => handleReject(row._id),
+          },
+        ]}
 
-                {/* APPROVE */}
-                <button
-                  onClick={() => handleApprove(row._id)}
-                  className="text-green-600"
-                >
-                  Approve
-                </button>
+        /* GRID VIEW */
+        renderItem={(row) => (
+          <div className="bg-white border rounded-xl p-4 space-y-2">
 
-                {/* REJECT */}
-                <button
-                  onClick={() => handleReject(row._id)}
-                  className="text-red-600"
-                >
-                  Reject
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+            <p className="font-semibold">
+              {row.ticketId?.pelangganId?.nama || "-"}
+            </p>
+
+            <p className="text-sm text-gray-500">
+              {row.tipe}
+            </p>
+
+            <p className="text-sm font-medium">
+              Rp {row.jumlah?.toLocaleString()}
+            </p>
+
+            <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+              {row.status}
+            </span>
+
+          </div>
+        )}
+      />
 
       {/* MODAL */}
       <PaymentDetailModal
@@ -97,6 +110,7 @@ export default function PaymentPage() {
         onClose={() => setOpenDetail(false)}
         data={selected}
       />
+
     </div>
   );
 }

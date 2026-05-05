@@ -2,11 +2,7 @@
 
 import { useState } from "react";
 import { useUsers } from "@/hooks/useUsers";
-
-import DataTable from "@/components/table/DataTable";
-import GridView from "@/components/table/GridView";
-import TableToolbar from "@/components/table/TableToolbar";
-import Pagination from "@/components/table/Pagination";
+import TableWrapper from "@/components/table/TableWrapper";
 
 import UserFormModal from "@/components/form/UserFormModal";
 import DetailUserModal from "@/components/modal/DetailUserModal";
@@ -19,8 +15,6 @@ import {
 
 export default function PegawaiPage() {
   /* ================= STATE ================= */
-
-  const [view, setView] = useState<"list" | "grid">("list");
 
   const [query, setQuery] = useState({
     page: 1,
@@ -71,21 +65,6 @@ export default function PegawaiPage() {
     }
   };
 
-  const handleSearch = (value: string) => {
-    setQuery((prev) => ({
-      ...prev,
-      search: value,
-      page: 1,
-    }));
-  };
-
-  const handlePageChange = (p: number) => {
-    setQuery((prev) => ({
-      ...prev,
-      page: p,
-    }));
-  };
-
   /* ================= UI ================= */
 
   return (
@@ -108,47 +87,85 @@ export default function PegawaiPage() {
         </button>
       </div>
 
-      {/* TOOLBAR */}
-      <TableToolbar
-        view={view}
-        setView={setView}
-        onSearch={handleSearch}
-      />
-
-      {/* CONTENT */}
-      {loading ? (
-        <div className="bg-white rounded-xl p-6 text-sm text-gray-500">
-          Loading...
-        </div>
-      ) : data.length === 0 ? (
-        <div className="bg-white rounded-xl p-6 text-sm text-gray-500">
-          Data tidak ditemukan
-        </div>
-      ) : view === "list" ? (
-        <DataTable
-          columns={[
-            { label: "Nama", key: "nama" },
-            { label: "Username", key: "userId.username" },
-          ]}
-          data={data}
-          onView={(row) => setSelected(row)}
-          onEdit={(row) => {
-            setSelected(row);
-            setOpenForm(true);
-          }}
-          onDelete={handleDelete}
-        />
-      ) : (
-        <GridView data={data} />
-      )}
-
-      {/* PAGINATION */}
-      <Pagination
-        page={query.page}
+      {/* TABLE SYSTEM */}
+      <TableWrapper
+        data={data}
         total={total}
-        limit={query.limit}
-        onChange={handlePageChange}
+        query={query}
+        setQuery={setQuery}
+
+        /* ================= COLUMNS ================= */
+        columns={[
+          { label: "Nama", key: "nama" },
+          { label: "Username", key: "userId.username" },
+        ]}
+
+        /* ================= ACTIONS ================= */
+        actions={[
+          {
+            label: "Detail",
+            onClick: (row) => setSelected(row),
+          },
+          {
+            label: "Edit",
+            onClick: (row) => {
+              setSelected(row);
+              setOpenForm(true);
+            },
+          },
+          {
+            label: "Delete",
+            onClick: handleDelete,
+          },
+        ]}
+
+        /* ================= GRID VIEW ================= */
+        renderItem={(row) => (
+          <div
+            key={row._id}
+            className="bg-white border rounded-xl p-4 hover:shadow transition"
+          >
+            <p className="font-semibold">
+              {row.nama || "No Name"}
+            </p>
+
+            <p className="text-sm text-gray-500">
+              {row.userId?.username || "-"}
+            </p>
+
+            <div className="mt-3 flex gap-2 text-sm">
+              <button
+                onClick={() => setSelected(row)}
+                className="text-blue-500"
+              >
+                Detail
+              </button>
+
+              <button
+                onClick={() => {
+                  setSelected(row);
+                  setOpenForm(true);
+                }}
+                className="text-yellow-500"
+              >
+                Edit
+              </button>
+
+              <button
+                onClick={() => handleDelete(row)}
+                className="text-red-500"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        )}
       />
+
+      {/* LOADING */}
+      {loading && (
+        <p className="text-sm text-gray-500">Loading...</p>
+      )}
 
       {/* FORM MODAL */}
       <UserFormModal

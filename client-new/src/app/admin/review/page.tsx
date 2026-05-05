@@ -1,15 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import TableWrapper from "@/components/table/TableWrapper";
 import { useReviews } from "@/hooks/useReviews";
 
 export default function ReviewPage() {
-  const { data, loading, toggle, remove } = useReviews(); // ✅ FIX DI SINI
+  /* ================= STATE ================= */
 
-  const [search, setSearch] = useState("");
+  const { data = [], loading, toggle, remove } = useReviews();
+
+  const [query, setQuery] = useState({
+    page: 1,
+    limit: 10,
+    search: "",
+  });
+
   const [layananFilter, setLayananFilter] = useState("");
 
-  // ambil list layanan unik
+  /* ================= DATA ================= */
+
+  // 🔥 list layanan unik
   const layananList = Array.from(
     new Set(
       data
@@ -18,10 +28,13 @@ export default function ReviewPage() {
     )
   );
 
+  // 🔥 filter
   const filtered = data.filter((r: any) => {
+    const search = query.search.toLowerCase();
+
     const matchSearch =
-      r.komentar?.toLowerCase().includes(search.toLowerCase()) ||
-      r.pelangganId?.nama?.toLowerCase().includes(search.toLowerCase());
+      r.komentar?.toLowerCase().includes(search) ||
+      r.pelangganId?.nama?.toLowerCase().includes(search);
 
     const matchLayanan =
       !layananFilter ||
@@ -30,22 +43,29 @@ export default function ReviewPage() {
     return matchSearch && matchLayanan;
   });
 
+  const total = filtered.length;
+
+  /* ================= HANDLER ================= */
+
+  const handleDelete = (row: any) => {
+    if (!confirm("Yakin hapus review?")) return;
+    remove(row._id);
+  };
+
+  /* ================= UI ================= */
+
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-bold mb-4">Kelola Review</h1>
+    <div className="p-6 space-y-4">
 
-      {/* FILTER */}
-      <div className="flex gap-4 mb-4">
-        <input
-          type="text"
-          placeholder="Search komentar / nama..."
-          className="border px-3 py-2 rounded w-64"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      {/* HEADER */}
+      <h1 className="text-xl font-semibold">
+        Kelola Review
+      </h1>
 
+      {/* FILTER TAMBAHAN */}
+      <div className="flex gap-3">
         <select
-          className="border px-3 py-2 rounded"
+          className="border px-3 py-2 rounded-xl text-sm"
           value={layananFilter}
           onChange={(e) => setLayananFilter(e.target.value)}
         >
@@ -58,90 +78,70 @@ export default function ReviewPage() {
         </select>
       </div>
 
-      {/* TABLE */}
-      <div className="overflow-auto border rounded">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="p-2">Pelanggan</th>
-              <th className="p-2">Layanan</th>
-              <th className="p-2">Rating</th>
-              <th className="p-2">Komentar</th>
-              <th className="p-2">Status</th>
-              <th className="p-2">Tanggal</th>
-              <th className="p-2">Action</th>
-            </tr>
-          </thead>
+      {/* TABLE SYSTEM */}
+      <TableWrapper
+        data={filtered}
+        total={total}
+        query={query}
+        setQuery={setQuery}
 
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={7} className="text-center p-4">
-                  Loading...
-                </td>
-              </tr>
-            ) : filtered.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="text-center p-4">
-                  Tidak ada data
-                </td>
-              </tr>
-            ) : (
-              filtered.map((r: any) => (
-                <tr key={r._id} className="border-t">
-                  <td className="p-2">
-                    {r.pelangganId?.nama || "-"}
-                  </td>
+        columns={[
+          { label: "Pelanggan", key: "pelangganId.nama" },
+          { label: "Layanan", key: "ticketId.layananId.nama" },
+          { label: "Rating", key: "rating" },
+          { label: "Komentar", key: "komentar" },
+          { label: "Tanggal", key: "createdAt" },
+        ]}
 
-                  <td className="p-2">
-                    {r.ticketId?.layananId?.nama || "-"}
-                  </td>
+        actions={[
+          {
+            label: "Toggle",
+            onClick: (row) => toggle(row._id),
+          },
+          {
+            label: "Delete",
+            onClick: handleDelete,
+          },
+        ]}
 
-                  <td className="p-2">⭐ {r.rating}</td>
+        renderItem={(row) => (
+          <div className="bg-white border rounded-xl p-4 space-y-2">
+            <p className="font-semibold">
+              {row.pelangganId?.nama || "-"}
+            </p>
 
-                  <td className="p-2">{r.komentar}</td>
+            <p className="text-sm text-gray-500">
+              {row.ticketId?.layananId?.nama || "-"}
+            </p>
 
-                  <td className="p-2">
-                    <span
-                      className={`px-2 py-1 rounded text-white text-xs ${
-                        r.isActive ? "bg-green-500" : "bg-gray-400"
-                      }`}
-                    >
-                      {r.isActive ? "Active" : "Non-active"}
-                    </span>
-                  </td>
+            <p className="text-sm">
+              ⭐ {row.rating}
+            </p>
 
-                  <td className="p-2">
-                    {r.createdAt
-                      ? new Date(r.createdAt).toLocaleDateString()
-                      : "-"}
-                  </td>
+            <p className="text-xs text-gray-500 line-clamp-2">
+              {row.komentar}
+            </p>
 
-                  <td className="p-2 flex gap-2">
-                    <button
-                      onClick={() => toggle(r._id)}
-                      className="bg-blue-500 text-white px-2 py-1 rounded"
-                    >
-                      Toggle
-                    </button>
+            <span
+              className={`inline-block px-2 py-1 rounded text-xs ${
+                row.isActive
+                  ? "bg-green-100 text-green-700"
+                  : "bg-gray-200 text-gray-600"
+              }`}
+            >
+              {row.isActive ? "Active" : "Non-active"}
+            </span>
+          </div>
+        )}
+      />
 
-                    <button
-                      onClick={() => {
-                        if (confirm("Yakin hapus review?")) {
-                          remove(r._id);
-                        }
-                      }}
-                      className="bg-red-500 text-white px-2 py-1 rounded"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      {/* LOADING */}
+      {loading && (
+        <p className="text-sm text-gray-500">
+          Loading...
+        </p>
+      )}
+
     </div>
   );
 }

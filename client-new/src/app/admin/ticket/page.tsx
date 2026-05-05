@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useTickets } from "@/hooks/useTickets";
-import Pagination from "@/components/table/Pagination";
+import TableWrapper from "@/components/table/TableWrapper";
+
 import AssignPICModal from "@/components/modal/AssignPICModal";
 import TicketDetailModal from "@/components/modal/TicketDetailModal";
 
@@ -24,16 +25,18 @@ const getStatusBadge = (status: string) => {
 };
 
 export default function TicketPage() {
+  /* ================= STATE ================= */
+
   const [query, setQuery] = useState({
     page: 1,
-    limit: 5,
+    limit: 8,
     status: "",
     search: "",
   });
 
   const [searchInput, setSearchInput] = useState("");
 
-  const { data, total, reload } = useTickets(query);
+  const { data = [], total = 0, reload } = useTickets(query);
 
   const [selected, setSelected] = useState<any>(null);
   const [openAssign, setOpenAssign] = useState(false);
@@ -42,7 +45,11 @@ export default function TicketPage() {
   /* ================= DEBOUNCE SEARCH ================= */
   useEffect(() => {
     const t = setTimeout(() => {
-      setQuery((q) => ({ ...q, search: searchInput, page: 1 }));
+      setQuery((q) => ({
+        ...q,
+        search: searchInput,
+        page: 1,
+      }));
     }, 400);
 
     return () => clearTimeout(t);
@@ -58,7 +65,7 @@ export default function TicketPage() {
       setOpenAssign(false);
       setSelected(null);
       reload();
-    } catch (err) {
+    } catch {
       alert("Gagal assign PIC");
     }
   };
@@ -79,57 +86,26 @@ export default function TicketPage() {
     }
   };
 
-  /* ================= ACTION RENDER ================= */
+  /* ================= ACTION CONFIG ================= */
 
-  const renderAction = (row: any) => {
-    return (
-      <div className="flex gap-2">
-        <button
-          onClick={() => setDetailId(row._id)}
-          className="text-green-600"
-        >
-          Detail
-        </button>
+  const actions = [
+    {
+      label: "Detail",
+      onClick: (row: any) => setDetailId(row._id),
+    },
+  ];
 
-        {row.status === "pending" && (
-          <button
-            onClick={() => {
-              setSelected(row);
-              setOpenAssign(true);
-            }}
-            className="text-blue-500"
-          >
-            Assign + ACC
-          </button>
-        )}
-
-        {row.status === "approved" && (
-          <button
-            onClick={() => handleStatus(row)}
-            className="text-yellow-600"
-          >
-            Start
-          </button>
-        )}
-
-        {row.status === "in_progress" && (
-          <button
-            onClick={() => handleStatus(row)}
-            className="text-green-700"
-          >
-            Done
-          </button>
-        )}
-      </div>
-    );
-  };
+  /* ================= UI ================= */
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-bold">Kelola Ticket</h1>
+    <div className="p-6 space-y-4">
 
-      {/* ================= FILTER + SEARCH ================= */}
-      <div className="flex gap-2">
+      <h1 className="text-xl font-semibold">
+        Kelola Ticket
+      </h1>
+
+      {/* ================= FILTER ================= */}
+      {/* <div className="flex gap-2">
         <input
           placeholder="Cari pelanggan, layanan, PIC..."
           className="border p-2 w-[300px]"
@@ -140,7 +116,11 @@ export default function TicketPage() {
         <select
           value={query.status}
           onChange={(e) =>
-            setQuery({ ...query, status: e.target.value, page: 1 })
+            setQuery({
+              ...query,
+              status: e.target.value,
+              page: 1,
+            })
           }
           className="border p-2"
         >
@@ -150,50 +130,103 @@ export default function TicketPage() {
           <option value="in_progress">In Progress</option>
           <option value="done">Done</option>
         </select>
-      </div>
+      </div> */}
 
-      {/* ================= TABLE ================= */}
-      <table className="w-full border text-sm">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="p-2">Pelanggan</th>
-            <th className="p-2">Layanan</th>
-            <th className="p-2">PIC</th>
-            <th className="p-2">Status</th>
-            <th className="p-2">Action</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {data.map((row) => (
-            <tr key={row._id} className="border-t">
-              <td className="p-2">{row.pelangganId?.nama}</td>
-              <td className="p-2">{row.layananId?.nama}</td>
-              <td className="p-2">{row.pegawaiId?.nama || "-"}</td>
-              <td className="p-2">
-                <span
-                  className={`px-2 py-1 rounded text-xs ${getStatusBadge(
-                    row.status
-                  )}`}
-                >
-                  {row.status}
-                </span>
-              </td>
-              <td className="p-2">{renderAction(row)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* ================= PAGINATION ================= */}
-      <Pagination
-        page={query.page}
+      {/* ================= TABLE SYSTEM ================= */}
+      <TableWrapper
+        data={data}
         total={total}
-        limit={query.limit}
-        onChange={(p) => setQuery({ ...query, page: p })}
+        query={query}
+        setQuery={setQuery}
+
+        columns={[
+          { label: "Pelanggan", key: "pelangganId.nama" },
+          { label: "Layanan", key: "layananId.nama" },
+          { label: "PIC", key: "pegawaiId.nama" },
+          { label: "Status", key: "status" },
+        ]}
+
+        actions={[
+          ...actions,
+          {
+            label: "Action",
+            onClick: (row: any) => {
+              if (row.status === "pending") {
+                setSelected(row);
+                setOpenAssign(true);
+              } else {
+                handleStatus(row);
+              }
+            },
+          },
+        ]}
+
+        renderItem={(row) => (
+          <div className="bg-white border rounded-xl p-4 space-y-2">
+            <p className="font-semibold">
+              {row.pelangganId?.nama}
+            </p>
+
+            <p className="text-sm text-gray-500">
+              {row.layananId?.nama}
+            </p>
+
+            <p className="text-sm">
+              PIC: {row.pegawaiId?.nama || "-"}
+            </p>
+
+            <span
+              className={`text-xs px-2 py-1 rounded ${getStatusBadge(
+                row.status
+              )}`}
+            >
+              {row.status}
+            </span>
+
+            <div className="flex gap-2 text-sm mt-2">
+              <button
+                onClick={() => setDetailId(row._id)}
+                className="text-green-600"
+              >
+                Detail
+              </button>
+
+              {row.status === "pending" && (
+                <button
+                  onClick={() => {
+                    setSelected(row);
+                    setOpenAssign(true);
+                  }}
+                  className="text-blue-500"
+                >
+                  Assign
+                </button>
+              )}
+
+              {row.status === "approved" && (
+                <button
+                  onClick={() => handleStatus(row)}
+                  className="text-yellow-600"
+                >
+                  Start
+                </button>
+              )}
+
+              {row.status === "in_progress" && (
+                <button
+                  onClick={() => handleStatus(row)}
+                  className="text-green-700"
+                >
+                  Done
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       />
 
       {/* ================= MODALS ================= */}
+
       <AssignPICModal
         open={openAssign}
         onClose={() => setOpenAssign(false)}

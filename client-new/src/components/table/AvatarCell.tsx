@@ -1,19 +1,14 @@
 "use client";
 
 export default function AvatarCell({ name }: { name?: string }) {
-  const safeName =
-    name && typeof name === "string" && name.length > 0
-      ? name
-      : "User";
+  const display = name || "Unknown";
 
   return (
     <div className="flex items-center gap-2">
-      
-      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm font-semibold">
-        {safeName.charAt(0).toUpperCase()}
+      <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-sm">
+        {display.charAt(0)}
       </div>
-
-      <span>{safeName}</span>
+      <span>{display}</span>
     </div>
   );
 }

@@ -1,128 +1,192 @@
-// "use client";
+"use client";
 
-// import { useState } from "react";
-// import { useUsers } from "@/hooks/useUsers";
-// import DataTable from "@/components/table/DataTable";
-// import Pagination from "@/components/table/Pagination";
-// import UserFormModal from "@/components/form/UserFormModal";
-// import DetailUserModal from "@/components/modal/DetailUserModal";
+import { useState } from "react";
+import { useUsers } from "@/hooks/useUsers";
+import TableWrapper from "@/components/table/TableWrapper";
 
-// import {
-//   createUser,
-//   updateUser,
-//   softDeleteUser,
-// } from "@/services/user.service";
+import UserFormModal from "@/components/form/UserFormModal";
+import DetailUserModal from "@/components/modal/DetailUserModal";
 
-// export default function PelangganPage() {
-//   const [query, setQuery] = useState({
-//     page: 1,
-//     limit: 5,
-//     search: "",
-//   });
+import {
+  createUser,
+  updateUser,
+  softDeleteUser,
+} from "@/services/user.service";
 
-//   const { data, total, reload, loading } = useUsers("pelanggan", query);
+export default function PelangganPage() {
+  /* ================= STATE ================= */
 
-//   const [openForm, setOpenForm] = useState(false);
-//   const [selected, setSelected] = useState<any>(null);
+  const [query, setQuery] = useState({
+    page: 1,
+    limit: 5,
+    search: "",
+  });
 
-//   const handleSubmit = async (form: any) => {
-//     try {
-//       if (selected) {
-//         await updateUser("pelanggan", selected._id, form);
-//       } else {
-//         await createUser("pelanggan", form);
-//       }
+  const [openForm, setOpenForm] = useState(false);
+  const [selected, setSelected] = useState<any>(null);
 
-//       setOpenForm(false);
-//       setSelected(null);
-//       reload();
-//     } catch (err) {
-//       console.error(err);
-//       alert("Gagal menyimpan data");
-//     }
-//   };
+  /* ================= DATA ================= */
 
-//   const handleDelete = async (row: any) => {
-//     if (!confirm("Yakin hapus?")) return;
+  const {
+    data = [],
+    total = 0,
+    reload,
+    loading,
+  } = useUsers("pelanggan", query);
 
-//     try {
-//       await softDeleteUser("pelanggan", row._id);      reload();
-//     } catch (err) {
-//       console.error(err);
-//       alert("Gagal menghapus");
-//     }
-//   };
+  /* ================= HANDLER ================= */
 
-//   const handleSearch = (value: string) => {
-//     setQuery((prev) => ({
-//       ...prev,
-//       search: value,
-//       page: 1,
-//     }));
-//   };
+  const handleSubmit = async (form: any) => {
+    try {
+      if (selected) {
+        await updateUser("pelanggan", selected._id, form);
+      } else {
+        await createUser("pelanggan", form);
+      }
 
-//   return (
-//     <div className="space-y-4">
-//       <h1 className="text-xl font-bold">Pelanggan</h1>
+      setOpenForm(false);
+      setSelected(null);
+      reload();
+    } catch (err) {
+      console.error(err);
+      alert("Gagal menyimpan data");
+    }
+  };
 
-//       <div className="flex gap-2">
-//         <input
-//           placeholder="Search..."
-//           className="border p-2"
-//           onChange={(e) => handleSearch(e.target.value)}
-//         />
+  const handleDelete = async (row: any) => {
+    if (!confirm("Yakin hapus?")) return;
 
-//         <button
-//           onClick={() => {
-//             setSelected(null);
-//             setOpenForm(true);
-//           }}
-//           className="bg-black text-white px-4"
-//         >
-//           + Tambah
-//         </button>
-//       </div>
+    try {
+      await softDeleteUser("pelanggan", row._id);
+      reload();
+    } catch (err) {
+      console.error(err);
+      alert("Gagal menghapus");
+    }
+  };
 
-//       <DataTable
-//         columns={[
-//           { label: "Nama", key: "nama" },
-//           { label: "Username", key: "userId.username" },
-//         ]}
-//         data={data}
-//         onView={(row) => setSelected(row)}
-//         onEdit={(row) => {
-//           setSelected(row);
-//           setOpenForm(true);
-//         }}
-//         onDelete={handleDelete}
-//       />
+  /* ================= UI ================= */
 
-//       {loading && <p className="text-sm text-gray-500">Loading...</p>}
+  return (
+    <div className="p-6 space-y-4">
 
-//       <Pagination
-//         page={query.page}
-//         total={total}
-//         limit={query.limit}
-//         onChange={(p) => setQuery({ ...query, page: p })}
-//       />
+      {/* HEADER */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold">
+          Data Pelanggan
+        </h1>
 
-//       <UserFormModal
-//         open={openForm}
-//         onClose={() => {
-//           setOpenForm(false);
-//           setSelected(null);
-//         }}
-//         onSubmit={handleSubmit}
-//         initialData={selected}
-//         role="pelanggan"
-//       />
+        <button
+          onClick={() => {
+            setSelected(null);
+            setOpenForm(true);
+          }}
+          className="bg-black text-white px-4 py-2 rounded-xl text-sm"
+        >
+          + Tambah
+        </button>
+      </div>
 
-//       <DetailUserModal
-//         open={!!selected && !openForm}
-//         data={selected}
-//         onClose={() => setSelected(null)}
-//         title="Detail Pelanggan"
-//       />
-//     </div>
-//   );
-// }
+      {/* TABLE SYSTEM */}
+      <TableWrapper
+        data={data}
+        total={total}
+        query={query}
+        setQuery={setQuery}
+
+        /* ================= COLUMNS ================= */
+        columns={[
+          { label: "Nama", key: "nama" },
+          { label: "Username", key: "userId.username" },
+        ]}
+
+        /* ================= ACTIONS ================= */
+        actions={[
+          {
+            label: "Detail",
+            onClick: (row) => setSelected(row),
+          },
+          {
+            label: "Edit",
+            onClick: (row) => {
+              setSelected(row);
+              setOpenForm(true);
+            },
+          },
+          {
+            label: "Delete",
+            onClick: handleDelete,
+          },
+        ]}
+
+        /* ================= GRID VIEW ================= */
+        renderItem={(row) => (
+          <div
+            key={row._id}
+            className="bg-white border rounded-xl p-4 hover:shadow transition"
+          >
+            <p className="font-semibold">
+              {row.nama || "No Name"}
+            </p>
+
+            <p className="text-sm text-gray-500">
+              {row.userId?.username || "-"}
+            </p>
+
+            <div className="mt-3 flex gap-2 text-sm">
+              <button
+                onClick={() => setSelected(row)}
+                className="text-blue-500"
+              >
+                Detail
+              </button>
+
+              <button
+                onClick={() => {
+                  setSelected(row);
+                  setOpenForm(true);
+                }}
+                className="text-yellow-500"
+              >
+                Edit
+              </button>
+
+              <button
+                onClick={() => handleDelete(row)}
+                className="text-red-500"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        )}
+      />
+
+      {/* LOADING */}
+      {loading && (
+        <p className="text-sm text-gray-500">Loading...</p>
+      )}
+
+      {/* FORM MODAL */}
+      <UserFormModal
+        open={openForm}
+        onClose={() => {
+          setOpenForm(false);
+          setSelected(null);
+        }}
+        onSubmit={handleSubmit}
+        initialData={selected}
+        role="pelanggan"
+      />
+
+      {/* DETAIL MODAL */}
+      <DetailUserModal
+        open={!!selected && !openForm}
+        data={selected}
+        onClose={() => setSelected(null)}
+        title="Detail Pelanggan"
+      />
+
+    </div>
+  );
+}

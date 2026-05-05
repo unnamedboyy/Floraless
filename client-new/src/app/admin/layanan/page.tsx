@@ -1,193 +1,172 @@
 "use client";
 
 import { useState } from "react";
-import { useLayanan } from "@/hooks/useLayanan";
-import { layananService } from "@/services/layanan.service";
+import TableWrapper from "@/components/table/TableWrapper";
 
-import LayananFormModal from "@/components/modal/LayananFormModal";
-import LayananDetailModal from "@/components/modal/LayananDetailModal";
+import LayananFormModal from "@/components/form/LayananFormModal";
+import DetailUserModal from "@/components/modal/DetailUserModal";
+import DetailLayananModal from "@/components/modal/LayananDetailModal";
+
+import {
+  createLayanan,
+  updateLayanan,
+  deleteLayanan,
+} from "@/services/layanan.service";
+
+import { useLayanan } from "@/hooks/useLayanan";
 
 export default function LayananPage() {
-  const {
-    data,
-    loading,
-    search,
-    setSearch,
-    create,
-    update,
-    remove
-  } = useLayanan();
+  /* ================= STATE ================= */
 
-  const [form, setForm] = useState<any>({
-    nama: "",
-    harga: "",
-    deskripsi: ""
+  const [query, setQuery] = useState({
+    page: 1,
+    limit: 10,
+    search: "",
   });
 
-  const [editId, setEditId] = useState<string | null>(null);
-  const [formOpen, setFormOpen] = useState(false);
+  const [openForm, setOpenForm] = useState(false);
   const [selected, setSelected] = useState<any>(null);
 
-  // ================= CREATE / EDIT =================
-  const handleCreate = () => {
-    setForm({ nama: "", harga: "", deskripsi: "" });
-    setEditId(null);
-    setFormOpen(true);
-  };
+  /* ================= DATA ================= */
 
-  const handleEdit = (item: any) => {
-    setForm({
-      nama: item.nama,
-      harga: item.harga,
-      deskripsi: item.deskripsi
-    });
-    setEditId(item._id);
-    setFormOpen(true);
-  };
+  const {
+    data = [],
+    loading,
+  } = useLayanan(query);
 
-  const handleSubmit = () => {
-    if (editId) {
-      update(editId, form);
-    } else {
-      create(form);
+  // 🔥 fallback karena belum server pagination
+  const total = data.length;
+
+  /* ================= HANDLER ================= */
+
+  const handleSubmit = async (form: any) => {
+    try {
+      if (selected) {
+        await updateLayanan(selected._id, form);
+      } else {
+        await createLayanan(form);
+      }
+
+      setOpenForm(false);
+      setSelected(null);
+
+      // 🔥 trigger re-fetch
+      setQuery((prev) => ({ ...prev }));
+    } catch (err) {
+      console.error(err);
+      alert("Gagal menyimpan layanan");
     }
-
-    setFormOpen(false);
   };
 
-  // ================= DETAIL =================
-  const handleDetail = (item: any) => {
-    setSelected(item);
+  const handleDelete = async (row: any) => {
+    if (!confirm("Yakin hapus layanan?")) return;
+
+    try {
+      await deleteLayanan(row._id);
+
+      // 🔥 trigger re-fetch
+      setQuery((prev) => ({ ...prev }));
+    } catch (err) {
+      console.error(err);
+      alert("Gagal menghapus layanan");
+    }
   };
 
-  // ================= TOGGLE =================
-  const handleToggle = async (id: string) => {
-    await layananService.toggle(id);
-    location.reload(); // simple refresh
-  };
+  /* ================= UI ================= */
 
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-bold mb-4">Kelola Layanan</h1>
+    <div className="p-6 space-y-4">
 
-      {/* SEARCH */}
-      <input
-        placeholder="Search layanan..."
-        className="border px-3 py-2 rounded mb-4 w-64"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
+      {/* HEADER */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold">
+          Data Layanan
+        </h1>
 
-      {/* BUTTON TAMBAH */}
-      <button
-        onClick={handleCreate}
-        className="mb-4 bg-green-500 text-white px-4 py-2 rounded"
-      >
-        + Tambah Layanan
-      </button>
-
-      {/* TABLE */}
-      <div className="overflow-auto border rounded">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="p-2 text-left">Nama</th>
-              <th className="p-2 text-left">Harga</th>
-              <th className="p-2 text-left">Status</th>
-              <th className="p-2 text-left">Action</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={4} className="text-center p-4">
-                  Loading...
-                </td>
-              </tr>
-            ) : data.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="text-center p-4">
-                  Tidak ada data
-                </td>
-              </tr>
-            ) : (
-              data.map((l: any) => (
-                <tr key={l._id} className="border-t">
-                  <td className="p-2">{l.nama}</td>
-
-                  <td className="p-2">
-                    Rp{" "}
-                    {new Intl.NumberFormat("id-ID").format(
-                      l.harga || 0
-                    )}
-                  </td>
-
-                  {/* STATUS TOGGLE */}
-                  <td className="p-2">
-                    <button
-                      onClick={() => handleToggle(l._id)}
-                      className={`px-2 py-1 text-white text-xs rounded ${
-                        l.isActive
-                          ? "bg-green-500"
-                          : "bg-gray-400"
-                      }`}
-                    >
-                      {l.isActive ? "Active" : "Non-active"}
-                    </button>
-                  </td>
-
-                  {/* ACTION */}
-                  <td className="p-2 flex gap-2">
-                    <button
-                      onClick={() => handleDetail(l)}
-                      className="bg-gray-600 text-white px-2 py-1 rounded text-xs"
-                    >
-                      Detail
-                    </button>
-
-                    <button
-                      onClick={() => handleEdit(l)}
-                      className="bg-blue-500 text-white px-2 py-1 rounded text-xs"
-                    >
-                      Edit
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        if (confirm("Yakin hapus layanan?")) {
-                          remove(l._id);
-                        }
-                      }}
-                      className="bg-red-500 text-white px-2 py-1 rounded text-xs"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+        <button
+          onClick={() => {
+            setSelected(null);
+            setOpenForm(true);
+          }}
+          className="bg-black text-white px-4 py-2 rounded-xl text-sm"
+        >
+          + Tambah
+        </button>
       </div>
 
-      {/* ================= MODALS ================= */}
+      {/* TABLE SYSTEM */}
+      <TableWrapper
+        data={data}
+        total={total}
+        query={query}
+        setQuery={setQuery}
+
+        columns={[
+          { label: "Nama", key: "nama" },
+          { label: "Harga", key: "harga" },
+          { label: "Deskripsi", key: "deskripsi" },
+        ]}
+
+        actions={[
+          {
+            label: "Detail",
+            onClick: (row) => setSelected(row),
+          },
+          {
+            label: "Edit",
+            onClick: (row) => {
+              setSelected(row);
+              setOpenForm(true);
+            },
+          },
+          {
+            label: "Delete",
+            onClick: handleDelete,
+          },
+        ]}
+
+        renderItem={(row) => (
+          <div className="bg-white border rounded-xl p-4 space-y-1">
+            <p className="font-semibold">
+              {row.nama || "-"}
+            </p>
+
+            <p className="text-sm text-gray-500">
+              Rp {row.harga?.toLocaleString("id-ID") || 0}
+            </p>
+
+            <p className="text-xs text-gray-400 line-clamp-2">
+              {row.deskripsi || "-"}
+            </p>
+          </div>
+        )}
+      />
+
+      {/* LOADING */}
+      {loading && (
+        <p className="text-sm text-gray-500">
+          Loading...
+        </p>
+      )}
 
       {/* FORM MODAL */}
       <LayananFormModal
-        open={formOpen}
-        onClose={() => setFormOpen(false)}
+        open={openForm}
+        onClose={() => {
+          setOpenForm(false);
+          setSelected(null);
+        }}
         onSubmit={handleSubmit}
-        form={form}
-        setForm={setForm}
-        isEdit={!!editId}
+        initialData={selected}
       />
 
       {/* DETAIL MODAL */}
-      <LayananDetailModal
+      <DetailLayananModal
+        open={!!selected && !openForm}
         data={selected}
         onClose={() => setSelected(null)}
       />
+
     </div>
   );
 }
