@@ -1,36 +1,21 @@
-"use client";
-
 import { useEffect, useState } from "react";
-import api from "@/lib/axios";
+import axios from "@/lib/axios";
 
 export function useJadwal(query: any) {
   const [data, setData] = useState<any[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
     try {
       setLoading(true);
 
-      const res = await api.get("/jadwal", {
-        params: {
-          // 🔥 mapping query
-          start: query.start,
-          end: query.end,
-          pegawaiId: query.pegawaiId,
-        },
+      const res = await axios.get("/jadwal", {
+        params: query
       });
 
-      const result = res.data;
-
-      // 🔥 backend kamu return array langsung
-      setData(result || []);
-      setTotal(result?.length || 0);
-
+      setData(res.data);
     } catch (err) {
-      console.error("ERROR JADWAL:", err);
-      setData([]);
-      setTotal(0);
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -42,8 +27,7 @@ export function useJadwal(query: any) {
 
   return {
     data,
-    total,
     loading,
-    reload: fetchData,
+    refetch: fetchData
   };
 }

@@ -29,7 +29,7 @@ export default function TicketPage() {
 
   const [query, setQuery] = useState({
     page: 1,
-    limit: 8,
+    limit: 10,
     status: "",
     search: "",
   });

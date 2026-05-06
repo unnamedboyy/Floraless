@@ -18,7 +18,7 @@ export default function PelangganPage() {
 
   const [query, setQuery] = useState({
     page: 1,
-    limit: 5,
+    limit: 10,
     search: "",
   });
 

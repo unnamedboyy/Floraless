@@ -1,69 +1,99 @@
 "use client";
 
-type Props = {
+interface Props {
   open: boolean;
   onClose: () => void;
-  data?: any;
-};
+  data: any;
+}
 
 export default function DetailJadwalModal({
   open,
   onClose,
-  data,
+  data
 }: Props) {
+
   if (!open || !data) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
 
-      <div className="bg-white rounded-xl p-6 w-[400px] space-y-4">
+      <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl">
 
-        <h2 className="text-lg font-semibold">
-          Detail Jadwal
-        </h2>
+        {/* HEADER */}
+        <div className="p-5 border-b flex items-center justify-between">
+          <h2 className="text-lg font-semibold">
+            Detail Jadwal
+          </h2>
 
-        <div className="space-y-2 text-sm">
-
-          <p>
-            <b>Tanggal:</b>{" "}
-            {data.tanggal_acara
-              ? new Date(data.tanggal_acara).toLocaleDateString()
-              : "-"}
-          </p>
-
-          <p>
-            <b>Pegawai:</b>{" "}
-            {data.pegawaiId?.nama || "-"}
-          </p>
-
-          <p>
-            <b>Lokasi:</b>{" "}
-            {data.lokasi || "-"}
-          </p>
-
-          <p>
-            <b>Dibuat:</b>{" "}
-            {data.createdAt
-              ? new Date(data.createdAt).toLocaleString()
-              : "-"}
-          </p>
-
-          <p>
-            <b>Update:</b>{" "}
-            {data.updatedAt
-              ? new Date(data.updatedAt).toLocaleString()
-              : "-"}
-          </p>
-
+          <button
+            onClick={onClose}
+            className="text-sm text-gray-500"
+          >
+            Tutup
+          </button>
         </div>
 
-        <button
-          onClick={onClose}
-          className="w-full mt-4 bg-black text-white py-2 rounded"
-        >
-          Close
-        </button>
+        {/* BODY */}
+        <div className="p-5 space-y-4">
 
+          <Field
+            label="Title"
+            value={
+              data.title ||
+              data.ticketId?.layananId?.nama ||
+              "-"
+            }
+          />
+
+          <Field
+            label="Tanggal"
+            value={
+              data.tanggal_acara
+                ? new Date(
+                    data.tanggal_acara
+                  ).toLocaleDateString()
+                : "-"
+            }
+          />
+
+          <Field
+            label="Lokasi"
+            value={data.lokasi || "-"}
+          />
+
+          <Field
+            label="Status"
+            value={data.status || "-"}
+          />
+
+          <Field
+            label="Pegawai"
+            value={data.pegawaiId?.nama || "-"}
+          />
+
+          <Field
+            label="Ticket"
+            value={data.ticketId?._id || "-"}
+          />
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  value
+}: any) {
+  return (
+    <div>
+      <div className="text-xs text-gray-500 mb-1">
+        {label}
+      </div>
+
+      <div className="text-sm font-medium">
+        {value}
       </div>
     </div>
   );

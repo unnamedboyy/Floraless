@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+
 import TableWrapper from "@/components/table/TableWrapper";
 
 import { useVoucher } from "@/hooks/useVoucher";
+
 import {
   createVoucher,
   updateVoucher,
@@ -13,41 +15,79 @@ import {
 import VoucherFormModal from "@/components/modal/VoucherFormModal";
 
 export default function VoucherPage() {
+
   /* ================= STATE ================= */
 
-  const { data = [], reload } = useVoucher();
+  const [query, setQuery] = useState({
+    page: 1,
+    limit: 10,
+    status: "",
+    search: "",
+  });
 
-  const [openForm, setOpenForm] = useState(false);
-  const [selected, setSelected] = useState<any>(null);
+  const {
+    data = [],
+    total = 0,
+    reload,
+  } = useVoucher(query);
+
+  const [openForm, setOpenForm] =
+    useState(false);
+
+  const [selected, setSelected] =
+    useState<any>(null);
 
   /* ================= HANDLER ================= */
 
-  const handleSubmit = async (form: any) => {
+  const handleSubmit = async (
+    form: any
+  ) => {
+
     try {
+
       if (selected) {
-        await updateVoucher(selected._id, form);
+        await updateVoucher(
+          selected._id,
+          form
+        );
       } else {
         await createVoucher(form);
       }
 
       setOpenForm(false);
       setSelected(null);
+
       reload();
+
     } catch (err) {
       console.error(err);
-      alert("Gagal menyimpan voucher");
+
+      alert(
+        "Gagal menyimpan voucher"
+      );
     }
   };
 
-  const handleDelete = async (row: any) => {
-    if (!confirm("Hapus voucher?")) return;
+  const handleDelete = async (
+    row: any
+  ) => {
+
+    if (!confirm("Hapus voucher?"))
+      return;
 
     try {
+
       await deleteVoucher(row._id);
+
       reload();
+
     } catch (err) {
+
       console.error(err);
-      alert("Gagal menghapus voucher");
+
+      alert(
+        "Gagal menghapus voucher"
+      );
     }
   };
 
@@ -58,6 +98,7 @@ export default function VoucherPage() {
 
       {/* HEADER */}
       <div className="flex items-center justify-between">
+
         <h1 className="text-xl font-semibold">
           Voucher
         </h1>
@@ -71,25 +112,42 @@ export default function VoucherPage() {
         >
           + Tambah Voucher
         </button>
+
       </div>
 
-      {/* TABLE SYSTEM */}
+      {/* TABLE */}
       <TableWrapper
         data={data}
-        total={data.length} // 🔥 non-pagination
-        query={{
-          page: 1,
-          limit: data.length || 1, // 🔥 anti error pagination
-          search: "",
-        }}
-        setQuery={() => {}}
+        total={total}
+
+        query={query}
+        setQuery={setQuery}
 
         columns={[
-          { label: "Code", key: "code" },
-          { label: "Pelanggan", key: "pelangganId.nama" },
-          { label: "Amount", key: "amount" },
-          { label: "Status", key: "isUsed" },
-          { label: "Expired", key: "expiredAt" },
+          {
+            label: "Code",
+            key: "code",
+          },
+
+          {
+            label: "Pelanggan",
+            key: "pelangganId.nama",
+          },
+
+          {
+            label: "Amount",
+            key: "amount",
+          },
+
+          {
+            label: "Status",
+            key: "isUsed",
+          },
+
+          {
+            label: "Expired",
+            key: "expiredAt",
+          },
         ]}
 
         actions={[
@@ -100,13 +158,13 @@ export default function VoucherPage() {
               setOpenForm(true);
             },
           },
+
           {
             label: "Delete",
             onClick: handleDelete,
           },
         ]}
 
-        /* GRID VIEW */
         renderItem={(row) => (
           <div className="bg-white border rounded-xl p-4 space-y-2">
 
@@ -123,12 +181,16 @@ export default function VoucherPage() {
             </p>
 
             <span className="text-xs bg-gray-100 px-2 py-1 rounded">
-              {row.isUsed ? "Used" : "Available"}
+              {row.isUsed
+                ? "Used"
+                : "Available"}
             </span>
 
             <p className="text-xs text-gray-400">
               {row.expiredAt
-                ? new Date(row.expiredAt).toLocaleDateString()
+                ? new Date(
+                    row.expiredAt
+                  ).toLocaleDateString()
                 : "-"}
             </p>
 

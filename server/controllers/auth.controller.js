@@ -88,32 +88,104 @@ export const registerAdmin = async (req, res, next) => {
 };
 
 // LOGIN
+// LOGIN
 export const login = async (req, res, next) => {
   try {
+
     const { username, password } = req.body;
 
-    const user = await User.findOne({ username });
+    /* ================= USER ================= */
+
+    const user = await User.findOne({
+      username
+    });
+
     if (!user) {
-      throw { status: 404, message: "User tidak ditemukan" };
+      throw {
+        status: 404,
+        message: "User tidak ditemukan"
+      };
     }
 
-    const match = await bcrypt.compare(password, user.password);
+    /* ================= PASSWORD ================= */
+
+    const match = await bcrypt.compare(
+      password,
+      user.password
+    );
+
     if (!match) {
-      throw { status: 400, message: "Password salah" };
+      throw {
+        status: 400,
+        message: "Password salah"
+      };
     }
+
+    /* ================= TOKEN ================= */
 
     const token = jwt.sign(
       {
         id: user._id,
-        role: user.role
+        role: user.role,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      {
+        expiresIn: "1d",
+      }
     );
 
-    res.json({ token });
+    /* ================= PROFILE ================= */
+
+    let profile = null;
+
+    if (user.role === "pelanggan") {
+
+      profile = await Pelanggan
+        .findOne({
+          userId: user._id,
+        });
+
+    } else if (
+      user.role === "pegawai"
+    ) {
+
+      profile = await Pegawai
+        .findOne({
+          userId: user._id,
+        });
+
+    } else if (
+      user.role === "admin"
+    ) {
+
+      profile = await Admin
+        .findOne({
+          userId: user._id,
+        });
+
+    }
+
+    /* ================= RESPONSE ================= */
+
+    res.json({
+      message: "Login berhasil",
+
+      token,
+
+      user: {
+        _id: user._id,
+        username: user.username,
+        role: user.role,
+        isActive: user.isActive,
+      },
+
+      profile,
+    });
+
   } catch (err) {
+
     next(err);
+
   }
 };
 

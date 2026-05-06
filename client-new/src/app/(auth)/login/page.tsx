@@ -1,56 +1,303 @@
 "use client";
 
-import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import LoginForm from "@/components/form/LoginForm";
+import Link from "next/link";
 
 export default function LoginPage() {
-  const { handleLogin, loading } = useAuth();
-  const router = useRouter();
 
-  const [form, setForm] = useState({
-    username: "",
-    password: "",
-  });
+  /* =========================================================
+     BG SLIDESHOW
+  ========================================================= */
 
-  const onSubmit = async () => {
-    const res = await handleLogin(form);
+  const images = [
+    "/auth/bg1.jpg",
+    "/auth/bg2.jpg",
+    "/auth/bg3.jpg",
+    "/auth/bg4.jpg",
+  ];
 
-    const decoded: any = JSON.parse(atob(res.token.split(".")[1]));
-    router.refresh();
-    
-    if (decoded.role === "admin") {
-      router.push("/admin/dashboard");
-    } else if (decoded.role === "pegawai") {
-      router.push("/pegawai/dashboard");
-    } else {
-      router.push("/");
-    }
-  };
+  const [bgIndex, setBgIndex] = useState(0);
+
+  useEffect(() => {
+
+    const interval = setInterval(() => {
+
+      setBgIndex((prev) =>
+        prev === images.length - 1
+          ? 0
+          : prev + 1
+      );
+
+    }, 5000);
+
+    return () => clearInterval(interval);
+
+  }, []);
 
   return (
-    <div className="p-10 max-w-md mx-auto">
-      <h1 className="text-xl font-bold mb-4">Login</h1>
+    <div
+      className="
+        min-h-screen
+        relative
+        overflow-hidden
+        bg-[#160B44]
+      "
+    >
 
-      <input
-        placeholder="Username"
-        className="border p-2 w-full mb-2"
-        onChange={(e) => setForm({ ...form, username: e.target.value })}
-      />
+      {/* =====================================================
+          BACKGROUND IMAGES
+      ===================================================== */}
+      <div className="absolute inset-0">
 
-      <input
-        placeholder="Password"
-        type="password"
-        className="border p-2 w-full mb-2"
-        onChange={(e) => setForm({ ...form, password: e.target.value })}
-      />
+        {images.map((img, index) => (
+          <div
+            key={img}
+            className={`
+              absolute inset-0
+              bg-cover bg-center
+              transition-opacity
+              duration-[2000ms]
+              brightness-[0.55]
+              saturate-125
+              ${
+                index === bgIndex
+                  ? "opacity-100"
+                  : "opacity-0"
+              }
+            `}
+            style={{
+              backgroundImage: `url(${img})`,
+            }}
+          />
+        ))}
 
-      <button
-        onClick={onSubmit}
-        className="bg-black text-white px-4 py-2 w-full"
+        {/* DARK PURPLE OVERLAY */}
+        <div
+          className="
+            absolute inset-0
+            bg-[#171717]/50
+          "
+        />
+
+        {/* GLOW */}
+        <div
+          className="
+            absolute
+            -top-32
+            -left-32
+            w-[500px]
+            h-[500px]
+            rounded-full
+            bg-cyan-400/10
+            blur-3xl
+          "
+        />
+
+      </div>
+
+      {/* =====================================================
+          CONTENT
+      ===================================================== */}
+      <div
+        className="
+          relative
+          z-10
+          min-h-screen
+          flex
+          items-center
+          justify-center
+          px-5
+          py-10
+        "
       >
-        {loading ? "Loading..." : "Login"}
-      </button>
+
+        <div
+          className="
+            w-full
+            max-w-7xl
+            grid
+            lg:grid-cols-2
+            gap-14
+            items-center
+          "
+        >
+
+          {/* =================================================
+              LEFT CONTENT
+          ================================================= */}
+          <div
+            className="
+              hidden
+              lg:flex
+              flex-col
+              justify-center
+              min-h-[700px]
+              relative
+            "
+          >
+
+            {/* CONTENT */}
+            <div className="relative z-10 max-w-[520px] pb-10">
+
+              <p
+                className="
+                  text-cyan-200
+                  tracking-[0.35em]
+                  text-sm
+                  font-semibold
+                  mb-8
+                "
+              >
+                FLORALESS
+              </p>
+
+              <h1
+                className="
+                  text-6xl
+                  font-bold
+                  leading-[1.1]
+                  text-white
+                "
+              >
+                Login to your
+                <br />
+                personal account
+              </h1>
+
+              <p
+                className="
+                  mt-8
+                  text-xl
+                  leading-relaxed
+                  text-white/75
+                "
+              >
+                Kelola pemesanan dekorasi,
+                pembayaran, jadwal acara,
+                dan aktivitas Floraless
+                dalam satu platform modern.
+              </p>
+
+              {/* BUTTONS */}
+              <div className="flex gap-4 mt-10">
+
+              <Link
+                href="/"
+                className="
+                  inline-flex
+                  items-center
+                  justify-center
+                  px-7
+                  py-3
+                  rounded-2xl
+                  border
+                  border-white/20
+                  bg-white/10
+                  text-white
+                  hover:bg-white/20
+                  transition
+                "
+              >
+                Explore
+              </Link>
+
+                {/* <button
+                  className="
+                    px-7
+                    py-3
+                    rounded-2xl
+                    text-cyan-200
+                    hover:text-white
+                    transition
+                  "
+                >
+                  Learn More
+                </button> */}
+
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* =================================================
+              RIGHT FORM
+          ================================================= */}
+          <div
+            className="
+              w-full
+              max-w-[520px]
+              mx-auto
+            "
+          >
+
+            {/* MOBILE TOP */}
+            <div
+              className="
+                lg:hidden
+                text-center
+                mb-8
+              "
+            >
+
+              <p
+                className="
+                  text-cyan-200
+                  tracking-[0.35em]
+                  text-sm
+                  font-semibold
+                "
+              >
+                FLORALESS
+              </p>
+
+              <h1
+                className="
+                  mt-5
+                  text-4xl
+                  font-bold
+                  text-white
+                "
+              >
+                Welcome Back
+              </h1>
+
+              <p
+                className="
+                  mt-3
+                  text-white/70
+                "
+              >
+                Login ke akun Floraless
+              </p>
+
+            </div>
+
+            {/* GLASS FORM */}
+            <div
+              className="
+                rounded-[36px]
+                border
+                border-white/10
+                bg-white/10
+                backdrop-blur-xl
+                p-8
+                md:p-10
+                shadow-[0_20px_80px_rgba(0,0,0,0.45)]
+              "
+            >
+
+              <LoginForm />
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
   );
 }

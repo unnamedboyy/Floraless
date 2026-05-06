@@ -8,7 +8,7 @@ import Pagination from "./Pagination";
 type Action = {
   label: string;
   onClick: (row: any) => void;
-  show?: (row: any) => boolean; // 🔥 FIX
+  show?: (row: any) => boolean;
 };
 
 type Props = {
@@ -57,29 +57,38 @@ export default function TableWrapper({
   return (
     <div className="space-y-4">
 
+      {/* TOOLBAR */}
       <TableToolbar
         view={view}
         setView={setView}
         onSearch={handleSearch}
       />
 
+      {/* CONTENT */}
       {data.length === 0 ? (
+
         <div className="bg-white border rounded-xl p-6 text-sm text-gray-500">
           Data tidak ditemukan
         </div>
+
       ) : view === "list" ? (
+
         <DataTable
           columns={columns}
           data={data}
           actions={actions}
         />
+
       ) : (
+
         <GridView
           data={data}
           renderItem={renderItem}
         />
+
       )}
 
+      {/* PAGINATION */}
       <Pagination
         page={query.page || 1}
         total={total || 0}

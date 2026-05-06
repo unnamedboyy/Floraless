@@ -14,7 +14,7 @@ export default function PaymentPage() {
 
   const [query, setQuery] = useState({
     page: 1,
-    limit: 5,
+    limit: 10,
     status: "",
     search: "",
   });

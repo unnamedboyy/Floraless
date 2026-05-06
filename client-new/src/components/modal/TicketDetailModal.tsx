@@ -12,30 +12,49 @@ type Props = {
 const formatRupiah = (num: number) =>
   "Rp " + (num || 0).toLocaleString("id-ID");
 
+const getStatusBadge = (status: string) => {
+  const map: any = {
+    pending: "bg-gray-100 text-gray-700",
+    approved: "bg-yellow-100 text-yellow-700",
+    in_progress: "bg-blue-100 text-blue-700",
+    done: "bg-green-100 text-green-700",
+    rejected: "bg-red-100 text-red-700",
+  };
+
+  return map[status] || "bg-gray-100 text-gray-700";
+};
+
 export default function TicketDetailModal({
   open,
   ticketId,
   onClose,
 }: Props) {
   const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (open && ticketId) fetchDetail();
+    if (open && ticketId) {
+      fetchDetail();
+    }
   }, [open, ticketId]);
 
   const fetchDetail = async () => {
     try {
+      setLoading(true);
+
       const res = await getTicketFull(ticketId!);
+
       setData(res.data);
     } catch (err) {
       console.error(err);
       alert("Gagal ambil detail");
+    } finally {
+      setLoading(false);
     }
   };
 
   if (!open) return null;
 
-  /* ================= MAPPING ================= */
   const ticket = data?.ticket;
   const pelanggan = ticket?.pelangganId;
   const layanan = ticket?.layananId;
@@ -43,177 +62,488 @@ export default function TicketDetailModal({
 
   const detail = data?.detail;
   const jadwal = data?.jadwal;
-  const payments = data?.payments;
+  const payments = data?.payments || [];
   const summary = data?.paymentSummary;
-  const claims = data?.claims;
-  const logs = data?.logs;
+  const claims = data?.claims || [];
+  const logs = data?.logs || [];
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
-      <div className="bg-white p-6 rounded w-[750px] max-h-[90vh] overflow-y-auto space-y-5">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
 
-        <h2 className="text-xl font-bold">Detail Ticket</h2>
+      <div className="
+        w-full
+        max-w-5xl
+        max-h-[95vh]
+        overflow-y-auto
+        bg-white
+        rounded-3xl
+        shadow-2xl
+        animate-in fade-in zoom-in-95 duration-200
+      ">
 
-        {/* ================= INFO ================= */}
-        <div>
-          <p><b>Status:</b> {ticket?.status}</p>
-          <p>
-            <b>Tanggal:</b>{" "}
-            {ticket?.createdAt &&
-              new Date(ticket.createdAt).toLocaleString()}
-          </p>
-        </div>
+        {/* HEADER */}
+        <div className="sticky top-0 bg-white border-b px-8 py-6 z-10">
 
-        {/* ================= PELANGGAN ================= */}
-        <div>
-          <h3 className="font-semibold">Pelanggan</h3>
-          <p>{pelanggan?.nama}</p>
-          <p>{pelanggan?.no_telp}</p>
-        </div>
+          <div className="flex items-start justify-between">
 
-        {/* ================= LAYANAN ================= */}
-        <div>
-          <h3 className="font-semibold">Layanan</h3>
-          <p>{layanan?.nama}</p>
-          <p>{formatRupiah(layanan?.harga)}</p>
-        </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Detail Ticket
+              </h2>
 
-        {/* ================= PIC ================= */}
-        <div>
-          <h3 className="font-semibold">PIC</h3>
-          <p>{pegawai?.nama || "-"}</p>
-        </div>
-
-        {/* ================= DETAIL ACARA ================= */}
-        {detail && (
-          <div>
-            <h3 className="font-semibold">Detail Acara</h3>
-            <p><b>Nama Acara:</b> {detail.nama_acara}</p>
-            <p><b>Lokasi:</b> {detail.lokasi}</p>
-            <p>
-              <b>Tanggal Acara:</b>{" "}
-              {detail.tanggal_acara &&
-                new Date(detail.tanggal_acara).toLocaleDateString()}
-            </p>
-            <p><b>Catatan:</b> {detail.catatan || "-"}</p>
-          </div>
-        )}
-
-        {/* ================= JADWAL ================= */}
-        {jadwal && (
-          <div>
-            <h3 className="font-semibold">Jadwal</h3>
-            <p>
-              {jadwal.tanggal_acara &&
-                new Date(jadwal.tanggal_acara).toLocaleDateString()}
-            </p>
-            <p>Status: {jadwal.status}</p>
-          </div>
-        )}
-
-        {/* ================= PAYMENT LIST ================= */}
-        {payments?.length > 0 && (
-          <div>
-            <h3 className="font-semibold">Pembayaran</h3>
-
-            {payments.map((p: any) => (
-              <div
-                key={p._id}
-                className="border p-3 rounded mb-2 bg-gray-50"
-              >
-                <p><b>Tipe:</b> {p.tipe}</p>
-                <p><b>Jumlah:</b> {formatRupiah(p.jumlah)}</p>
-                <p><b>Status:</b> {p.status}</p>
-                <p>
-                  <b>Approved:</b>{" "}
-                  {p.approvedAt &&
-                    new Date(p.approvedAt).toLocaleString()}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* ================= SUMMARY ================= */}
-        {summary && (
-          <div>
-            <h3 className="font-semibold">Ringkasan Pembayaran</h3>
-
-            <div className="w-full bg-gray-200 h-3 rounded mt-2">
-              <div
-                className="bg-green-500 h-3 rounded"
-                style={{
-                  width: `${
-                    (summary.totalDibayar / summary.totalHarga) * 100
-                  }%`,
-                }}
-              />
+              <p className="text-sm text-gray-500 mt-1">
+                Informasi lengkap ticket pelanggan
+              </p>
             </div>
 
-            <p className="mt-2 text-sm">
-              {formatRupiah(summary.totalDibayar)} /{" "}
-              {formatRupiah(summary.totalHarga)}
-            </p>
+            <button
+              onClick={onClose}
+              className="
+                w-11 h-11
+                rounded-2xl
+                hover:bg-gray-100
+                transition
+                text-gray-500
+                text-lg
+              "
+            >
+              ✕
+            </button>
 
-            <p>Sisa: {formatRupiah(summary.sisa)}</p>
-            <p>Status: {summary.status}</p>
           </div>
-        )}
 
-        {/* ================= CLAIM ================= */}
-        {claims?.length > 0 && (
-          <div>
-            <h3 className="font-semibold">Claim Cashback</h3>
+        </div>
 
-            {claims.map((c: any) => (
-              <div key={c._id} className="border p-3 rounded mb-2">
-                <p><b>Kode:</b> {c.kode_voucher}</p>
-                <p><b>Nama Rek:</b> {c.nama_rekening}</p>
-                <p><b>Bank:</b> {c.bank}</p>
-                <p><b>Status:</b> {c.status}</p>
-                <p>
-                  <b>Bukti:</b>{" "}
-                  <a
-                    href={c.bukti_tf}
-                    target="_blank"
-                    className="text-blue-500"
-                  >
-                    Lihat
-                  </a>
+        {/* LOADING */}
+        {loading ? (
+          <div className="p-8 text-sm text-gray-500">
+            Loading...
+          </div>
+        ) : (
+
+          <div className="p-8 space-y-6">
+
+            {/* TOP */}
+            <div className="
+              grid
+              grid-cols-1
+              lg:grid-cols-3
+              gap-5
+            ">
+
+              {/* STATUS */}
+              <div className="
+                border rounded-3xl
+                p-5
+                bg-gray-50/70
+              ">
+
+                <p className="text-sm text-gray-500 mb-2">
+                  Status Ticket
                 </p>
+
+                <span
+                  className={`
+                    inline-flex
+                    px-3 py-1
+                    rounded-xl
+                    text-sm
+                    font-medium
+                    ${getStatusBadge(ticket?.status)}
+                  `}
+                >
+                  {ticket?.status || "-"}
+                </span>
+
+                <p className="text-xs text-gray-400 mt-4">
+                  Dibuat:
+                </p>
+
+                <p className="text-sm">
+                  {ticket?.createdAt
+                    ? new Date(
+                        ticket.createdAt
+                      ).toLocaleString()
+                    : "-"}
+                </p>
+
               </div>
-            ))}
-          </div>
-        )}
 
-        {/* ================= LOG ================= */}
-        {logs?.length > 0 && (
-          <div>
-            <h3 className="font-semibold">Timeline Aktivitas</h3>
+              {/* PELANGGAN */}
+              <div className="
+                border rounded-3xl
+                p-5
+                bg-gray-50/70
+              ">
 
-            <div className="border-l pl-4 space-y-3">
-              {logs.map((log: any) => (
-                <div key={log._id} className="relative">
-                  <div className="absolute -left-2 w-3 h-3 bg-blue-500 rounded-full" />
+                <h3 className="font-semibold text-gray-900">
+                  Pelanggan
+                </h3>
 
-                  <p className="font-medium">{log.description}</p>
-                  <p className="text-xs text-gray-500">
-                    {new Date(log.createdAt).toLocaleString()}
+                <div className="mt-4 space-y-3 text-sm">
+
+                  <div>
+                    <p className="text-gray-500">
+                      Nama
+                    </p>
+
+                    <p className="font-medium">
+                      {pelanggan?.nama || "-"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-gray-500">
+                      No Telp
+                    </p>
+
+                    <p className="font-medium">
+                      {pelanggan?.no_telp || "-"}
+                    </p>
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* PIC */}
+              <div className="
+                border rounded-3xl
+                p-5
+                bg-gray-50/70
+              ">
+
+                <h3 className="font-semibold text-gray-900">
+                  PIC Pegawai
+                </h3>
+
+                <div className="mt-4 space-y-3 text-sm">
+
+                  <div>
+                    <p className="text-gray-500">
+                      Nama Pegawai
+                    </p>
+
+                    <p className="font-medium">
+                      {pegawai?.nama || "-"}
+                    </p>
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* LAYANAN */}
+            <div className="
+              border rounded-3xl
+              p-6
+              bg-gray-50/70
+            ">
+
+              <h3 className="font-semibold text-gray-900">
+                Layanan
+              </h3>
+
+              <div className="
+                grid
+                grid-cols-1
+                md:grid-cols-2
+                gap-5
+                mt-5
+              ">
+
+                <div>
+                  <p className="text-sm text-gray-500">
+                    Nama Layanan
+                  </p>
+
+                  <p className="font-medium mt-1">
+                    {layanan?.nama || "-"}
                   </p>
                 </div>
-              ))}
+
+                <div>
+                  <p className="text-sm text-gray-500">
+                    Harga
+                  </p>
+
+                  <p className="font-semibold mt-1">
+                    {formatRupiah(layanan?.harga)}
+                  </p>
+                </div>
+
+              </div>
+
             </div>
+
+            {/* DETAIL ACARA */}
+            {detail && (
+              <div className="
+                border rounded-3xl
+                p-6
+                bg-gray-50/70
+              ">
+
+                <h3 className="font-semibold text-gray-900">
+                  Detail Acara
+                </h3>
+
+                <div className="
+                  grid
+                  grid-cols-1
+                  md:grid-cols-2
+                  gap-5
+                  mt-5
+                ">
+
+                  <div>
+                    <p className="text-sm text-gray-500">
+                      Nama Acara
+                    </p>
+
+                    <p className="font-medium mt-1">
+                      {detail.nama_acara || "-"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-gray-500">
+                      Tanggal Acara
+                    </p>
+
+                    <p className="font-medium mt-1">
+                      {detail.tanggal_acara
+                        ? new Date(
+                            detail.tanggal_acara
+                          ).toLocaleDateString()
+                        : "-"}
+                    </p>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <p className="text-sm text-gray-500">
+                      Lokasi
+                    </p>
+
+                    <p className="font-medium mt-1">
+                      {detail.lokasi || "-"}
+                    </p>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <p className="text-sm text-gray-500">
+                      Catatan
+                    </p>
+
+                    <p className="font-medium mt-1">
+                      {detail.catatan || "-"}
+                    </p>
+                  </div>
+
+                </div>
+
+              </div>
+            )}
+
+            {/* PAYMENT */}
+            <div className="
+              border rounded-3xl
+              p-6
+              bg-gray-50/70
+            ">
+
+              <div className="
+                flex items-center justify-between
+                mb-5
+              ">
+
+                <h3 className="font-semibold text-gray-900">
+                  Pembayaran
+                </h3>
+
+                <span className="
+                  text-xs
+                  bg-black
+                  text-white
+                  px-3 py-1
+                  rounded-xl
+                ">
+                  {payments.length} pembayaran
+                </span>
+
+              </div>
+
+              <div className="space-y-3">
+
+                {payments.length === 0 && (
+                  <p className="text-sm text-gray-500">
+                    Belum ada pembayaran
+                  </p>
+                )}
+
+                {payments.map((p: any) => (
+                  <div
+                    key={p._id}
+                    className="
+                      bg-white
+                      border
+                      rounded-2xl
+                      p-4
+                    "
+                  >
+
+                    <div className="
+                      flex items-start justify-between
+                    ">
+
+                      <div>
+                        <p className="font-medium">
+                          {p.tipe}
+                        </p>
+
+                        <p className="text-sm text-gray-500 mt-1">
+                          {formatRupiah(p.jumlah)}
+                        </p>
+                      </div>
+
+                      <span
+                        className={`
+                          px-3 py-1
+                          rounded-xl
+                          text-xs
+                          font-medium
+                          ${getStatusBadge(p.status)}
+                        `}
+                      >
+                        {p.status}
+                      </span>
+
+                    </div>
+
+                  </div>
+                ))}
+
+              </div>
+
+            </div>
+
+            {/* SUMMARY */}
+            {summary && (
+              <div className="
+                border rounded-3xl
+                p-6
+                bg-gray-50/70
+              ">
+
+                <h3 className="font-semibold text-gray-900">
+                  Ringkasan Pembayaran
+                </h3>
+
+                <div className="mt-5">
+
+                  <div className="
+                    w-full
+                    h-3
+                    bg-gray-200
+                    rounded-full
+                    overflow-hidden
+                  ">
+
+                    <div
+                      className="
+                        h-full
+                        bg-green-500
+                      "
+                      style={{
+                        width: `${
+                          (summary.totalDibayar /
+                            summary.totalHarga) *
+                          100
+                        }%`,
+                      }}
+                    />
+
+                  </div>
+
+                  <div className="
+                    grid
+                    grid-cols-1
+                    md:grid-cols-3
+                    gap-4
+                    mt-5
+                  ">
+
+                    <div>
+                      <p className="text-sm text-gray-500">
+                        Total Dibayar
+                      </p>
+
+                      <p className="font-semibold">
+                        {formatRupiah(
+                          summary.totalDibayar
+                        )}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-sm text-gray-500">
+                        Total Harga
+                      </p>
+
+                      <p className="font-semibold">
+                        {formatRupiah(
+                          summary.totalHarga
+                        )}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-sm text-gray-500">
+                        Sisa
+                      </p>
+
+                      <p className="font-semibold">
+                        {formatRupiah(summary.sisa)}
+                      </p>
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
+            )}
+
+            {/* FOOTER */}
+            <div className="pt-2">
+
+              <button
+                onClick={onClose}
+                className="
+                  w-full
+                  py-3
+                  rounded-2xl
+                  bg-black
+                  text-white
+                  text-sm
+                  font-medium
+                  hover:opacity-90
+                  transition
+                "
+              >
+                Tutup
+              </button>
+
+            </div>
+
           </div>
+
         )}
 
-        {/* ================= CLOSE ================= */}
-        <button
-          onClick={onClose}
-          className="bg-black text-white px-4 py-2 w-full"
-        >
-          Close
-        </button>
       </div>
+
     </div>
   );
 }
