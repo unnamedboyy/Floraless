@@ -21,7 +21,14 @@ const portfolioSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
-  }
+  },
+
+  thumbnail: String,
+  slug: {
+    type: String,
+    unique: true
+  },
+  excerpt: String,
 
 }, { timestamps: true });
 

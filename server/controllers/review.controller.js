@@ -155,3 +155,25 @@ export const deleteReview = async (req, res, next) => {
     next(err);
   }
 };
+
+export const getPublicReviews = async (
+  req,
+  res,
+  next
+) => {
+  try {
+
+    const data = await Review.find({
+      isActive: true
+    })
+    .sort({ createdAt: -1 })
+    .limit(6);
+
+    res.json(data);
+
+  } catch (err) {
+
+    next(err);
+
+  }
+};

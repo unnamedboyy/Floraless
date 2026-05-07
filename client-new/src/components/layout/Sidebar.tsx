@@ -12,7 +12,7 @@ export default function Sidebar({ menu }: { menu: any[] }) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className="h-screen bg-[#f5f6f8] p-4">
+    <div className="h-screen bg-[#f5f7fb] p-4">
       <div
         className={`h-full bg-white rounded-2xl shadow-sm flex flex-col transition-all duration-300
         ${collapsed ? "w-[90px]" : "w-[260px]"}`}

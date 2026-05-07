@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import RegisterForm from "@/components/form/RegisterForm";
+import Link from "next/link";
 
 export default function RegisterPage() {
 
@@ -192,34 +193,25 @@ export default function RegisterPage() {
               {/* BUTTONS */}
               <div className="flex gap-4 mt-10">
 
-                <button
-                  className="
-                    px-7
-                    py-3
-                    rounded-2xl
-                    border
-                    border-white/20
-                    bg-white/10
-                    text-white
-                    hover:bg-white/20
-                    transition
-                  "
-                >
-                  Get Started
-                </button>
-
-                <button
-                  className="
-                    px-7
-                    py-3
-                    rounded-2xl
-                    text-cyan-200
-                    hover:text-white
-                    transition
-                  "
-                >
-                  Learn More
-                </button>
+              <Link
+                href="/"
+                className="
+                  inline-flex
+                  items-center
+                  justify-center
+                  px-7
+                  py-3
+                  rounded-2xl
+                  border
+                  border-white/20
+                  bg-white/10
+                  text-white
+                  hover:bg-white/20
+                  transition
+                "
+              >
+                Explore
+              </Link>
 
               </div>
 

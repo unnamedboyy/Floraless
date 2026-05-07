@@ -28,7 +28,7 @@ export default function Packages() {
       try {
 
         const res = await api.get(
-          "/layanan"
+          "/layanans"
         );
 
         console.log(
