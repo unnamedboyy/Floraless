@@ -2,96 +2,128 @@ import Portfolio from "../models/portfolio.js";
 import Ticket from "../models/ticket.js";
 import Review from "../models/review.js";
 import DetailTicket from "../models/detailTicket.js";
+import FotoPortfolio from "../models/fotoPortfolio.js";
+
 import { logActivity } from "../utils/logger.js";
-import fotoPortfolio from "../models/fotoPortfolio.js";
 
-export const createPortfolio = async (req, res, next) => {
-  try {
-    const { ticketId, title, content, images, type } = req.body;
+/* ================= HELPERS ================= */
 
-    if (!images || !Array.isArray(images) || images.length === 0) {
-      throw { status: 400, message: "Minimal 1 gambar wajib" };
-    }
-
-    let portfolioData = {
-      title,
-      content,
-      type
-    };
-
-    // ================= AUTO =================
-    if (type === "auto") {
-
-      if (!ticketId) {
-        throw { status: 400, message: "ticketId wajib" };
-      }
-
-      const ticket = await Ticket.findById(ticketId);
-      if (!ticket) throw { status: 404, message: "Ticket tidak ditemukan" };
-
-      if (ticket.status !== "done") {
-        throw { status: 400, message: "Ticket belum selesai" };
-      }
-
-      const existing = await Portfolio.findOne({ ticketId });
-      if (existing) {
-        throw { status: 400, message: "Portfolio sudah ada" };
-      }
-
-      const review = await Review.findOne({ ticketId });
-      if (!review) {
-        throw { status: 400, message: "Review belum ada" };
-      }
-
-      const detail = await DetailTicket.findOne({ ticketId });
-
-      portfolioData = {
-        ticketId,
-        title: title || detail?.nama_acara,
-        content: content || review.komentar,
-        rating: review.rating,
-        review: review.komentar,
-        type: "auto"
-      };
-    }
-
-    // ================= CREATE PORTFOLIO =================
-    const portfolio = await Portfolio.create(portfolioData);
-
-    // ================= CREATE FOTO PORTFOLIO =================
-    const imageDocs = images.map((url, index) => ({
-      portfolioId: portfolio._id,
-      url,
-      order: index + 1,
-      caption: "Foto Hasil Dekorasi"
-    }));
-
-    await fotoPortfolio.insertMany(imageDocs);
-
-    // LOG
-    await logActivity({
-      userId: req.user.id,
-      action: "CREATE_PORTFOLIO",
-      customDescription: `Portfolio ${portfolio.title} dibuat dengan ${images.length} gambar`
-    });
-
-    res.json({
-      message: "Portfolio berhasil dibuat",
-      portfolio,
-      totalImages: images.length
-    });
-
-  } catch (err) {
-    next(err);
-  }
+const generateSlug = (text) => {
+  return text
+    .toLowerCase()
+    .replace(/[^\w ]+/g, "")
+    .replace(/ +/g, "-");
 };
 
+/* ================= CREATE ================= */
 
+export const createPortfolio =
+  async (req, res, next) => {
 
-// GET ALL
-export const getPortfolios = async (req, res, next) => {
+    try {
+
+      const {
+        title,
+        excerpt,
+        content,
+        type,
+      } = req.body;
+
+      const thumbnailFile =
+        req.files?.thumbnail?.[0];
+
+      const galleryFiles =
+        req.files?.gallery || [];
+
+      if (
+        !thumbnailFile
+      ) {
+        throw {
+          status: 400,
+          message:
+            "Thumbnail wajib",
+        };
+      }
+
+      if (
+        galleryFiles.length === 0
+      ) {
+        throw {
+          status: 400,
+          message:
+            "Gallery wajib",
+        };
+      }
+
+      const portfolio =
+        await Portfolio.create({
+
+          title,
+
+          slug:
+            generateSlug(title),
+
+          excerpt,
+
+          content,
+
+          thumbnail:
+            req.files?.thumbnail?.[0]
+            ? `/uploads/portfolio/${req.files.thumbnail[0].filename}`
+            : "",
+
+          type:
+            type || "manual",
+
+          isActive: true,
+        });
+
+      const imageDocs =
+        galleryFiles.map(
+          (file, index) => ({
+
+            portfolioId:
+              portfolio._id,
+
+            url:
+              `/uploads/portfolio/${file.filename}`,
+
+            order:
+              index + 1,
+
+            caption:
+              "Hasil dekorasi Floraless",
+          })
+        );
+
+      await FotoPortfolio.insertMany(
+        imageDocs
+      );
+
+      res.json({
+        message:
+          "Portfolio berhasil dibuat",
+        portfolio,
+      });
+
+    } catch (err) {
+      next(err);
+    }
+  };
+
+/* ================= GET ALL ================= */
+
+export const getPortfolios = async (
+  req,
+  res,
+  next
+) => {
   try {
-    const data = await Portfolio.find({ isActive: true })
+
+    const data =
+      await Portfolio.find({
+        isActive: true
+      })
       .sort({ createdAt: -1 });
 
     res.json(data);
@@ -101,69 +133,221 @@ export const getPortfolios = async (req, res, next) => {
   }
 };
 
+/* ================= GET DETAIL ================= */
 
+export const getPortfolioById =
+  async (req, res, next) => {
+    try {
 
-// GET DETAIL
-export const getPortfolioById = async (req, res, next) => {
-  try {
-    const data = await Portfolio.findById(req.params.id);
+      const portfolio =
+        await Portfolio.findById(
+          req.params.id
+        );
 
-    if (!data) throw { status: 404, message: "Portfolio tidak ditemukan" };
+      if (!portfolio) {
+        throw {
+          status: 404,
+          message:
+            "Portfolio tidak ditemukan"
+        };
+      }
 
-    res.json(data);
+      const images =
+        await FotoPortfolio.find({
+          portfolioId:
+            portfolio._id
+        }).sort({ order: 1 });
 
-  } catch (err) {
-    next(err);
-  }
-};
+      res.json({
+        portfolio,
+        images
+      });
 
+    } catch (err) {
+      next(err);
+    }
+  };
 
+/* ================= GET BY SLUG ================= */
 
-// UPDATE
-export const updatePortfolio = async (req, res, next) => {
-  try {
-    const data = await Portfolio.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+export const getPortfolioBySlug =
+  async (req, res, next) => {
 
-    if (!data) throw { status: 404, message: "Portfolio tidak ditemukan" };
+    try {
 
-    await logActivity({
-      userId: req.user.id,
-      action: "UPDATE_PORTFOLIO",
-      customDescription: `Admin mengupdate portfolio ${data.title}`
-    });
+      const portfolio =
+        await Portfolio.findOne({
+          slug:
+            req.params.slug,
+          isActive: true,
+        });
 
-    res.json(data);
+      if (!portfolio) {
 
-  } catch (err) {
-    next(err);
-  }
-};
+        return res.status(404).json({
+          message:
+            "Portfolio tidak ditemukan",
+        });
+      }
 
+      const photos =
+        await FotoPortfolio.find({
+          portfolioId:
+            portfolio._id,
+        }).sort({
+          order: 1,
+        });
 
+      res.json({
+        portfolio,
+        photos,
+      });
 
-// SOFT DELETE
-export const deletePortfolio = async (req, res, next) => {
-  try {
-    const data = await Portfolio.findById(req.params.id);
+    } catch (err) {
 
-    if (!data) throw { status: 404, message: "Portfolio tidak ditemukan" };
+      next(err);
+    }
+  };
 
-    data.isActive = false;
-    await data.save();
+/* ================= UPDATE ================= */
+export const updatePortfolio =
+  async (req, res, next) => {
 
-    await logActivity({
-      userId: req.user.id,
-      action: "DELETE_PORTFOLIO",
-      customDescription: `Admin menghapus portfolio ${data.title}`
-    });
+    try {
 
-    res.json({ message: "Portfolio dihapus" });
+      const portfolio =
+        await Portfolio.findById(
+          req.params.id
+        );
 
-  } catch (err) {
-    next(err);
-  }
-};
+      if (!portfolio) {
+        throw {
+          status: 404,
+          message:
+            "Portfolio tidak ditemukan",
+        };
+      }
+
+      const {
+        title,
+        excerpt,
+        content,
+      } = req.body;
+
+      if (title) {
+        portfolio.title =
+          title;
+
+        portfolio.slug =
+          generateSlug(title);
+      }
+
+      if (excerpt) {
+        portfolio.excerpt =
+          excerpt;
+      }
+
+      if (content) {
+        portfolio.content =
+          content;
+      }
+
+      const thumbnailFile =
+        req.files?.thumbnail?.[0];
+
+      if (thumbnailFile) {
+
+        portfolio.thumbnail =
+          `/uploads/portfolio/${thumbnailFile.filename}`;
+      }
+
+      await portfolio.save();
+
+      const galleryFiles =
+        req.files?.gallery || [];
+
+      if (
+        galleryFiles.length > 0
+      ) {
+
+        const existing =
+          await FotoPortfolio.countDocuments({
+            portfolioId:
+              portfolio._id,
+          });
+
+        const imageDocs =
+          galleryFiles.map(
+            (file, index) => ({
+
+              portfolioId:
+                portfolio._id,
+
+              url:
+                `/uploads/portfolio/${file.filename}`,
+
+              order:
+                existing +
+                index +
+                1,
+
+              caption:
+                "Hasil dekorasi Floraless",
+            })
+          );
+
+        await FotoPortfolio.insertMany(
+          imageDocs
+        );
+      }
+
+      res.json({
+        message:
+          "Portfolio berhasil diupdate",
+        portfolio,
+      });
+
+    } catch (err) {
+      next(err);
+    }
+  };
+
+/* ================= DELETE ================= */
+
+export const deletePortfolio =
+  async (req, res, next) => {
+    try {
+
+      const data =
+        await Portfolio.findById(
+          req.params.id
+        );
+
+      if (!data) {
+        throw {
+          status: 404,
+          message:
+            "Portfolio tidak ditemukan"
+        };
+      }
+
+      data.isActive = false;
+
+      await data.save();
+
+      await logActivity({
+        userId: req.user.id,
+        action: "DELETE_PORTFOLIO",
+        customDescription:
+          `Portfolio ${data.title} dihapus`
+      });
+
+      res.json({
+        message:
+          "Portfolio berhasil dihapus"
+      });
+
+    } catch (err) {
+      next(err);
+    }
+  };

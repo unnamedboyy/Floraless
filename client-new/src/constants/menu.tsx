@@ -89,6 +89,12 @@ export const adminMenu: MenuItem[] = [
     roles: ["admin"],
     icon: <Tag size={18} />,
   },
+  {
+    label: "Portfolio",
+    path: "/admin/portfolio",
+    roles: ["admin"],
+    icon: <Tag size={18} />,
+  },
 ];
 
 /* ================= PEGAWAI MENU ================= */

@@ -5,6 +5,7 @@ dotenv.config();
 import express from "express";
 import cors from "cors";
 import connectDB from "./config/db.js";
+import path from "path";
 
 import authRoutes from "./routes/auth.router.js";
 import ticketRoutes from "./routes/ticket.router.js";
@@ -31,6 +32,16 @@ console.log("JWT_SECRET:", process.env.JWT_SECRET);
 
 app.use(cors());
 app.use(express.json());
+
+app.use(
+  "/uploads",
+  express.static(
+    path.join(
+      process.cwd(),
+      "uploads"
+    )
+  )
+);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/tickets", ticketRoutes);

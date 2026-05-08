@@ -7,9 +7,34 @@ const portfolioSchema = new mongoose.Schema({
     ref: "Ticket"
   },
 
-  title: String,
-  content: String,
+  title: {
+    type: String,
+    required: true
+  },
+
+  slug: {
+    type: String,
+    unique: true,
+    required: true
+  },
+
+  excerpt: {
+    type: String,
+    default: ""
+  },
+
+  thumbnail: {
+    type: String,
+    required: true
+  },
+
+  content: {
+    type: String,
+    default: ""
+  },
+
   rating: Number,
+
   review: String,
 
   type: {
@@ -21,20 +46,23 @@ const portfolioSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
-  },
-
-  thumbnail: String,
-  slug: {
-    type: String,
-    unique: true
-  },
-  excerpt: String,
+  }
 
 }, { timestamps: true });
 
 portfolioSchema.index(
   { ticketId: 1 },
-  { unique: true, partialFilterExpression: { ticketId: { $exists: true } } }
+  {
+    unique: true,
+    partialFilterExpression: {
+      ticketId: { $exists: true }
+    }
+  }
 );
 
-export default mongoose.model("Portfolio", portfolioSchema);
+portfolioSchema.index({ slug: 1 });
+
+export default mongoose.model(
+  "Portfolio",
+  portfolioSchema
+);
