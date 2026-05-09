@@ -7,6 +7,13 @@ const portfolioSchema = new mongoose.Schema({
     ref: "Ticket"
   },
 
+  layananIds: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Layanan"
+    }
+  ],
+
   title: {
     type: String,
     required: true
@@ -22,12 +29,7 @@ const portfolioSchema = new mongoose.Schema({
     type: String,
     default: ""
   },
-
-  thumbnail: {
-    type: String,
-    required: true
-  },
-
+  
   content: {
     type: String,
     default: ""
@@ -37,9 +39,14 @@ const portfolioSchema = new mongoose.Schema({
 
   review: String,
 
+  isFeatured: {
+    type: Boolean,
+    default: false
+  },
+
   type: {
     type: String,
-    enum: ["auto", "manual"],
+    enum: ["ticket", "manual"],
     default: "manual"
   },
 
@@ -61,6 +68,8 @@ portfolioSchema.index(
 );
 
 portfolioSchema.index({ slug: 1 });
+portfolioSchema.index({ layananIds: 1 });
+portfolioSchema.index({ isFeatured: 1 });
 
 export default mongoose.model(
   "Portfolio",

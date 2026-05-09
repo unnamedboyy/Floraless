@@ -9,6 +9,7 @@ import Payment from "../models/payment.js";
 import Review from "../models/review.js";
 import CashbackClaim from "../models/cashbackClaim.js";
 import LogActivity from "../models/logAktivitas.js";
+import Portfolio from "../models/portfolio.js";
 
 // CREATE TICKET
 export const createTicket = async (req, res, next) => {
@@ -405,6 +406,12 @@ export const getTicketFullById = async (req, res, next) => {
       ticketId: id
     }).sort({ createdAt: -1 });
 
+    const portfolio =
+      await Portfolio.findOne({
+        ticketId: ticket._id,
+        isActive: true,
+    });
+
     // ================= RESPONSE =================
     res.json({
       ticket,
@@ -412,10 +419,10 @@ export const getTicketFullById = async (req, res, next) => {
       jadwal,
       payments,
       paymentSummary,
-      review,
-      voucher,
       claims,
-      logs
+      logs,
+      portfolioExists: !!portfolio,
+      portfolio,
     });
 
   } catch (err) {

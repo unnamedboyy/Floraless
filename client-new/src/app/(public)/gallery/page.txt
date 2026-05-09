@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
+
+import Link from "next/link";
 
 import {
   useEffect,
@@ -9,15 +10,15 @@ import {
   useState,
 } from "react";
 
-import { Search }
-from "lucide-react";
+import {
+  Search,
+} from "lucide-react";
 
 import {
   getGalleryPortfolio,
 } from "@/services/portfolio.service";
 
-type PortfolioItem = {
-
+type Portfolio = {
   _id: string;
 
   title: string;
@@ -26,12 +27,7 @@ type PortfolioItem = {
 
   excerpt: string;
 
-  isFeatured?: boolean;
-
-  layananIds?: {
-    _id: string;
-    nama: string;
-  }[];
+  createdAt: string;
 
   coverImage?: {
     url: string;
@@ -39,9 +35,6 @@ type PortfolioItem = {
 };
 
 export default function GalleryPage() {
-
-  const [data, setData] =
-    useState<PortfolioItem[]>([]);
 
   const [loading, setLoading] =
     useState(true);
@@ -52,6 +45,9 @@ export default function GalleryPage() {
   const [offset, setOffset] =
     useState(0);
 
+  const [data, setData] =
+    useState<Portfolio[]>([]);
+
   useEffect(() => {
 
     const fetchData =
@@ -59,14 +55,10 @@ export default function GalleryPage() {
 
         try {
 
-          const res =
+          const result =
             await getGalleryPortfolio();
 
-          setData(
-            Array.isArray(res)
-              ? res
-              : []
-          );
+          setData(result);
 
         } catch (err) {
 
@@ -104,27 +96,22 @@ export default function GalleryPage() {
 
   }, []);
 
-  const filtered =
-    useMemo(() => {
+  const filtered = useMemo(() => {
 
-      return data.filter(
-        (item) =>
+    return data.filter((item) =>
 
-          item.title
-            .toLowerCase()
-            .includes(
-              search.toLowerCase()
-            )
-      );
+      item.title
+        .toLowerCase()
+        .includes(
+          search.toLowerCase()
+        )
+    );
 
-    }, [data, search]);
+  }, [data, search]);
 
   return (
 
-    <div className="
-      bg-white
-      text-black
-    ">
+    <div className="bg-[#f8f8f8]">
 
       {/* ================= HERO ================= */}
 
@@ -134,7 +121,7 @@ export default function GalleryPage() {
         overflow-hidden
       ">
 
-        {/* PARALLAX IMAGE */}
+        {/* PARALLAX */}
 
         <div
           className="
@@ -149,7 +136,7 @@ export default function GalleryPage() {
         >
 
           <Image
-            src="/about.jpg"
+            src="/gallery-hero.jpg"
             alt="Gallery Floraless"
             fill
             priority
@@ -429,57 +416,6 @@ export default function GalleryPage() {
                               p-8
                               text-white
                             ">
-
-                              {/* BADGES */}
-
-                              <div className="
-                                mb-4
-                                flex
-                                flex-wrap
-                                gap-2
-                              ">
-
-                                {
-                                  item.layananIds?.map(
-                                    (layanan) => (
-
-                                      <span
-                                        key={layanan._id}
-                                        className="
-                                          rounded-full
-                                          border
-                                          border-white/20
-                                          bg-white/10
-                                          px-4
-                                          py-2
-                                          text-xs
-                                          backdrop-blur-md
-                                        "
-                                      >
-                                        {layanan.nama}
-                                      </span>
-                                    )
-                                  )
-                                }
-
-                                {
-                                  item.isFeatured && (
-
-                                    <span className="
-                                      rounded-full
-                                      bg-[#D4B36A]
-                                      px-4
-                                      py-2
-                                      text-xs
-                                      font-semibold
-                                      text-black
-                                    ">
-                                      FEATURED
-                                    </span>
-                                  )
-                                }
-
-                              </div>
 
                               <p className="
                                 text-sm

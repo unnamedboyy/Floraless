@@ -1,24 +1,50 @@
 import mongoose from "mongoose";
 
-const fotoPortfolioSchema = new mongoose.Schema({
-  portfolioId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Portfolio",
-    required: true
-  },
+const fotoPortfolioSchema =
+  new mongoose.Schema({
 
-  url: {
-    type: String,
-    required: true
-  },
+    portfolioId: {
 
-  order: {
-    type: Number,
-    default: 0
-  },
+      type:
+        mongoose.Schema.Types.ObjectId,
 
-  caption: String
+      ref: "Portfolio",
 
-}, { timestamps: true });
+      required: true
+    },
 
-export default mongoose.model("FotoPortfolio", fotoPortfolioSchema);
+    url: {
+
+      type: String,
+
+      required: true
+    },
+
+    order: {
+
+      type: Number,
+
+      default: 0
+    },
+
+    caption: String,
+
+    /* ================= COVER ================= */
+
+    isCover: {
+
+      type: Boolean,
+
+      default: false
+    },
+
+  }, {
+
+    timestamps: true
+
+  });
+
+export default mongoose.model(
+  "FotoPortfolio",
+  fotoPortfolioSchema
+);

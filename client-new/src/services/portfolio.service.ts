@@ -1,6 +1,79 @@
 import api from "@/lib/axios";
 
+/* ================= GET ALL ================= */
+
 export const getPortfolios =
+  async () => {
+
+    const res =
+      await api.get(
+        "/portfolio"
+      );
+
+    return res.data;
+  };
+
+/* ================= FEATURED ================= */
+
+export const getFeaturedPortfolios =
+  async () => {
+
+    const res =
+      await api.get(
+        "/portfolio/featured"
+      );
+
+    return res.data;
+  };
+
+/* ================= BY LAYANAN ================= */
+
+export const getPortfolioByLayanan =
+  async (
+    layananId: string
+  ) => {
+
+    const res =
+      await api.get(
+        `/portfolio/by-layanan/${layananId}`
+      );
+
+    return res.data;
+  };
+
+/* ================= RELATED ================= */
+
+export const getRelatedPortfolio =
+  async (
+    id: string
+  ) => {
+
+    const res =
+      await api.get(
+        `/portfolio/related/${id}`
+      );
+
+    return res.data;
+  };
+
+/* ================= GENERATE FROM TICKET ================= */
+
+export const generatePortfolioFromTicket =
+  async (
+    ticketId: string
+  ) => {
+
+    const res =
+      await api.get(
+        `/portfolio/generate-from-ticket/${ticketId}`
+      );
+
+    return res.data;
+  };
+
+/* ================= PUBLIC ================= */
+
+export const getGalleryPortfolio =
   async () => {
 
     const res =
@@ -33,13 +106,20 @@ export const getPortfolioBySlug =
     return res.data;
   };
 
+/* ================= CREATE ================= */
+
 export const createPortfolio =
-  async (data: FormData) => {
+  async (
+    data: FormData
+  ) => {
 
     const res =
       await api.post(
+
         "/portfolio",
+
         data,
+
         {
           headers: {
             "Content-Type":
@@ -50,6 +130,8 @@ export const createPortfolio =
 
     return res.data;
   };
+
+/* ================= UPDATE ================= */
 
 export const updatePortfolio =
   async (
@@ -59,8 +141,11 @@ export const updatePortfolio =
 
     const res =
       await api.put(
+
         `/portfolio/${id}`,
+
         data,
+
         {
           headers: {
             "Content-Type":
@@ -72,12 +157,43 @@ export const updatePortfolio =
     return res.data;
   };
 
+/* ================= DELETE ================= */
+
 export const deletePortfolio =
   async (id: string) => {
 
     const res =
       await api.patch(
         `/portfolio/${id}/delete`
+      );
+
+    return res.data;
+  };
+
+/* ================= COVER ================= */
+
+export const setCoverPortfolioImage =
+  async (
+    imageId: string
+  ) => {
+
+    const res =
+      await api.patch(
+        `/portfolio/image/${imageId}/cover`
+      );
+
+    return res.data;
+  };
+
+export const reorderPortfolioImages =
+  async (
+    images: any[]
+  ) => {
+
+    const res =
+      await api.patch(
+        "/portfolio/reorder-images",
+        { images }
       );
 
     return res.data;

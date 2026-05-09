@@ -8,6 +8,7 @@ import Review from "@/components/landing/Review";
 import BeforeAfter from "@/components/landing/BeforeAfter";
 import FaqSection from "@/components/landing/FaqSection";
 import Reveal from "@/components/ui/Reveal";
+import FeaturedPortfolio from "@/components/landing/FeaturedPortfolio";
 
 export default function HomePage() {
   return (
@@ -25,6 +26,10 @@ export default function HomePage() {
 
       <Reveal>
         <Gallery />
+      </Reveal>
+
+      <Reveal>
+        <FeaturedPortfolio />
       </Reveal>
 
       <Reveal>

@@ -1,8 +1,22 @@
+
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import { X, Trash2, ImagePlus } from "lucide-react";
+
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  X,
+  Trash2,
+  ImagePlus,
+  Star,
+} from "lucide-react";
+
+import { useLayanan }
+from "@/hooks/useLayanan";
 
 type ExistingImage = {
   _id?: string;
@@ -13,9 +27,12 @@ type ExistingImage = {
 type Props = {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: FormData) => Promise<void>;
+  onSubmit: (
+    data: FormData
+  ) => Promise<void>;
   loading?: boolean;
   initialData?: any;
+  prefilledData?: any;
 };
 
 export default function PortfolioFormModal({
@@ -23,8 +40,13 @@ export default function PortfolioFormModal({
   onClose,
   onSubmit,
   loading,
-  initialData
+  initialData,
+  prefilledData,
 }: Props) {
+
+  const {
+    data: layananList = []
+  } = useLayanan({});
 
   const [title, setTitle] =
     useState("");
@@ -35,13 +57,13 @@ export default function PortfolioFormModal({
   const [content, setContent] =
     useState("");
 
-  const [thumbnail,
-    setThumbnail] =
-    useState<File | null>(null);
+  const [isFeatured,
+    setIsFeatured] =
+    useState(false);
 
-  const [thumbnailPreview,
-    setThumbnailPreview] =
-    useState("");
+  const [selectedLayanan,
+    setSelectedLayanan] =
+    useState<string[]>([]);
 
   const [gallery,
     setGallery] =
@@ -57,7 +79,51 @@ export default function PortfolioFormModal({
 
   useEffect(() => {
 
-    if (!initialData) return;
+    if (!open) return;
+
+    if (!initialData) {
+
+      if (prefilledData) {
+
+        setTitle(
+          prefilledData.title || ""
+        );
+
+        setExcerpt(
+          prefilledData.excerpt || ""
+        );
+
+        setContent(
+          prefilledData.content || ""
+        );
+
+        setIsFeatured(false);
+
+        setSelectedLayanan(
+          prefilledData.layananIds?.map(
+            (item: any) =>
+              typeof item === "string"
+                ? item
+                : item._id
+          ) || []
+        );
+
+        setExistingImages([]);
+
+        return;
+      }
+
+      setTitle("");
+      setExcerpt("");
+      setContent("");
+      setIsFeatured(false);
+      setSelectedLayanan([]);
+      setExistingImages([]);
+      setGallery([]);
+      setGalleryPreview([]);
+
+      return;
+    }
 
     setTitle(
       initialData.title || ""
@@ -71,21 +137,42 @@ export default function PortfolioFormModal({
       initialData.content || ""
     );
 
-    if (initialData.thumbnail) {
+    setIsFeatured(
+      initialData.isFeatured || false
+    );
 
-      setThumbnailPreview(
-        `${process.env.NEXT_PUBLIC_API_URL}${initialData.thumbnail}`
-      );
+    setSelectedLayanan(
+
+      initialData.layananIds?.map(
+        (item: any) =>
+          typeof item === "string"
+            ? item
+            : item._id
+      ) || []
+    );
+
+    setExistingImages(
+      initialData.photos ||
+      initialData.images ||
+      []
+    );
+
+  }, [
+    open,
+    initialData,
+    prefilledData
+  ]);
+
+  useEffect(() => {
+
+    if (!open) {
+
+      setGallery([]);
+      setGalleryPreview([]);
+      setExistingImages([]);
     }
 
-    if (initialData.images) {
-
-      setExistingImages(
-        initialData.images
-      );
-    }
-
-  }, [initialData]);
+  }, [open]);
 
   if (!open) return null;
 
@@ -98,14 +185,20 @@ export default function PortfolioFormModal({
         e.target.files || []
       );
 
-    setGallery(files);
+    setGallery((prev) => [
+      ...prev,
+      ...files
+    ]);
 
     const previews =
       files.map((file) =>
         URL.createObjectURL(file)
       );
 
-    setGalleryPreview(previews);
+    setGalleryPreview((prev) => [
+      ...prev,
+      ...previews
+    ]);
   };
 
   const removeNewImage = (
@@ -141,55 +234,131 @@ export default function PortfolioFormModal({
     setExistingImages(updated);
   };
 
-  const handleSubmit = async () => {
+  const toggleLayanan = (
+    id: string
+  ) => {
 
-    const formData =
-      new FormData();
+    setSelectedLayanan(
+      (prev) =>
 
-    formData.append(
-      "title",
-      title
+        prev.includes(id)
+
+          ? prev.filter(
+              (item) =>
+                item !== id
+            )
+
+          : [...prev, id]
     );
-
-    formData.append(
-      "excerpt",
-      excerpt
-    );
-
-    formData.append(
-      "content",
-      content
-    );
-
-    if (thumbnail) {
-
-      formData.append(
-        "thumbnail",
-        thumbnail
-      );
-    }
-
-    gallery.forEach((file) => {
-
-      formData.append(
-        "gallery",
-        file
-      );
-
-    });
-
-    formData.append(
-      "existingImages",
-      JSON.stringify(
-        existingImages
-      )
-    );
-
-    await onSubmit(formData);
   };
 
-  return (
+  const handleSubmit =
+    async () => {
 
+      if (
+        gallery.length === 0 &&
+        existingImages.length === 0
+      ) {
+
+        alert(
+          "Minimal upload 1 foto gallery"
+        );
+
+        return;
+      }
+
+      const formData =
+        new FormData();
+
+      formData.append(
+        "title",
+        title
+      );
+
+      formData.append(
+        "excerpt",
+        excerpt
+      );
+
+      formData.append(
+        "content",
+        content
+      );
+
+      formData.append(
+        "isFeatured",
+        String(isFeatured)
+      );
+
+      formData.append(
+        "layananIds",
+        JSON.stringify(
+          selectedLayanan
+        )
+      );
+
+      if (
+        prefilledData?.ticketId
+      ) {
+
+        formData.append(
+          "ticketId",
+          prefilledData.ticketId
+        );
+      }
+
+      if (
+        prefilledData?.rating
+      ) {
+
+        formData.append(
+          "rating",
+          String(
+            prefilledData.rating
+          )
+        );
+      }
+
+      if (
+        prefilledData?.review
+      ) {
+
+        formData.append(
+          "review",
+          prefilledData.review
+        );
+      }
+
+      if (
+        prefilledData?.type
+      ) {
+
+        formData.append(
+          "type",
+          prefilledData.type
+        );
+      }
+
+      gallery.forEach((file) => {
+
+        formData.append(
+          "gallery",
+          file
+        );
+
+      });
+
+      formData.append(
+        "existingImages",
+        JSON.stringify(
+          existingImages
+        )
+      );
+
+      await onSubmit(formData);
+    };
+
+  return (
     <div className="
       fixed
       inset-0
@@ -198,8 +367,8 @@ export default function PortfolioFormModal({
       items-center
       justify-center
       bg-black/50
-      backdrop-blur-sm
       p-5
+      backdrop-blur-sm
     ">
 
       <div className="
@@ -243,12 +412,17 @@ export default function PortfolioFormModal({
           }
         </h2>
 
-        <div className="mt-10 space-y-8">
+        <div className="
+          mt-10
+          space-y-8
+        ">
 
           <input
             value={title}
             onChange={(e) =>
-              setTitle(e.target.value)
+              setTitle(
+                e.target.value
+              )
             }
             placeholder="Title"
             className="
@@ -265,7 +439,9 @@ export default function PortfolioFormModal({
           <textarea
             value={excerpt}
             onChange={(e) =>
-              setExcerpt(e.target.value)
+              setExcerpt(
+                e.target.value
+              )
             }
             placeholder="Excerpt"
             rows={4}
@@ -283,7 +459,9 @@ export default function PortfolioFormModal({
           <textarea
             value={content}
             onChange={(e) =>
-              setContent(e.target.value)
+              setContent(
+                e.target.value
+              )
             }
             placeholder="Content"
             rows={7}
@@ -298,103 +476,206 @@ export default function PortfolioFormModal({
             "
           />
 
-          {/* THUMBNAIL */}
+          <div className="
+            rounded-[28px]
+            border
+            p-6
+          ">
 
-          <div>
-
-            <p className="
-              mb-4
-              text-lg
-              font-semibold
-            ">
-              Thumbnail
-            </p>
-
-            {
-              thumbnailPreview && (
-
-                <div className="
-                  relative
-                  mb-5
-                  h-[260px]
-                  overflow-hidden
-                  rounded-[28px]
-                ">
-
-                  <Image
-                    src={thumbnailPreview}
-                    alt="thumbnail"
-                    fill
-                    unoptimized
-                    className="object-cover"
-                  />
-
-                </div>
-
-              )
-            }
-
-            <label className="
+            <div className="
               flex
-              cursor-pointer
               items-center
-              justify-center
-              gap-3
-              rounded-[20px]
-              border-2
-              border-dashed
-              border-gray-300
-              px-6
-              py-10
-              transition
-              hover:border-black
+              justify-between
             ">
-
-              <ImagePlus size={24} />
-
-              <span className="font-medium">
-                Upload Thumbnail
-              </span>
-
-              <input
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={(e) => {
-
-                  const file =
-                    e.target.files?.[0];
-
-                  if (!file) return;
-
-                  setThumbnail(file);
-
-                  setThumbnailPreview(
-                    URL.createObjectURL(file)
-                  );
-                }}
-              />
-
-            </label>
-
-          </div>
-
-          {/* EXISTING GALLERY */}
-
-          {
-            existingImages.length > 0 && (
 
               <div>
 
-                <p className="
-                  mb-5
-                  text-lg
+                <h3 className="
+                  flex
+                  items-center
+                  gap-2
+                  text-xl
                   font-semibold
                 ">
-                  Existing Gallery
-                </p>
+                  <Star size={20} />
+                  Featured Portfolio
+                </h3>
+
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setIsFeatured(
+                    !isFeatured
+                  )
+                }
+                className={`
+                  h-8
+                  w-16
+                  rounded-full
+                  transition
+                  ${
+                    isFeatured
+                      ? "bg-black"
+                      : "bg-neutral-300"
+                  }
+                `}
+              >
+                <div
+                  className={`
+                    h-8
+                    w-8
+                    rounded-full
+                    bg-white
+                    shadow-md
+                    transition
+                    ${
+                      isFeatured
+                        ? "translate-x-8"
+                        : "translate-x-0"
+                    }
+                  `}
+                />
+              </button>
+
+            </div>
+
+          </div>
+
+          <div className="
+            rounded-[28px]
+            border
+            p-6
+          ">
+
+            <h3 className="
+              text-xl
+              font-semibold
+            ">
+              Kategori Layanan
+            </h3>
+
+            <div className="
+              mt-6
+              flex
+              flex-wrap
+              gap-3
+            ">
+
+              {
+                layananList?.map(
+                  (item: any) => {
+
+                    const active =
+                      selectedLayanan.includes(
+                        item._id
+                      );
+
+                    return (
+
+                      <button
+                        key={item._id}
+                        type="button"
+                        onClick={() =>
+                          toggleLayanan(
+                            item._id
+                          )
+                        }
+                        className={`
+                          rounded-full
+                          border
+                          px-5
+                          py-3
+                          text-sm
+                          font-medium
+                          transition
+                          ${
+                            active
+
+                              ? `
+                                border-black
+                                bg-black
+                                text-white
+                              `
+
+                              : `
+                                border-neutral-300
+                                bg-white
+                                text-black
+                              `
+                          }
+                        `}
+                      >
+                        {item.nama}
+                      </button>
+                    );
+                  }
+                )
+              }
+
+            </div>
+
+          </div>
+
+          {/* GALLERY */}
+
+          <div>
+
+            <div className="
+              mb-4
+              flex
+              items-center
+              justify-between
+            ">
+
+              <p className="
+                text-lg
+                font-semibold
+              ">
+                Gallery Images
+              </p>
+
+              <label
+                className="
+                  flex
+                  cursor-pointer
+                  items-center
+                  gap-2
+                  rounded-full
+                  border
+                  px-5
+                  py-3
+                  text-sm
+                  font-medium
+                "
+              >
+
+                <ImagePlus
+                  size={18}
+                />
+
+                Add Images
+
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  hidden
+                  onChange={
+                    handleGalleryChange
+                  }
+                />
+
+              </label>
+
+            </div>
+
+            {
+              existingImages.length > 0 && (
 
                 <div className="
+                  mb-6
                   grid
                   grid-cols-2
                   gap-5
@@ -403,14 +684,16 @@ export default function PortfolioFormModal({
 
                   {
                     existingImages.map(
-                      (img, index) => (
+                      (
+                        img,
+                        index
+                      ) => (
 
                         <div
                           key={index}
                           className="
-                            group
                             relative
-                            h-52
+                            aspect-square
                             overflow-hidden
                             rounded-[24px]
                           "
@@ -418,7 +701,7 @@ export default function PortfolioFormModal({
 
                           <Image
                             src={`${process.env.NEXT_PUBLIC_API_URL}${img.url}`}
-                            alt="gallery"
+                            alt=""
                             fill
                             unoptimized
                             className="
@@ -429,7 +712,9 @@ export default function PortfolioFormModal({
                           <button
                             type="button"
                             onClick={() =>
-                              removeExistingImage(index)
+                              removeExistingImage(
+                                index
+                              )
                             }
                             className="
                               absolute
@@ -449,67 +734,18 @@ export default function PortfolioFormModal({
                           </button>
 
                         </div>
-
                       )
                     )
                   }
 
                 </div>
-
-              </div>
-
-            )
-          }
-
-          {/* NEW GALLERY */}
-
-          <div>
-
-            <p className="
-              mb-5
-              text-lg
-              font-semibold
-            ">
-              Add Gallery Images
-            </p>
-
-            <label className="
-              flex
-              cursor-pointer
-              items-center
-              justify-center
-              gap-3
-              rounded-[20px]
-              border-2
-              border-dashed
-              border-gray-300
-              px-6
-              py-10
-              transition
-              hover:border-black
-            ">
-
-              <ImagePlus size={24} />
-
-              <span className="font-medium">
-                Upload Multiple Images
-              </span>
-
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                hidden
-                onChange={handleGalleryChange}
-              />
-
-            </label>
+              )
+            }
 
             {
               galleryPreview.length > 0 && (
 
                 <div className="
-                  mt-6
                   grid
                   grid-cols-2
                   gap-5
@@ -518,13 +754,16 @@ export default function PortfolioFormModal({
 
                   {
                     galleryPreview.map(
-                      (img, index) => (
+                      (
+                        img,
+                        index
+                      ) => (
 
                         <div
                           key={index}
                           className="
                             relative
-                            h-52
+                            aspect-square
                             overflow-hidden
                             rounded-[24px]
                           "
@@ -542,7 +781,9 @@ export default function PortfolioFormModal({
                           <button
                             type="button"
                             onClick={() =>
-                              removeNewImage(index)
+                              removeNewImage(
+                                index
+                              )
                             }
                             className="
                               absolute
@@ -562,13 +803,11 @@ export default function PortfolioFormModal({
                           </button>
 
                         </div>
-
                       )
                     )
                   }
 
                 </div>
-
               )
             }
 
@@ -602,6 +841,6 @@ export default function PortfolioFormModal({
 
       </div>
 
-    </div>
+    </div>  
   );
 }
