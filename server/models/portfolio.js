@@ -36,7 +36,6 @@ const portfolioSchema = new mongoose.Schema({
   },
 
   rating: Number,
-
   review: String,
 
   isFeatured: {

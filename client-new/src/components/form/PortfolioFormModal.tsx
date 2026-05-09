@@ -20,7 +20,9 @@ from "@/hooks/useLayanan";
 
 type ExistingImage = {
   _id?: string;
-  url: string;
+  url?: string;
+  imageUrl?: string;
+  path?: string;
   caption?: string;
 };
 
@@ -76,6 +78,18 @@ export default function PortfolioFormModal({
   const [existingImages,
     setExistingImages] =
     useState<ExistingImage[]>([]);
+
+  const getImageUrl = (
+    img: ExistingImage
+  ) => {
+
+    return (
+      img.url ||
+      img.imageUrl ||
+      img.path ||
+      ""
+    );
+  };
 
   useEffect(() => {
 
@@ -700,7 +714,7 @@ export default function PortfolioFormModal({
                         >
 
                           <Image
-                            src={`${process.env.NEXT_PUBLIC_API_URL}${img.url}`}
+                            src={`${process.env.NEXT_PUBLIC_API_URL}${getImageUrl(img)}`}
                             alt=""
                             fill
                             unoptimized
