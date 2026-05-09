@@ -11,74 +11,129 @@ import CashbackClaim from "../models/cashbackClaim.js";
 import LogActivity from "../models/logAktivitas.js";
 import Portfolio from "../models/portfolio.js";
 
-// CREATE TICKET
+/* =========================================================
+   CUSTOMER CREATE TICKET
+========================================================= */
+
 export const createTicket = async (req, res, next) => {
   try {
-    const { pelangganId, layananId, tanggal, lokasi, nama_acara } = req.body;
+    const {
+      layananId,
+      tanggal,
+      lokasi,
+      nama_acara,
+      catatan,
+    } = req.body;
 
-    // VALIDASI ID
-    if (!mongoose.Types.ObjectId.isValid(pelangganId)) {
-      throw { status: 400, message: "pelangganId tidak valid" };
+    /* ================= USER ================= */
+
+    const pelanggan = await Pelanggan.findOne({
+      userId: req.user.id,
+    });
+
+    if (!pelanggan) {
+      throw {
+        status: 404,
+        message: "Pelanggan tidak ditemukan",
+      };
     }
+
+    /* ================= VALIDATION ================= */
 
     if (!mongoose.Types.ObjectId.isValid(layananId)) {
-      throw { status: 400, message: "layananId tidak valid" };
+      throw {
+        status: 400,
+        message: "layananId tidak valid",
+      };
     }
 
-    // VALIDASI DATA
-    const pelanggan = await Pelanggan.findById(pelangganId);
-    if (!pelanggan) throw { status: 404, message: "Pelanggan tidak ditemukan" };
-
     const layanan = await Layanan.findById(layananId);
-    if (!layanan) throw { status: 404, message: "Layanan tidak ditemukan" };
 
-  
-    // CEK BENTROK
+    if (!layanan) {
+      throw {
+        status: 404,
+        message: "Layanan tidak ditemukan",
+      };
+    }
+
+    if (!tanggal) {
+      throw {
+        status: 400,
+        message: "Tanggal acara wajib diisi",
+      };
+    }
+
+    if (!lokasi) {
+      throw {
+        status: 400,
+        message: "Lokasi wajib diisi",
+      };
+    }
+
+    if (!nama_acara) {
+      throw {
+        status: 400,
+        message: "Nama acara wajib diisi",
+      };
+    }
+
+    /* ================= CEK BENTROK ================= */
+
     const bentrok = await Jadwal.findOne({
-      tanggal_acara: new Date(tanggal)
+      tanggal_acara: new Date(tanggal),
+      status: {
+        $ne: "cancelled",
+      },
     });
 
     if (bentrok) {
       throw {
         status: 400,
-        message: "Tanggal sudah dibooking"
+        message: "Tanggal sudah dibooking",
       };
     }
 
-    // CREATE TICKET
+    /* ================= CREATE TICKET ================= */
+
     const ticket = await Ticket.create({
-      pelangganId,
+      pelangganId: pelanggan._id,
       layananId,
-      status: "pending"
+      status: "pending",
     });
 
-    // DETAIL TICKET
+    /* ================= DETAIL ================= */
+
     const detail = await DetailTicket.create({
       ticketId: ticket._id,
       tanggal_acara: tanggal,
       lokasi,
-      nama_acara
+      nama_acara,
+      catatan: catatan || "",
     });
 
-    // JADWAL
+    /* ================= JADWAL ================= */
+
     await Jadwal.create({
       ticketId: ticket._id,
       tanggal_acara: tanggal,
-      status: "booked"
+      status: "booked",
     });
 
-    // HISTORY
-  await LogActivity.create({
-    ticketId: ticket._id,
-    action: "CREATE_TICKET",
-    status: "pending",
-    description: "Ticket dibuat"
-  });
+    /* ================= LOG ================= */
 
-    res.json({
-      message: "Ticket berhasil dibuat",
+    await LogActivity.create({
+      ticketId: ticket._id,
+      action: "CREATE_TICKET",
+      status: "pending",
+      description: "Ticket dibuat oleh pelanggan",
+    });
+
+    /* ================= RESPONSE ================= */
+
+    res.status(201).json({
+      message: "Pemesanan berhasil dibuat",
       ticket,
-      detail
+      detail,
     });
 
   } catch (err) {
@@ -86,7 +141,10 @@ export const createTicket = async (req, res, next) => {
   }
 };
 
-// GET ALL TICKET
+/* =========================================================
+   GET ALL TICKET
+========================================================= */
+
 export const getTickets = async (req, res, next) => {
   try {
     const {
@@ -94,14 +152,27 @@ export const getTickets = async (req, res, next) => {
       limit = 10,
       status,
       tanggal,
-      search
     } = req.query;
 
     let filter = {};
 
+    /* ================= PELANGGAN ================= */
+
     if (req.user.role === "pelanggan") {
-      filter.pelangganId = req.user.id;
+      const pelanggan = await Pelanggan.findOne({
+        userId: req.user.id,
+      });
+
+      if (!pelanggan) {
+        return res.status(404).json({
+          message: "Pelanggan tidak ditemukan",
+        });
+      }
+
+      filter.pelangganId = pelanggan._id;
     }
+
+    /* ================= PEGAWAI ================= */
 
     if (req.user.role === "pegawai") {
       const pegawai = await Pegawai.findOne({
@@ -117,6 +188,8 @@ export const getTickets = async (req, res, next) => {
       filter.pegawaiId = pegawai._id;
     }
 
+    /* ================= FILTER STATUS ================= */
+
     if (status) {
       filter.status = status;
     }
@@ -124,21 +197,25 @@ export const getTickets = async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     let tickets = await Ticket.find(filter)
-      .populate("pelangganId", "nama")
+      .populate("pelangganId", "nama no_telp")
       .populate("layananId", "nama harga")
       .populate("pegawaiId", "nama")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(Number(limit));
 
-      if (tanggal) {
+    /* ================= FILTER TANGGAL ================= */
+
+    if (tanggal) {
       const jadwals = await Jadwal.find({
-        tanggal_acara: new Date(tanggal)
+        tanggal_acara: new Date(tanggal),
       });
 
-      const ticketIds = jadwals.map(j => j.ticketId.toString());
+      const ticketIds = jadwals.map(
+        (j) => j.ticketId.toString()
+      );
 
-      tickets = tickets.filter(t =>
+      tickets = tickets.filter((t) =>
         ticketIds.includes(t._id.toString())
       );
     }
@@ -149,7 +226,7 @@ export const getTickets = async (req, res, next) => {
       data: tickets,
       total,
       page: Number(page),
-      totalPages: Math.ceil(total / limit)
+      totalPages: Math.ceil(total / limit),
     });
 
   } catch (err) {
@@ -157,7 +234,10 @@ export const getTickets = async (req, res, next) => {
   }
 };
 
-// GET BY ID
+/* =========================================================
+   GET TICKET BY ID
+========================================================= */
+
 export const getTicketById = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -167,19 +247,51 @@ export const getTicketById = async (req, res, next) => {
       .populate("layananId", "nama harga")
       .populate("pegawaiId", "nama");
 
-    if (!ticket) throw { status: 404, message: "Ticket tidak ditemukan" };
+    if (!ticket) {
+      throw {
+        status: 404,
+        message: "Ticket tidak ditemukan",
+      };
+    }
+
+    /* ================= VALIDASI OWNERSHIP ================= */
+
+    if (req.user.role === "pelanggan") {
+      const pelanggan = await Pelanggan.findOne({
+        userId: req.user.id,
+      });
+
+      if (
+        !pelanggan ||
+        ticket.pelangganId._id.toString() !== pelanggan._id.toString()
+      ) {
+        throw {
+          status: 403,
+          message: "Tidak memiliki akses",
+        };
+      }
+    }
 
     const summary = await getPaymentSummary(ticket);
-    const detail = await DetailTicket.findOne({ ticketId: id });
-    const jadwal = await Jadwal.findOne({ ticketId: id });
-    const logs = await LogActivity.find({ ticketId: id }).sort({ createdAt: 1 });
-    
-      res.json({
+
+    const detail = await DetailTicket.findOne({
+      ticketId: id,
+    });
+
+    const jadwal = await Jadwal.findOne({
+      ticketId: id,
+    });
+
+    const logs = await LogActivity.find({
+      ticketId: id,
+    }).sort({ createdAt: 1 });
+
+    res.json({
       ticket,
       detail,
       jadwal,
       logs,
-      summary
+      summary,
     });
 
   } catch (err) {
@@ -187,14 +299,19 @@ export const getTicketById = async (req, res, next) => {
   }
 };
 
-// APPROVE (ASSIGN PIC)
+/* =========================================================
+   APPROVE TICKET
+========================================================= */
+
 export const approveTicket = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { pegawaiId } = req.body;
 
     if (!pegawaiId) {
-      return res.status(400).json({ message: "pegawaiId wajib diisi" });
+      return res.status(400).json({
+        message: "pegawaiId wajib diisi",
+      });
     }
 
     const updated = await Ticket.findByIdAndUpdate(
@@ -210,38 +327,65 @@ export const approveTicket = async (req, res, next) => {
       .populate("layananId", "nama harga");
 
     if (!updated) {
-      return res.status(404).json({ message: "Ticket tidak ditemukan" });
+      return res.status(404).json({
+        message: "Ticket tidak ditemukan",
+      });
     }
 
-    res.json(updated); 
+    await LogActivity.create({
+      ticketId: updated._id,
+      action: "APPROVE_TICKET",
+      status: "approved",
+      description: "Ticket disetujui",
+    });
+
+    res.json(updated);
+
   } catch (err) {
     console.error("APPROVE ERROR:", err);
     next(err);
   }
 };
 
-// UPDATE STATUS (perlu saya lihat lagi flownya kaya gimana, soalnya statusnya banyak)
+/* =========================================================
+   UPDATE STATUS
+========================================================= */
+
 export const updateStatusTicket = async (req, res, next) => {
   try {
     const { status } = req.body;
     const { id } = req.params;
 
-    const allowedStatus = ["pending", "approved", "in_progress", "done", "rejected"];
+    const allowedStatus = [
+      "pending",
+      "approved",
+      "in_progress",
+      "done",
+      "rejected",
+    ];
 
     if (!allowedStatus.includes(status)) {
-      throw { status: 400, message: "Status tidak valid" };
+      throw {
+        status: 400,
+        message: "Status tidak valid",
+      };
     }
 
     const ticket = await Ticket.findById(id);
-    if (!ticket) throw { status: 404, message: "Ticket tidak ditemukan" };
 
-    // VALIDASI FLOWS
+    if (!ticket) {
+      throw {
+        status: 404,
+        message: "Ticket tidak ditemukan",
+      };
+    }
+
     const flow = {
       pending: ["approved", "rejected"],
       approved: ["in_progress"],
       in_progress: ["done"],
       done: [],
-      rejected: []
+      rejected: [],
     };
 
     const current = ticket.status;
@@ -249,25 +393,24 @@ export const updateStatusTicket = async (req, res, next) => {
     if (!flow[current].includes(status)) {
       throw {
         status: 400,
-        message: `Tidak bisa mengubah status dari ${current} ke ${status}`
+        message: `Tidak bisa mengubah status dari ${current} ke ${status}`,
       };
     }
 
-    // UPDATE STATUS
     ticket.status = status;
+
     await ticket.save();
 
-    // HISTORY LOG
     await LogActivity.create({
       ticketId: ticket._id,
       action: "UPDATE_STATUS",
       status,
-      description: `Status diubah ke ${status}`
+      description: `Status diubah ke ${status}`,
     });
 
     res.json({
       message: "Status berhasil diupdate",
-      ticket
+      ticket,
     });
 
   } catch (err) {
@@ -275,19 +418,26 @@ export const updateStatusTicket = async (req, res, next) => {
   }
 };
 
-// 💰 PAYMENT SUMMARY
+/* =========================================================
+   PAYMENT SUMMARY
+========================================================= */
+
 const getPaymentSummary = async (ticket) => {
 
-  // ambil harga layanan
   const layanan = await Layanan.findById(ticket.layananId);
+
   if (!layanan) {
-    throw { status: 404, message: "Layanan tidak ditemukan" };
+    throw {
+      status: 404,
+      message: "Layanan tidak ditemukan",
+    };
   }
 
   const totalTagihan = layanan.harga;
+
   const payments = await Payment.find({
     ticketId: ticket._id,
-    status: "approved"
+    status: "approved",
   });
 
   const totalDibayar = payments.reduce(
@@ -296,6 +446,7 @@ const getPaymentSummary = async (ticket) => {
   );
 
   const sisaTagihan = totalTagihan - totalDibayar;
+
   let statusPembayaran = "unpaid";
 
   if (totalDibayar === 0) {
@@ -311,18 +462,28 @@ const getPaymentSummary = async (ticket) => {
     totalDibayar,
     sisaTagihan,
     statusPembayaran,
-    jumlahPembayaran: payments.length
+    jumlahPembayaran: payments.length,
   };
 };
+
+/* =========================================================
+   PAYMENT SUMMARY BY TICKET
+========================================================= */
 
 export const getPaymentSummaryByTicket = async (req, res, next) => {
   try {
 
     const ticket = await Ticket.findById(req.params.id);
 
-    if (!ticket) throw { status: 404, message: "Ticket tidak ditemukan" };
+    if (!ticket) {
+      throw {
+        status: 404,
+        message: "Ticket tidak ditemukan",
+      };
+    }
 
     const summary = await getPaymentSummary(ticket);
+
     res.json(summary);
 
   } catch (err) {
@@ -330,29 +491,56 @@ export const getPaymentSummaryByTicket = async (req, res, next) => {
   }
 };
 
-// GET FULL DETAIL BY ID (TICKET + DETAIL + JADWAL + PAYMENT + REVIEW + VOUCHER + CLAIMS)
+/* =========================================================
+   FULL DETAIL TICKET
+========================================================= */
+
 export const getTicketFullById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    // ================= TICKET =================
     const ticket = await Ticket.findById(id)
       .populate("pelangganId", "nama no_telp")
       .populate("pegawaiId", "nama")
       .populate("layananId", "nama harga");
 
-    if (!ticket) throw { status: 404, message: "Ticket tidak ditemukan" };
+    if (!ticket) {
+      throw {
+        status: 404,
+        message: "Ticket tidak ditemukan",
+      };
+    }
 
-    // ================= DETAIL =================
-    const detail = await DetailTicket.findOne({ ticketId: id });
+    /* ================= VALIDASI OWNERSHIP ================= */
 
-    // ================= JADWAL =================
-    const jadwal = await Jadwal.findOne({ ticketId: id });
+    if (req.user.role === "pelanggan") {
+      const pelanggan = await Pelanggan.findOne({
+        userId: req.user.id,
+      });
 
-    // ================= PAYMENTS =================
-    const payments = await Payment.find({ ticketId: id }).sort({ createdAt: 1 });
+      if (
+        !pelanggan ||
+        ticket.pelangganId._id.toString() !== pelanggan._id.toString()
+      ) {
+        throw {
+          status: 403,
+          message: "Tidak memiliki akses",
+        };
+      }
+    }
 
-    // ================= PAYMENT SUMMARY =================
+    const detail = await DetailTicket.findOne({
+      ticketId: id,
+    });
+
+    const jadwal = await Jadwal.findOne({
+      ticketId: id,
+    });
+
+    const payments = await Payment.find({
+      ticketId: id,
+    }).sort({ createdAt: 1 });
+
     let totalHarga = 0;
     let totalDibayar = 0;
 
@@ -360,7 +548,7 @@ export const getTicketFullById = async (req, res, next) => {
       totalHarga = ticket.layananId.harga;
     }
 
-    payments.forEach(p => {
+    payments.forEach((p) => {
       if (p.status === "approved") {
         totalDibayar += p.jumlah;
       }
@@ -382,43 +570,33 @@ export const getTicketFullById = async (req, res, next) => {
       totalHarga,
       totalDibayar,
       sisa,
-      status: paymentStatus
+      status: paymentStatus,
     };
 
-    // ================= REVIEW =================
-    const review = await Review.findOne({ ticketId: id });
-
-    // ================= VOUCHER =================
-    let voucher = null;
-    if (review) {
-      voucher = await Voucher.findOne({
-        pelangganId: ticket.pelangganId._id
-      }).sort({ createdAt: -1 });
-    }
-
-    // ================= CLAIM =================
-    const claims = await CashbackClaim.find({
-      pelangganId: ticket.pelangganId._id
-    }).sort({ createdAt: -1 });
-
-    // ================= LOG =================
-    const logs = await LogActivity.find({
-      ticketId: id
-    }).sort({ createdAt: -1 });
-
-    const portfolio =
-      await Portfolio.findOne({
-        ticketId: ticket._id,
-        isActive: true,
+    const review = await Review.findOne({
+      ticketId: id,
     });
 
-    // ================= RESPONSE =================
+    const claims = await CashbackClaim.find({
+      pelangganId: ticket.pelangganId._id,
+    }).sort({ createdAt: -1 });
+
+    const logs = await LogActivity.find({
+      ticketId: id,
+    }).sort({ createdAt: -1 });
+
+    const portfolio = await Portfolio.findOne({
+      ticketId: ticket._id,
+      isActive: true,
+    });
+
     res.json({
       ticket,
       detail,
       jadwal,
       payments,
       paymentSummary,
+      review,
       claims,
       logs,
       portfolioExists: !!portfolio,

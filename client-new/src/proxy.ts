@@ -1,62 +1,177 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-const CUSTOMER_ONLY_ROUTES = [
-  "/pemesanan",
-  "/profile",
-];
-
-const ADMIN_ROUTES = [
-  "/admin",
-];
-
-const PEGAWAI_ROUTES = [
-  "/pegawai",
-];
-
-export function middleware(
-  req: NextRequest
+export function proxy(
+  request: NextRequest
 ) {
 
-  const { pathname } =
-    req.nextUrl;
-
   const token =
-    req.cookies.get(
-      "token"
-    )?.value;
+    request.cookies
+      .get("token")
+      ?.value;
 
   const role =
-    req.cookies.get(
-      "role"
-    )?.value;
+    request.cookies
+      .get("role")
+      ?.value;
 
-  /* =========================================================
-     CUSTOMER ONLY ROUTES
-  ========================================================= */
+  const {
+    pathname,
+  } = request.nextUrl;
 
-  const isCustomerRoute =
-    CUSTOMER_ONLY_ROUTES.some(
-      (route) =>
-        pathname.startsWith(
-          route
+  /* =====================================================
+     LOGIN REDIRECT
+  ===================================================== */
+
+  if (
+    pathname === "/login" &&
+    token
+  ) {
+
+    if (
+      role === "admin"
+    ) {
+
+      return NextResponse.redirect(
+
+        new URL(
+          "/admin/dashboard",
+          request.url
         )
-    );
+      );
+    }
 
-  if (isCustomerRoute) {
+    if (
+      role === "pegawai"
+    ) {
 
-    // belum login
+      return NextResponse.redirect(
+
+        new URL(
+          "/pegawai/dashboard",
+          request.url
+        )
+      );
+    }
+
+    if (
+      role === "pelanggan"
+    ) {
+
+      return NextResponse.redirect(
+
+        new URL(
+          "/",
+          request.url
+        )
+      );
+    }
+  }
+
+  /* =====================================================
+     ADMIN
+  ===================================================== */
+
+  if (
+    pathname.startsWith(
+      "/admin"
+    )
+  ) {
+
     if (!token) {
 
       return NextResponse.redirect(
 
         new URL(
           "/login",
-          req.url
+          request.url
         )
       );
     }
 
-    // bukan pelanggan
+    if (
+      role !== "admin"
+    ) {
+
+      return NextResponse.redirect(
+
+        new URL(
+          "/",
+          request.url
+        )
+      );
+    }
+  }
+
+  /* =====================================================
+     PEGAWAI
+  ===================================================== */
+
+  if (
+    pathname.startsWith(
+      "/pegawai"
+    )
+  ) {
+
+    if (!token) {
+
+      return NextResponse.redirect(
+
+        new URL(
+          "/login",
+          request.url
+        )
+      );
+    }
+
+    if (
+      role !== "pegawai"
+    ) {
+
+      return NextResponse.redirect(
+
+        new URL(
+          "/",
+          request.url
+        )
+      );
+    }
+  }
+
+  /* =====================================================
+     CUSTOMER ONLY
+  ===================================================== */
+
+  const protectedCustomerRoutes = [
+
+    "/booking",
+
+    "/profile",
+  ];
+
+  const isCustomerRoute =
+    protectedCustomerRoutes.some(
+      (route) =>
+        pathname.startsWith(
+          route
+        )
+    );
+
+  if (
+    isCustomerRoute
+  ) {
+
+    if (!token) {
+
+      return NextResponse.redirect(
+
+        new URL(
+          "/login",
+          request.url
+        )
+      );
+    }
+
     if (
       role !== "pelanggan"
     ) {
@@ -65,132 +180,7 @@ export function middleware(
 
         new URL(
           "/",
-          req.url
-        )
-      );
-    }
-  }
-
-  /* =========================================================
-     ADMIN ROUTES
-  ========================================================= */
-
-  const isAdminRoute =
-    ADMIN_ROUTES.some(
-      (route) =>
-        pathname.startsWith(
-          route
-        )
-    );
-
-  if (isAdminRoute) {
-
-    if (!token) {
-
-      return NextResponse.redirect(
-
-        new URL(
-          "/login",
-          req.url
-        )
-      );
-    }
-
-    if (role !== "admin") {
-
-      return NextResponse.redirect(
-
-        new URL(
-          "/",
-          req.url
-        )
-      );
-    }
-  }
-
-  /* =========================================================
-     PEGAWAI ROUTES
-  ========================================================= */
-
-  const isPegawaiRoute =
-    PEGAWAI_ROUTES.some(
-      (route) =>
-        pathname.startsWith(
-          route
-        )
-    );
-
-  if (isPegawaiRoute) {
-
-    if (!token) {
-
-      return NextResponse.redirect(
-
-        new URL(
-          "/login",
-          req.url
-        )
-      );
-    }
-
-    if (role !== "pegawai") {
-
-      return NextResponse.redirect(
-
-        new URL(
-          "/",
-          req.url
-        )
-      );
-    }
-  }
-
-  /* =========================================================
-     LOGIN PAGE PROTECTION
-  ========================================================= */
-
-  if (
-    pathname === "/login"
-  ) {
-
-    if (
-      token &&
-      role === "admin"
-    ) {
-
-      return NextResponse.redirect(
-
-        new URL(
-          "/admin/dashboard",
-          req.url
-        )
-      );
-    }
-
-    if (
-      token &&
-      role === "pegawai"
-    ) {
-
-      return NextResponse.redirect(
-
-        new URL(
-          "/pegawai/dashboard",
-          req.url
-        )
-      );
-    }
-
-    if (
-      token &&
-      role === "pelanggan"
-    ) {
-
-      return NextResponse.redirect(
-
-        new URL(
-          "/",
-          req.url
+          request.url
         )
       );
     }
@@ -203,10 +193,14 @@ export const config = {
 
   matcher: [
 
-    "/login",
     "/admin/:path*",
+
     "/pegawai/:path*",
-    "/pemesanan",
+
+    "/booking/:path*",
+
     "/profile/:path*",
+
+    "/login",
   ],
 };

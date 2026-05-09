@@ -1,4 +1,5 @@
 import express from "express";
+
 import auth from "../middlewares/auth.js";
 import role from "../middlewares/role.js";
 
@@ -9,17 +10,78 @@ import {
   approveTicket,
   updateStatusTicket,
   getPaymentSummaryByTicket,
-  getTicketFullById
+  getTicketFullById,
 } from "../controllers/ticket.controller.js";
 
 const router = express.Router();
 
-router.post("/", auth, role("pelanggan"), createTicket);
-router.get("/", auth, getTickets);
-router.get("/:id", auth, role("pelanggan"), getTicketById); 
-router.get("/:id/full", auth, getTicketFullById);
-router.patch("/:id/approve", auth, role("admin", "pegawai"), approveTicket);
-router.patch("/:id/status",auth,role("admin", "pegawai"), updateStatusTicket);
-router.get("/:id/paymentSummary", auth, getPaymentSummaryByTicket);
+/* =========================================================
+   CUSTOMER CREATE TICKET
+========================================================= */
+
+router.post(
+  "/",
+  auth,
+  role("pelanggan"),
+  createTicket
+);
+
+/* =========================================================
+   GET ALL
+========================================================= */
+
+router.get(
+  "/",
+  auth,
+  getTickets
+);
+
+/* =========================================================
+   GET DETAIL
+========================================================= */
+
+router.get(
+  "/:id",
+  auth,
+  getTicketById
+);
+
+router.get(
+  "/:id/full",
+  auth,
+  getTicketFullById
+);
+
+/* =========================================================
+   PAYMENT SUMMARY
+========================================================= */
+
+router.get(
+  "/:id/paymentSummary",
+  auth,
+  getPaymentSummaryByTicket
+);
+
+/* =========================================================
+   APPROVE
+========================================================= */
+
+router.patch(
+  "/:id/approve",
+  auth,
+  role("admin", "pegawai"),
+  approveTicket
+);
+
+/* =========================================================
+   UPDATE STATUS
+========================================================= */
+
+router.patch(
+  "/:id/status",
+  auth,
+  role("admin", "pegawai"),
+  updateStatusTicket
+);
 
 export default router;
