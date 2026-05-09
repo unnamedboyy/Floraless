@@ -56,21 +56,6 @@ export const getRelatedPortfolio =
     return res.data;
   };
 
-/* ================= GENERATE FROM TICKET ================= */
-
-export const generatePortfolioFromTicket =
-  async (
-    ticketId: string
-  ) => {
-
-    const res =
-      await api.get(
-        `/portfolio/generate-from-ticket/${ticketId}`
-      );
-
-    return res.data;
-  };
-
 /* ================= PUBLIC ================= */
 
 export const getGalleryPortfolio =
@@ -165,35 +150,6 @@ export const deletePortfolio =
     const res =
       await api.patch(
         `/portfolio/${id}/delete`
-      );
-
-    return res.data;
-  };
-
-/* ================= COVER ================= */
-
-export const setCoverPortfolioImage =
-  async (
-    imageId: string
-  ) => {
-
-    const res =
-      await api.patch(
-        `/portfolio/image/${imageId}/cover`
-      );
-
-    return res.data;
-  };
-
-export const reorderPortfolioImages =
-  async (
-    images: any[]
-  ) => {
-
-    const res =
-      await api.patch(
-        "/portfolio/reorder-images",
-        { images }
       );
 
     return res.data;

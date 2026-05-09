@@ -389,28 +389,6 @@ export default function AdminPortfolioPage() {
                           {item.excerpt}
                         </p>
 
-                        {
-                          item.review && (
-
-                            <div className="mt-5 rounded-2xl bg-neutral-50 p-4">
-
-                              {
-                                item.rating && (
-
-                                  <div className="mb-2 text-lg">
-                                    {"⭐".repeat(item.rating)}
-                                  </div>
-                                )
-                              }
-
-                              <p className="line-clamp-3 text-sm italic leading-[1.8] text-neutral-600">
-                                “{item.review}”
-                              </p>
-
-                            </div>
-                          )
-                        }
-
                         <div className="mt-7 flex items-center gap-3">
 
                           <button

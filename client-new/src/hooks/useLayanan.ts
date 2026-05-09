@@ -1,33 +1,68 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getAllLayanan } from "@/services/layanan.service";
+import {
+  useEffect,
+  useState,
+} from "react";
 
-export const useLayanan = (query: any) => {
-  const [data, setData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+import {
+  getAllLayanan,
+} from "@/services/layanan.service";
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
+export const useLayanan = (
+  query = {}
+) => {
 
-      const res = await getAllLayanan(query);
+  const [data, setData] =
+    useState<any[]>([]);
 
-      // 🔥 sesuaikan dengan response backend kamu
-      setData(res.data.data || res.data || []);
-    } catch (err) {
-      console.error("GET LAYANAN ERROR:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [loading, setLoading] =
+    useState(false);
+
+  const fetchData =
+    async () => {
+
+      try {
+
+        setLoading(true);
+
+        const res =
+          await getAllLayanan(query);
+
+        setData(
+
+          res?.data?.data ||
+
+          res?.data ||
+
+          []
+        );
+
+      } catch (err) {
+
+        console.error(
+          "GET LAYANAN ERROR:",
+          err
+        );
+
+      } finally {
+
+        setLoading(false);
+      }
+    };
 
   useEffect(() => {
+
     fetchData();
-  }, [query]);
+
+  }, []);
 
   return {
+
     data,
+
     loading,
+
+    refresh: fetchData,
   };
 };

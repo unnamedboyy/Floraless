@@ -2,11 +2,6 @@ import mongoose from "mongoose";
 
 const portfolioSchema = new mongoose.Schema({
 
-  ticketId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Ticket"
-  },
-
   layananIds: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -35,18 +30,9 @@ const portfolioSchema = new mongoose.Schema({
     default: ""
   },
 
-  rating: Number,
-  review: String,
-
   isFeatured: {
     type: Boolean,
     default: false
-  },
-
-  type: {
-    type: String,
-    enum: ["ticket", "manual"],
-    default: "manual"
   },
 
   isActive: {
@@ -55,16 +41,6 @@ const portfolioSchema = new mongoose.Schema({
   }
 
 }, { timestamps: true });
-
-portfolioSchema.index(
-  { ticketId: 1 },
-  {
-    unique: true,
-    partialFilterExpression: {
-      ticketId: { $exists: true }
-    }
-  }
-);
 
 portfolioSchema.index({ slug: 1 });
 portfolioSchema.index({ layananIds: 1 });

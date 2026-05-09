@@ -24,11 +24,7 @@ export type PortfolioItem = {
   content?: string;
 
   createdAt: string;
-
-  rating?: number;
-
-  review?: string;
-
+  
   isFeatured?: boolean;
 
   layananIds?: {
@@ -67,12 +63,17 @@ export function usePortfolio() {
           await getPortfolios();
 
         setData(
+          Array.isArray(
+            res?.data
+          )
 
-          Array.isArray(res)
+            ? res.data
 
-            ? res
+            : Array.isArray(res)
 
-            : []
+              ? res
+
+              : []
         );
 
       } catch (err) {

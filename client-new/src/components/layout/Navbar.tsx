@@ -58,10 +58,10 @@ export default function Navbar() {
 
   const menu = [
     ["Beranda", "/"],
-    ["Tentang", "tentang"],
-    ["Galeri", "gallery"],
+    ["Tentang", "/tentang"],
+    ["Galeri", "/gallery"],
     ["Paket", "#packages"],
-    ["Kontak", "kontak"],
+    ["Kontak", "/kontak"],
   ];
 
   return (

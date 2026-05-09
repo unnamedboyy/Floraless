@@ -19,7 +19,6 @@ import {
   getFeaturedPortfolios,
   getPortfolioByLayanan,
   getRelatedPortfolio,
-  generatePortfolioFromTicket,
 } from "../controllers/portfolio.controller.js";
 
 const router = express.Router();
@@ -46,12 +45,6 @@ router.get(
 router.get(
   "/related/:id",
   getRelatedPortfolio
-);
-
-router.get(
-  "/generate-from-ticket/:ticketId",
-  auth,
-  generatePortfolioFromTicket
 );
 
 router.get(

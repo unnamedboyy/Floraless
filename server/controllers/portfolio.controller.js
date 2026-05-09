@@ -1,8 +1,5 @@
 import Portfolio from "../models/portfolio.js";
 import FotoPortfolio from "../models/fotoPortfolio.js";
-import Ticket from "../models/ticket.js";
-import DetailTicket from "../models/detailTicket.js";
-import Review from "../models/review.js";
 
 import { deleteFile }
 from "../utils/deleteFile.js";
@@ -18,25 +15,95 @@ const generateSlug = (text) => {
 
     .toLowerCase()
 
+    .trim()
+
     .replace(/[^\w ]+/g, "")
 
     .replace(/ +/g, "-");
 };
 
-const parseLayananIds = (layananIds) => {
+const parseLayananIds = (
+  layananIds
+) => {
 
-  if (!layananIds) return [];
+  if (!layananIds) {
+    return [];
+  }
 
-  if (Array.isArray(layananIds)) {
+  if (
+    Array.isArray(
+      layananIds
+    )
+  ) {
     return layananIds;
   }
 
   try {
-    return JSON.parse(layananIds);
+
+    return JSON.parse(
+      layananIds
+    );
+
   } catch {
+
     return [];
   }
 };
+
+const attachCoverImage =
+  async (portfolio) => {
+
+    const coverImage =
+      await FotoPortfolio.findOne({
+
+        portfolioId:
+          portfolio._id,
+
+        isCover: true
+
+      });
+
+    return {
+
+      ...portfolio.toObject(),
+
+      coverImage,
+    };
+  };
+
+const ensureCoverExists =
+  async (portfolioId) => {
+
+    const coverExists =
+      await FotoPortfolio.findOne({
+
+        portfolioId,
+
+        isCover: true,
+      });
+
+    if (coverExists) {
+      return;
+    }
+
+    const firstImage =
+      await FotoPortfolio.findOne({
+
+        portfolioId,
+      })
+
+      .sort({
+        order: 1
+      });
+
+    if (!firstImage) {
+      return;
+    }
+
+    firstImage.isCover = true;
+
+    await firstImage.save();
+  };
 
 /* ================= CREATE ================= */
 
@@ -49,12 +116,8 @@ export const createPortfolio =
         title,
         excerpt,
         content,
-        type,
         layananIds,
         isFeatured,
-        ticketId,
-        rating,
-        review,
       } = req.body;
 
       const galleryFiles =
@@ -69,37 +132,32 @@ export const createPortfolio =
           status: 400,
 
           message:
-            "Gallery wajib",
+            "Gallery wajib diisi",
         };
       }
 
       const portfolio =
         await Portfolio.create({
 
-          ticketId: ticketId || null,
-
           layananIds:
-            parseLayananIds(layananIds),
+            parseLayananIds(
+              layananIds
+            ),
 
           title,
 
           slug:
             generateSlug(title),
 
-          excerpt,
+          excerpt:
+            excerpt || "",
 
-          content,
-
-          rating,
-
-          review,
+          content:
+            content || "",
 
           isFeatured:
             isFeatured === "true" ||
             isFeatured === true,
-
-          type:
-            type || "manual",
 
           isActive: true,
         });
@@ -118,10 +176,10 @@ export const createPortfolio =
               `/uploads/portfolio/${file.filename}`,
 
             order:
-              index + 1,
+              index,
 
             caption:
-              "Hasil dekorasi Floraless",
+              "Portfolio Floraless",
 
             isCover:
               index === 0,
@@ -147,7 +205,10 @@ export const createPortfolio =
         message:
           "Portfolio berhasil dibuat",
 
-        portfolio: result,
+        portfolio:
+          await attachCoverImage(
+            result
+          ),
       });
 
     } catch (err) {
@@ -187,25 +248,7 @@ export const getPortfolios =
         await Promise.all(
 
           portfolios.map(
-            async (item) => {
-
-              const coverImage =
-                await FotoPortfolio.findOne({
-
-                  portfolioId:
-                    item._id,
-
-                  isCover: true
-
-                });
-
-              return {
-
-                ...item.toObject(),
-
-                coverImage
-              };
-            }
+            attachCoverImage
           )
         );
 
@@ -217,7 +260,7 @@ export const getPortfolios =
     }
   };
 
-/* ================= GET FEATURED ================= */
+/* ================= FEATURED ================= */
 
 export const getFeaturedPortfolios =
   async (
@@ -232,6 +275,7 @@ export const getFeaturedPortfolios =
         await Portfolio.find({
 
           isActive: true,
+
           isFeatured: true,
 
         })
@@ -249,25 +293,7 @@ export const getFeaturedPortfolios =
         await Promise.all(
 
           portfolios.map(
-            async (item) => {
-
-              const coverImage =
-                await FotoPortfolio.findOne({
-
-                  portfolioId:
-                    item._id,
-
-                  isCover: true
-
-                });
-
-              return {
-
-                ...item.toObject(),
-
-                coverImage
-              };
-            }
+            attachCoverImage
           )
         );
 
@@ -279,7 +305,7 @@ export const getFeaturedPortfolios =
     }
   };
 
-/* ================= GET BY LAYANAN ================= */
+/* ================= BY LAYANAN ================= */
 
 export const getPortfolioByLayanan =
   async (
@@ -313,25 +339,7 @@ export const getPortfolioByLayanan =
         await Promise.all(
 
           portfolios.map(
-            async (item) => {
-
-              const coverImage =
-                await FotoPortfolio.findOne({
-
-                  portfolioId:
-                    item._id,
-
-                  isCover: true
-
-                });
-
-              return {
-
-                ...item.toObject(),
-
-                coverImage
-              };
-            }
+            attachCoverImage
           )
         );
 
@@ -343,10 +351,14 @@ export const getPortfolioByLayanan =
     }
   };
 
-/* ================= GET DETAIL ================= */
+/* ================= DETAIL ================= */
 
 export const getPortfolioById =
-  async (req, res, next) => {
+  async (
+    req,
+    res,
+    next
+  ) => {
 
     try {
 
@@ -356,7 +368,8 @@ export const getPortfolioById =
         )
 
         .populate(
-          "layananIds"
+          "layananIds",
+          "nama"
         );
 
       if (!portfolio) {
@@ -366,7 +379,7 @@ export const getPortfolioById =
           status: 404,
 
           message:
-            "Portfolio tidak ditemukan"
+            "Portfolio tidak ditemukan",
         };
       }
 
@@ -389,7 +402,6 @@ export const getPortfolioById =
             portfolio._id,
 
           isCover: true
-
         });
 
       res.json({
@@ -398,7 +410,7 @@ export const getPortfolioById =
 
         images,
 
-        coverImage
+        coverImage,
       });
 
     } catch (err) {
@@ -407,10 +419,14 @@ export const getPortfolioById =
     }
   };
 
-/* ================= GET BY SLUG ================= */
+/* ================= SLUG ================= */
 
 export const getPortfolioBySlug =
-  async (req, res, next) => {
+  async (
+    req,
+    res,
+    next
+  ) => {
 
     try {
 
@@ -424,16 +440,19 @@ export const getPortfolioBySlug =
         })
 
         .populate(
-          "layananIds"
+          "layananIds",
+          "nama"
         );
 
       if (!portfolio) {
 
-        return res.status(404).json({
+        throw {
+
+          status: 404,
 
           message:
             "Portfolio tidak ditemukan",
-        });
+        };
       }
 
       const photos =
@@ -454,8 +473,7 @@ export const getPortfolioBySlug =
           portfolioId:
             portfolio._id,
 
-          isCover: true
-
+          isCover: true,
         });
 
       res.json({
@@ -464,7 +482,7 @@ export const getPortfolioBySlug =
 
         photos,
 
-        coverImage
+        coverImage,
       });
 
     } catch (err) {
@@ -476,7 +494,11 @@ export const getPortfolioBySlug =
 /* ================= UPDATE ================= */
 
 export const updatePortfolio =
-  async (req, res, next) => {
+  async (
+    req,
+    res,
+    next
+  ) => {
 
     try {
 
@@ -503,16 +525,15 @@ export const updatePortfolio =
         existingImages,
         layananIds,
         isFeatured,
-        ticketId,
-        rating,
-        review,
-        type,
       } = req.body;
 
       if (title) {
 
         portfolio.title =
           title;
+
+        portfolio.slug =
+          generateSlug(title);
       }
 
       if (excerpt !== undefined) {
@@ -530,7 +551,9 @@ export const updatePortfolio =
       if (layananIds !== undefined) {
 
         portfolio.layananIds =
-          parseLayananIds(layananIds);
+          parseLayananIds(
+            layananIds
+          );
       }
 
       if (isFeatured !== undefined) {
@@ -540,44 +563,25 @@ export const updatePortfolio =
           isFeatured === true;
       }
 
-      if (ticketId !== undefined) {
-
-        portfolio.ticketId =
-          ticketId || null;
-      }
-
-      if (rating !== undefined) {
-
-        portfolio.rating =
-          rating;
-      }
-
-      if (review !== undefined) {
-
-        portfolio.review =
-          review;
-      }
-
-      if (type) {
-
-        portfolio.type = type;
-      }
-
       await portfolio.save();
 
-      /* ================= REMOVE IMAGES ================= */
+      /* ================= EXISTING IMAGES ================= */
 
-      const existingImageIds =
+      const parsedExistingImages =
+
         existingImages
 
           ? JSON.parse(
               existingImages
-            ).map(
-              (img) =>
-                img._id
             )
 
           : [];
+
+      const existingImageIds =
+
+        parsedExistingImages.map(
+          (img) => img._id
+        );
 
       const oldImages =
         await FotoPortfolio.find({
@@ -585,6 +589,8 @@ export const updatePortfolio =
           portfolioId:
             portfolio._id,
         });
+
+      /* ================= DELETE REMOVED ================= */
 
       for (const img of oldImages) {
 
@@ -606,7 +612,35 @@ export const updatePortfolio =
         }
       }
 
-      /* ================= ADD NEW IMAGES ================= */
+      /* ================= UPDATE EXISTING ================= */
+
+      for (
+        let i = 0;
+        i < parsedExistingImages.length;
+        i++
+      ) {
+
+        const img =
+          parsedExistingImages[i];
+
+        await FotoPortfolio.findByIdAndUpdate(
+
+          img._id,
+
+          {
+
+            order:
+              img.order ??
+              i,
+
+            isCover:
+              img.isCover ||
+              false,
+          }
+        );
+      }
+
+      /* ================= NEW GALLERY ================= */
 
       const galleryFiles =
         req.files?.gallery || [];
@@ -637,11 +671,10 @@ export const updatePortfolio =
 
               order:
                 existingCount +
-                index +
-                1,
+                index,
 
               caption:
-                "Hasil dekorasi Floraless",
+                "Portfolio Floraless",
 
               isCover: false,
             })
@@ -652,39 +685,11 @@ export const updatePortfolio =
         );
       }
 
-      /* ================= ENSURE COVER EXISTS ================= */
+      /* ================= ENSURE COVER ================= */
 
-      const coverExists =
-        await FotoPortfolio.findOne({
-
-          portfolioId:
-            portfolio._id,
-
-          isCover: true
-        });
-
-      if (!coverExists) {
-
-        const firstImage =
-          await FotoPortfolio.findOne({
-
-            portfolioId:
-              portfolio._id
-
-          })
-
-          .sort({
-            order: 1
-          });
-
-        if (firstImage) {
-
-          firstImage.isCover =
-            true;
-
-          await firstImage.save();
-        }
-      }
+      await ensureCoverExists(
+        portfolio._id
+      );
 
       const result =
         await Portfolio.findById(
@@ -701,7 +706,10 @@ export const updatePortfolio =
         message:
           "Portfolio berhasil diupdate",
 
-        portfolio: result,
+        portfolio:
+          await attachCoverImage(
+            result
+          ),
       });
 
     } catch (err) {
@@ -713,23 +721,27 @@ export const updatePortfolio =
 /* ================= DELETE ================= */
 
 export const deletePortfolio =
-  async (req, res, next) => {
+  async (
+    req,
+    res,
+    next
+  ) => {
 
     try {
 
-      const data =
+      const portfolio =
         await Portfolio.findById(
           req.params.id
         );
 
-      if (!data) {
+      if (!portfolio) {
 
         throw {
 
           status: 404,
 
           message:
-            "Portfolio tidak ditemukan"
+            "Portfolio tidak ditemukan",
         };
       }
 
@@ -737,7 +749,7 @@ export const deletePortfolio =
         await FotoPortfolio.find({
 
           portfolioId:
-            data._id
+            portfolio._id,
         });
 
       for (const img of images) {
@@ -750,12 +762,12 @@ export const deletePortfolio =
       await FotoPortfolio.deleteMany({
 
         portfolioId:
-          data._id
+          portfolio._id,
       });
 
-      data.isActive = false;
+      portfolio.isActive = false;
 
-      await data.save();
+      await portfolio.save();
 
       await logActivity({
 
@@ -766,14 +778,84 @@ export const deletePortfolio =
           "DELETE_PORTFOLIO",
 
         customDescription:
-          `Portfolio ${data.title} dihapus`
+          `Portfolio ${portfolio.title} dihapus`,
       });
 
       res.json({
 
         message:
-          "Portfolio berhasil dihapus"
+          "Portfolio berhasil dihapus",
       });
+
+    } catch (err) {
+
+      next(err);
+    }
+  };
+
+/* ================= RELATED ================= */
+
+export const getRelatedPortfolio =
+  async (
+    req,
+    res,
+    next
+  ) => {
+
+    try {
+
+      const current =
+        await Portfolio.findById(
+          req.params.id
+        );
+
+      if (!current) {
+
+        throw {
+
+          status: 404,
+
+          message:
+            "Portfolio tidak ditemukan",
+        };
+      }
+
+      const related =
+        await Portfolio.find({
+
+          _id: {
+            $ne: current._id
+          },
+
+          isActive: true,
+
+          layananIds: {
+            $in:
+              current.layananIds
+          }
+
+        })
+
+        .populate(
+          "layananIds",
+          "nama"
+        )
+
+        .sort({
+          createdAt: -1
+        })
+
+        .limit(4);
+
+      const data =
+        await Promise.all(
+
+          related.map(
+            attachCoverImage
+          )
+        );
+
+      res.json(data);
 
     } catch (err) {
 
@@ -883,220 +965,6 @@ export const reorderPortfolioImages =
           "Urutan gallery berhasil diupdate"
 
       });
-
-    } catch (err) {
-
-      next(err);
-    }
-  };
-
-  /* ================= RELATED ================= */
-
-export const getRelatedPortfolio =
-  async (req, res, next) => {
-
-    try {
-
-      const current =
-        await Portfolio.findById(
-          req.params.id
-        );
-
-      if (!current) {
-
-        throw {
-
-          status: 404,
-
-          message:
-            "Portfolio tidak ditemukan"
-        };
-      }
-
-      const related =
-        await Portfolio.find({
-
-          _id: {
-            $ne: current._id
-          },
-
-          isActive: true,
-
-          layananIds: {
-            $in:
-              current.layananIds
-          }
-
-        })
-
-        .populate(
-          "layananIds",
-          "nama"
-        )
-
-        .sort({
-          createdAt: -1
-        })
-
-        .limit(4);
-
-      const data =
-        await Promise.all(
-
-          related.map(
-            async (item) => {
-
-              const coverImage =
-                await FotoPortfolio.findOne({
-
-                  portfolioId:
-                    item._id,
-
-                  isCover: true
-
-                });
-
-              return {
-
-                ...item.toObject(),
-
-                coverImage
-              };
-            }
-          )
-        );
-
-      res.json(data);
-
-    } catch (err) {
-
-      next(err);
-    }
-  };
-
-/* ================= GENERATE FROM TICKET ================= */
-
-export const generatePortfolioFromTicket =
-  async (req, res, next) => {
-
-    try {
-
-      const ticket =
-        await Ticket.findById(
-          req.params.ticketId
-        )
-
-        .populate(
-          "layananId",
-          "nama"
-        );
-
-      if (!ticket) {
-
-        throw {
-
-          status: 404,
-
-          message:
-            "Ticket tidak ditemukan"
-        };
-      }
-
-      if (
-        ticket.status !== "done"
-      ) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Ticket belum selesai"
-        };
-      }
-
-      const existing =
-        await Portfolio.findOne({
-
-          ticketId:
-            ticket._id
-        });
-
-      if (existing) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Portfolio ticket ini sudah ada"
-        };
-      }
-
-      const detail =
-        await DetailTicket.findOne({
-
-          ticketId:
-            ticket._id
-        });
-
-      const review =
-        await Review.findOne({
-
-          ticketId:
-            ticket._id,
-
-          isActive: true
-        });
-
-      const result = {
-
-        ticketId:
-          ticket._id,
-
-        layananIds:
-          ticket.layananId
-            ? [ticket.layananId._id]
-            : [],
-
-        title:
-          detail?.nama_acara ||
-          "Portfolio Floraless",
-
-        excerpt:
-          detail?.catatan ||
-          "",
-
-        content: `
-Acara:
-${detail?.nama_acara || "-"}
-
-Lokasi:
-${detail?.lokasi || "-"}
-
-Tanggal Acara:
-${detail?.tanggal_acara
-  ? new Date(
-      detail.tanggal_acara
-    ).toLocaleDateString("id-ID")
-  : "-"}
-
-Dekorasi dikerjakan oleh tim Floraless
-dengan konsep elegan dan premium.
-        `.trim(),
-
-        rating:
-          review?.rating || 5,
-
-        review:
-          review?.komentar || "",
-
-        isFeatured: false,
-
-        type: "ticket"
-      };
-
-      res.json(result);
 
     } catch (err) {
 

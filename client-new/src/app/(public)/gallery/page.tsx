@@ -14,6 +14,7 @@ from "lucide-react";
 
 import {
   getGalleryPortfolio,
+  getFeaturedPortfolios,
 } from "@/services/portfolio.service";
 
 type PortfolioItem = {
@@ -60,7 +61,7 @@ export default function GalleryPage() {
         try {
 
           const res =
-            await getGalleryPortfolio();
+            await getFeaturedPortfolios();
 
           setData(
             Array.isArray(res)
