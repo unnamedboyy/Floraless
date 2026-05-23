@@ -1,16 +1,99 @@
 import api from "@/lib/axios";
 
-export const getAllLayanan = (params?: any) =>
-  api.get("/layanans", { params });
+/* ======================================================
+   GET ALL
+====================================================== */
 
-export const createLayanan = (data: any) =>
-  api.post("/layanans", data);
+export const getAllLayanan =
+  async (params?: any) => {
 
-export const updateLayanan = (id: string, data: any) =>
-  api.put(`/layanans/${id}`, data);
+    const res =
+      await api.get(
+        "/layanans",
+        {
+          params,
+        }
+      );
 
-export const toggleLayanan = (id: string) =>
-  api.patch(`/layanans/${id}/toggle`);
+    return res.data;
+  };
 
-export const deleteLayanan = (id: string) =>
-  api.delete(`/layanans/${id}`);
+/* ======================================================
+   GET DETAIL
+====================================================== */
+
+export const getLayananById =
+  async (id: string) => {
+
+    const res =
+      await api.get(
+        `/layanans/${id}`
+      );
+
+    return res.data;
+  };
+
+/* ======================================================
+   CREATE
+====================================================== */
+
+export const createLayanan =
+  async (data: any) => {
+
+    const res =
+      await api.post(
+        "/layanans",
+        data
+      );
+
+    return res.data;
+  };
+
+/* ======================================================
+   UPDATE
+====================================================== */
+
+export const updateLayanan =
+  async (
+    id: string,
+    data: any
+  ) => {
+
+    const res =
+      await api.put(
+        `/layanans/${id}`,
+        data
+      );
+
+    return res.data;
+  };
+
+/* ======================================================
+   TOGGLE
+====================================================== */
+
+export const toggleLayanan =
+  async (id: string) => {
+
+    const res =
+      await api.patch(
+        `/layanans/${id}/toggle`
+      );
+
+    return res.data;
+  };
+
+/* ======================================================
+   DELETE
+====================================================== */
+
+export const deleteLayanan =
+  async (id: string) => {
+
+    const res =
+      await api.delete(
+        `/layanans/${id}`
+      );
+
+    return res.data;
+  };

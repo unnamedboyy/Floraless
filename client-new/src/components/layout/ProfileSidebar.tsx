@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 
+import Image from "next/image";
+
 import {
   User,
   ShoppingBag,
@@ -15,6 +17,11 @@ import {
 } from "next/navigation";
 
 import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
   getProfile,
   logout,
 } from "@/lib/auth";
@@ -24,8 +31,22 @@ export default function ProfileSidebar() {
   const pathname =
     usePathname();
 
-  const profile =
-    getProfile();
+  const [mounted, setMounted] =
+    useState(false);
+
+  const [profile, setProfile] =
+    useState<any>(null);
+
+  useEffect(() => {
+
+    setMounted(true);
+
+    const data =
+      getProfile();
+
+    setProfile(data);
+
+  }, []);
 
   const menus = [
 
@@ -42,17 +63,19 @@ export default function ProfileSidebar() {
     },
 
     {
-      label: "Pembayaran",
-      href: "/profile/payment",
-      icon: <CreditCard size={18} />,
-    },
-
-    {
       label: "Cashback",
       href: "/profile/cashback",
       icon: <Gift size={18} />,
     },
   ];
+
+  if (!mounted) return null;
+
+  const avatar =
+    profile?.profile &&
+    profile.profile !== ""
+      ? profile.profile
+      : "/images/profile-default.png";
 
   return (
 
@@ -64,9 +87,7 @@ export default function ProfileSidebar() {
       shadow-sm
     ">
 
-      {/* =====================================================
-         PROFILE
-      ===================================================== */}
+      {/* PROFILE */}
 
       <div className="
         border-b
@@ -80,23 +101,20 @@ export default function ProfileSidebar() {
         ">
 
           <div className="
-            flex
-            h-14
-            w-14
-            items-center
-            justify-center
+            relative
+            h-16
+            w-16
+            overflow-hidden
             rounded-full
-            bg-[#C9AE63]
-            text-xl
-            font-bold
-            text-white
+            border
           ">
 
-            {
-              profile?.nama
-                ?.charAt(0)
-                ?.toUpperCase() || "P"
-            }
+            <Image
+              src={avatar}
+              alt="Profile"
+              fill
+              className="object-cover"
+            />
 
           </div>
 
@@ -104,11 +122,14 @@ export default function ProfileSidebar() {
 
             <h2 className="
               font-semibold
+              text-lg
             ">
+
               {
                 profile?.nama ||
                 "Pelanggan"
               }
+
             </h2>
 
             <p className="
@@ -124,9 +145,7 @@ export default function ProfileSidebar() {
 
       </div>
 
-      {/* =====================================================
-         MENUS
-      ===================================================== */}
+      {/* MENUS */}
 
       <div className="
         mt-6
@@ -159,12 +178,10 @@ export default function ProfileSidebar() {
 
                     ${
                       active
-
                         ? `
                           bg-black
                           text-white
                         `
-
                         : `
                           text-gray-600
                           hover:bg-gray-100
@@ -173,13 +190,9 @@ export default function ProfileSidebar() {
                   `}
                 >
 
-                  {
-                    item.icon
-                  }
+                  {item.icon}
 
-                  {
-                    item.label
-                  }
+                  {item.label}
 
                 </Link>
               );
@@ -189,9 +202,7 @@ export default function ProfileSidebar() {
 
       </div>
 
-      {/* =====================================================
-         LOGOUT
-      ===================================================== */}
+      {/* LOGOUT */}
 
       <button
         onClick={logout}

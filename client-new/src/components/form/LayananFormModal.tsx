@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Image from "next/image";
+import {
+  useEffect,
+  useState,
+} from "react";
 
 type Props = {
   open: boolean;
@@ -9,122 +13,210 @@ type Props = {
   initialData?: any;
 };
 
-const formatRupiahInput = (value: string) => {
-  const number = value.replace(/\D/g, "");
+const formatRupiahInput =
+  (value: string) => {
 
-  if (!number) return "";
+    const number =
+      value.replace(/\D/g, "");
 
-  return new Intl.NumberFormat("id-ID").format(
-    Number(number)
-  );
-};
+    if (!number) return "";
+
+    return new Intl.NumberFormat(
+      "id-ID"
+    ).format(Number(number));
+  };
 
 export default function LayananFormModal({
-  open,
-  onClose,
-  onSubmit,
-  initialData,
-}: Props) {
-  const [loading, setLoading] = useState(false);
 
-  const [form, setForm] = useState({
-    nama: "",
-    harga: "",
-    deskripsi: "",
-  });
+  open,
+
+  onClose,
+
+  onSubmit,
+
+  initialData,
+
+}: Props) {
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [form, setForm] =
+    useState({
+
+      nama: "",
+
+      harga: "",
+
+      deskripsi: "",
+
+      thumbnail: "",
+    });
+
+  /* =====================================================
+     EFFECT
+  ===================================================== */
 
   useEffect(() => {
 
     if (initialData) {
 
       setForm({
-        nama: initialData.nama || "",
-        harga: initialData.harga
-          ? String(initialData.harga)
-          : "",
+
+        nama:
+          initialData.nama || "",
+
+        harga:
+          initialData.harga
+
+            ? String(
+                initialData.harga
+              )
+
+            : "",
+
         deskripsi:
-          initialData.deskripsi || "",
+          initialData.deskripsi ||
+          "",
+
+        thumbnail:
+          initialData.thumbnail ||
+          "",
       });
 
     } else {
 
       setForm({
-        nama: "",
-        harga: "",
-        deskripsi: "",
-      });
 
+        nama: "",
+
+        harga: "",
+
+        deskripsi: "",
+
+        thumbnail: "",
+      });
     }
 
   }, [initialData, open]);
 
-  const handleSubmit = async () => {
+  /* =====================================================
+     SUBMIT
+  ===================================================== */
 
-    try {
+  const handleSubmit =
+    async () => {
 
-      setLoading(true);
+      try {
 
-      await onSubmit({
-        ...form,
-        harga: Number(
-          form.harga.replace(/\D/g, "")
-        ),
-      });
+        setLoading(true);
 
-    } finally {
+        await onSubmit({
 
-      setLoading(false);
+          ...form,
 
-    }
-  };
+          harga: Number(
+
+            form.harga.replace(
+              /\D/g,
+              ""
+            )
+          ),
+        });
+
+      } finally {
+
+        setLoading(false);
+      }
+    };
 
   if (!open) return null;
 
+  const previewImage =
+
+    form.thumbnail ||
+
+    "/service-default.jpg";
+
+  /* =====================================================
+     UI
+  ===================================================== */
+
   return (
+
     <div className="
-      fixed inset-0 z-50
+      fixed
+      inset-0
+      z-50
+      flex
+      items-center
+      justify-center
       bg-black/40
       backdrop-blur-sm
-      flex items-center justify-center
       p-4
     ">
 
       {/* CARD */}
       <div className="
         w-full
-        max-w-2xl
-        bg-white
-        rounded-3xl
-        shadow-2xl
+        max-w-3xl
         overflow-hidden
-        animate-in fade-in zoom-in-95 duration-200
+        rounded-[32px]
+        bg-white
+        shadow-2xl
+        animate-in
+        fade-in
+        zoom-in-95
+        duration-200
       ">
 
-        {/* HEADER */}
+        {/* =================================================
+           HEADER
+        ================================================= */}
+
         <div className="
-          px-6 py-5
+          flex
+          items-start
+          justify-between
           border-b
-          flex items-start justify-between
+          px-7
+          py-6
         ">
 
           <div>
 
-            <h2 className="
-              text-xl
-              font-semibold
-              text-gray-900
+            <p className="
+              text-xs
+              uppercase
+              tracking-[0.3em]
+              text-[#C9AE63]
             ">
+              Floraless Service
+            </p>
+
+            <h2 className="
+              mt-3
+              text-2xl
+              font-semibold
+              tracking-tight
+              text-black
+            ">
+
               {initialData
+
                 ? "Edit Layanan"
+
                 : "Tambah Layanan"}
+
             </h2>
 
             <p className="
+              mt-2
               text-sm
-              text-gray-500
-              mt-1
+              text-neutral-500
             ">
-              Kelola informasi layanan dekorasi
+              Kelola informasi layanan
+              dekorasi premium Floraless.
             </p>
 
           </div>
@@ -132,11 +224,14 @@ export default function LayananFormModal({
           <button
             onClick={onClose}
             className="
-              w-10 h-10
+              flex
+              h-11
+              w-11
+              items-center
+              justify-center
               rounded-2xl
-              hover:bg-gray-100
               transition
-              text-gray-500
+              hover:bg-neutral-100
             "
           >
             ✕
@@ -144,47 +239,122 @@ export default function LayananFormModal({
 
         </div>
 
-        {/* BODY */}
-        <div className="p-6 space-y-6">
+        {/* =================================================
+           BODY
+        ================================================= */}
 
-          {/* INFORMASI */}
+        <div className="
+          max-h-[75vh]
+          overflow-y-auto
+          p-7
+          space-y-7
+        ">
+
+          {/* IMAGE PREVIEW */}
           <div className="
+            overflow-hidden
+            rounded-[28px]
             border
-            rounded-3xl
-            p-5
-            bg-gray-50/70
-            space-y-5
+            border-[#EFE7DA]
           ">
 
+            <div className="
+              relative
+              h-[260px]
+              w-full
+            ">
+
+              <Image
+                src={previewImage}
+                alt="Preview Thumbnail"
+                fill
+                className="
+                  object-cover
+                "
+              />
+
+              {/* OVERLAY */}
+              <div className="
+                absolute
+                inset-0
+                bg-gradient-to-t
+                from-black/40
+                via-black/10
+                to-transparent
+              " />
+
+              {/* BADGE */}
+              <div className="
+                absolute
+                left-5
+                top-5
+                rounded-full
+                bg-white/90
+                px-4
+                py-2
+                text-xs
+                font-medium
+                tracking-[0.25em]
+                text-black
+                backdrop-blur
+              ">
+                PREVIEW
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* =================================================
+             FORM
+          ================================================= */}
+
+          <div className="
+            rounded-[32px]
+            border
+            border-[#EFE7DA]
+            bg-[#FAF7F2]
+            p-6
+            space-y-6
+          ">
+
+            {/* TITLE */}
             <div>
 
               <h3 className="
+                text-lg
                 font-semibold
-                text-gray-900
               ">
                 Informasi Layanan
               </h3>
 
               <p className="
-                text-sm
-                text-gray-500
                 mt-1
+                text-sm
+                text-neutral-500
               ">
-                Isi detail layanan yang tersedia
+                Isi detail layanan dekorasi
+                yang tersedia.
               </p>
 
             </div>
 
             {/* NAMA */}
-            <FormField label="Nama Layanan">
+            <FormField
+              label="Nama Layanan"
+            >
 
               <input
-                placeholder="Masukkan nama layanan"
+                placeholder="Wedding Decoration"
                 value={form.nama}
                 onChange={(e) =>
+
                   setForm({
+
                     ...form,
-                    nama: e.target.value,
+
+                    nama:
+                      e.target.value,
                   })
                 }
                 className="
@@ -192,28 +362,33 @@ export default function LayananFormModal({
                   rounded-2xl
                   border
                   bg-white
-                  px-4 py-3
+                  px-5
+                  py-3.5
                   text-sm
-                  focus:outline-none
-                  focus:ring-2
-                  focus:ring-black
+                  outline-none
+                  transition
+                  focus:border-black
                 "
               />
 
             </FormField>
 
             {/* HARGA */}
-            <FormField label="Harga Layanan">
+            <FormField
+              label="Harga Layanan"
+            >
 
-              <div className="relative">
+              <div className="
+                relative
+              ">
 
                 <div className="
                   absolute
-                  left-4
+                  left-5
                   top-1/2
                   -translate-y-1/2
                   text-sm
-                  text-gray-500
+                  text-neutral-500
                 ">
                   Rp
                 </div>
@@ -224,8 +399,11 @@ export default function LayananFormModal({
                     form.harga
                   )}
                   onChange={(e) =>
+
                     setForm({
+
                       ...form,
+
                       harga:
                         e.target.value.replace(
                           /\D/g,
@@ -238,13 +416,13 @@ export default function LayananFormModal({
                     rounded-2xl
                     border
                     bg-white
-                    pl-12
-                    pr-4
-                    py-3
+                    py-3.5
+                    pl-14
+                    pr-5
                     text-sm
-                    focus:outline-none
-                    focus:ring-2
-                    focus:ring-black
+                    outline-none
+                    transition
+                    focus:border-black
                   "
                 />
 
@@ -252,17 +430,22 @@ export default function LayananFormModal({
 
             </FormField>
 
-            {/* DESKRIPSI */}
-            <FormField label="Deskripsi">
+            {/* THUMBNAIL */}
+            <FormField
+              label="Thumbnail URL"
+            >
 
-              <textarea
-                placeholder="Masukkan deskripsi layanan"
-                rows={5}
-                value={form.deskripsi}
+              <input
+                placeholder="https://..."
+                value={form.thumbnail}
                 onChange={(e) =>
+
                   setForm({
+
                     ...form,
-                    deskripsi: e.target.value,
+
+                    thumbnail:
+                      e.target.value,
                   })
                 }
                 className="
@@ -270,12 +453,56 @@ export default function LayananFormModal({
                   rounded-2xl
                   border
                   bg-white
-                  px-4 py-3
+                  px-5
+                  py-3.5
                   text-sm
+                  outline-none
+                  transition
+                  focus:border-black
+                "
+              />
+
+              <p className="
+                text-xs
+                text-neutral-400
+              ">
+                Kosongkan jika ingin
+                menggunakan gambar default.
+              </p>
+
+            </FormField>
+
+            {/* DESKRIPSI */}
+            <FormField
+              label="Deskripsi"
+            >
+
+              <textarea
+                rows={6}
+                placeholder="Masukkan deskripsi layanan..."
+                value={form.deskripsi}
+                onChange={(e) =>
+
+                  setForm({
+
+                    ...form,
+
+                    deskripsi:
+                      e.target.value,
+                  })
+                }
+                className="
+                  w-full
                   resize-none
-                  focus:outline-none
-                  focus:ring-2
-                  focus:ring-black
+                  rounded-2xl
+                  border
+                  bg-white
+                  px-5
+                  py-4
+                  text-sm
+                  outline-none
+                  transition
+                  focus:border-black
                 "
               />
 
@@ -285,24 +512,31 @@ export default function LayananFormModal({
 
         </div>
 
-        {/* FOOTER */}
+        {/* =================================================
+           FOOTER
+        ================================================= */}
+
         <div className="
+          flex
+          flex-col
+          gap-3
           border-t
-          px-6 py-5
-          flex flex-col sm:flex-row gap-3
+          px-7
+          py-5
+          sm:flex-row
         ">
 
           <button
             onClick={onClose}
             className="
               flex-1
-              py-3
               rounded-2xl
               border
-              hover:bg-gray-50
-              transition
+              py-3.5
               text-sm
               font-medium
+              transition
+              hover:bg-neutral-50
             "
           >
             Batal
@@ -313,22 +547,28 @@ export default function LayananFormModal({
             disabled={loading}
             className="
               flex-1
-              py-3
               rounded-2xl
               bg-black
-              text-white
-              hover:opacity-90
-              transition
+              py-3.5
               text-sm
               font-medium
+              text-white
+              transition
+              hover:opacity-90
               disabled:opacity-50
             "
           >
+
             {loading
+
               ? "Menyimpan..."
+
               : initialData
-              ? "Simpan Perubahan"
-              : "Tambah Layanan"}
+
+                ? "Simpan Perubahan"
+
+                : "Tambah Layanan"}
+
           </button>
 
         </div>
@@ -344,20 +584,28 @@ export default function LayananFormModal({
 ========================================================= */
 
 function FormField({
+
   label,
+
   children,
+
 }: {
+
   label: string;
+
   children: React.ReactNode;
 }) {
 
   return (
-    <div className="space-y-2">
+
+    <div className="
+      space-y-2
+    ">
 
       <label className="
         text-sm
         font-medium
-        text-gray-700
+        text-neutral-700
       ">
         {label}
       </label>

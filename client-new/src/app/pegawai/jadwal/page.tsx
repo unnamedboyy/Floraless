@@ -2,19 +2,54 @@
 
 import { useState } from "react";
 
-import { useJadwal } from "@/hooks/useJadwal";
+import { useJadwal }
+from "@/hooks/useJadwal";
 
-import JadwalCalendar from "@/components/jadwal/JadwalCalendar";
-import DetailJadwalModal from "@/components/modal/DetailJadwalModal";
+import TableWrapper
+from "@/components/table/TableWrapper";
+
+import JadwalCalendar
+from "@/components/jadwal/JadwalCalendar";
+
+import DetailJadwalModal
+from "@/components/modal/DetailJadwalModal";
+
 export default function PegawaiJadwalPage() {
 
-  const today =
-    new Date().toISOString().split("T")[0];
+  /* =====================================================
+     STATE
+  ===================================================== */
 
-  const [query, setQuery] = useState({
-    start: today,
-    end: today
-  });
+  const today =
+    new Date()
+      .toISOString()
+      .split("T")[0];
+
+  const [mode, setMode] =
+    useState<"table" | "calendar">(
+      "calendar"
+    );
+
+  const [view, setView] =
+    useState<"list" | "grid">(
+      "list"
+    );
+
+  const [query, setQuery] =
+    useState({
+
+      page: 1,
+
+      limit: 10,
+
+      search: "",
+
+      start: today,
+
+      end: today,
+
+      status: "",
+    });
 
   const [selected, setSelected] =
     useState<any>(null);
@@ -22,135 +57,567 @@ export default function PegawaiJadwalPage() {
   const [open, setOpen] =
     useState(false);
 
+  /* =====================================================
+     DATA
+  ===================================================== */
+
   const {
-    data,
+    data = [],
     loading,
-    refetch
+    refetch,
   } = useJadwal(query);
 
-  const handleSelect = (event: any) => {
-    setSelected(event);
-    setOpen(true);
-  };
+  /* =====================================================
+     ACTION
+  ===================================================== */
+
+  const handleSelect =
+    (event: any) => {
+
+      setSelected(event);
+
+      setOpen(true);
+    };
+
+  /* =====================================================
+     BADGE
+  ===================================================== */
+
+  const getStatusBadge =
+    (status: string) => {
+
+      const map: any = {
+
+        pending:
+          "bg-yellow-100 text-yellow-700 border border-yellow-200",
+
+        approved:
+          "bg-blue-100 text-blue-700 border border-blue-200",
+
+        done:
+          "bg-green-100 text-green-700 border border-green-200",
+      };
+
+      return (
+        map[status] ||
+        "bg-gray-100 text-gray-700 border"
+      );
+    };
+
+  /* =====================================================
+     UI
+  ===================================================== */
 
   return (
-    <div className="p-6 space-y-6">
 
-      {/* HEADER */}
-      <h1 className="text-xl font-semibold">
-        Jadwal Saya
-      </h1>
+    <div className="
+      p-6
+      space-y-6
+    ">
 
-      {/* FILTER */}
-      <div className="bg-white border border-gray-200 rounded-xl p-4 flex gap-4">
+      {/* =================================================
+         HEADER
+      ================================================= */}
 
-        <input
-          type="date"
-          value={query.start}
-          onChange={(e) =>
-            setQuery({
-              ...query,
-              start: e.target.value
-            })
-          }
-          className="border rounded-xl px-3 py-2 text-sm"
-        />
+      <div className="
+        rounded-3xl
+        border
+        bg-white
+        p-6
+        shadow-sm
+      ">
 
-        <input
-          type="date"
-          value={query.end}
-          onChange={(e) =>
-            setQuery({
-              ...query,
-              end: e.target.value
-            })
-          }
-          className="border rounded-xl px-3 py-2 text-sm"
-        />
+        <p className="
+          text-sm
+          uppercase
+          tracking-[0.3em]
+          text-[#C9AE63]
+        ">
+          Jadwal
+        </p>
+
+        <h1 className="
+          mt-3
+          text-3xl
+          font-bold
+        ">
+          Jadwal Saya
+        </h1>
+
+        <p className="
+          mt-3
+          max-w-2xl
+          text-gray-500
+        ">
+          Monitoring jadwal pekerjaan
+          dan acara pegawai.
+        </p>
+
       </div>
 
-      {/* CALENDAR */}
-      <JadwalCalendar
-        data={data}
-        onSelect={handleSelect}
-      />
+      {/* =================================================
+         MODE SWITCH
+      ================================================= */}
 
-      {/* TABLE */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div className="flex gap-2">
 
-        <div className="px-4 py-3 border-b text-sm font-medium">
-          List Jadwal
-        </div>
+        <button
+          onClick={() =>
+            setMode("calendar")
+          }
+          className={`
+            px-4
+            py-2
+            rounded-2xl
+            text-sm
+            transition
 
-        {loading ? (
-          <div className="p-4 text-sm">
-            Loading...
-          </div>
-        ) : data.length === 0 ? (
-          <div className="p-4 text-sm">
-            Tidak ada data
-          </div>
+            ${
+              mode === "calendar"
+
+                ? "bg-black text-white"
+
+                : `
+                  border
+                  bg-white
+                  hover:bg-gray-50
+                `
+            }
+          `}
+        >
+          Calendar
+        </button>
+
+        <button
+          onClick={() =>
+            setMode("table")
+          }
+          className={`
+            px-4
+            py-2
+            rounded-2xl
+            text-sm
+            transition
+
+            ${
+              mode === "table"
+
+                ? "bg-black text-white"
+
+                : `
+                  border
+                  bg-white
+                  hover:bg-gray-50
+                `
+            }
+          `}
+        >
+          Table
+        </button>
+
+      </div>
+
+      {/* =================================================
+         CONTENT
+      ================================================= */}
+
+      <div className="
+        rounded-3xl
+        border
+        bg-white
+        p-4
+        shadow-sm
+      ">
+
+        {mode === "calendar" ? (
+
+          <JadwalCalendar
+            data={data}
+            refetch={refetch}
+            onSelect={handleSelect}
+          />
+
         ) : (
-          <table className="w-full text-sm">
 
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="p-3 text-left">
-                  Tanggal
-                </th>
+          <TableWrapper
 
-                <th className="p-3 text-left">
-                  Title
-                </th>
+            /* 🔥 VIEW */
+            view={view}
+            setView={setView}
 
-                <th className="p-3 text-left">
-                  Lokasi
-                </th>
+            /* 🔥 FILTER */
+            filterContent={
 
-                <th className="p-3 text-left">
-                  Status
-                </th>
-              </tr>
-            </thead>
+              <div className="space-y-3">
 
-            <tbody>
-              {data.map((row: any) => (
-                <tr
-                  key={row._id}
-                  className="border-t"
+                {/* STATUS */}
+                <div>
+
+                  <p className="
+                    text-xs
+                    text-gray-500
+                    mb-1
+                  ">
+                    Status Jadwal
+                  </p>
+
+                  <select
+                    value={query.status}
+                    onChange={(e) =>
+                      setQuery((prev) => ({
+                        ...prev,
+                        status:
+                          e.target.value,
+                        page: 1,
+                      }))
+                    }
+                    className="
+                      w-full
+                      border
+                      rounded-xl
+                      px-3
+                      py-2
+                      text-sm
+                    "
+                  >
+
+                    <option value="">
+                      Semua
+                    </option>
+
+                    <option value="pending">
+                      Pending
+                    </option>
+
+                    <option value="approved">
+                      Approved
+                    </option>
+
+                    <option value="done">
+                      Done
+                    </option>
+
+                  </select>
+
+                </div>
+
+                {/* START */}
+                <div>
+
+                  <p className="
+                    text-xs
+                    text-gray-500
+                    mb-1
+                  ">
+                    Dari Tanggal
+                  </p>
+
+                  <input
+                    type="date"
+                    value={query.start}
+                    onChange={(e) =>
+                      setQuery((prev) => ({
+                        ...prev,
+                        start:
+                          e.target.value,
+                        page: 1,
+                      }))
+                    }
+                    className="
+                      w-full
+                      border
+                      rounded-xl
+                      px-3
+                      py-2
+                      text-sm
+                    "
+                  />
+
+                </div>
+
+                {/* END */}
+                <div>
+
+                  <p className="
+                    text-xs
+                    text-gray-500
+                    mb-1
+                  ">
+                    Sampai Tanggal
+                  </p>
+
+                  <input
+                    type="date"
+                    value={query.end}
+                    onChange={(e) =>
+                      setQuery((prev) => ({
+                        ...prev,
+                        end:
+                          e.target.value,
+                        page: 1,
+                      }))
+                    }
+                    className="
+                      w-full
+                      border
+                      rounded-xl
+                      px-3
+                      py-2
+                      text-sm
+                    "
+                  />
+
+                </div>
+
+                {/* LIMIT */}
+                <div>
+
+                  <p className="
+                    text-xs
+                    text-gray-500
+                    mb-1
+                  ">
+                    Data per halaman
+                  </p>
+
+                  <select
+                    value={query.limit}
+                    onChange={(e) =>
+                      setQuery((prev) => ({
+                        ...prev,
+                        limit: Number(
+                          e.target.value
+                        ),
+                        page: 1,
+                      }))
+                    }
+                    className="
+                      w-full
+                      border
+                      rounded-xl
+                      px-3
+                      py-2
+                      text-sm
+                    "
+                  >
+
+                    <option value={5}>
+                      5
+                    </option>
+
+                    <option value={10}>
+                      10
+                    </option>
+
+                    <option value={20}>
+                      20
+                    </option>
+
+                    <option value={50}>
+                      50
+                    </option>
+
+                  </select>
+
+                </div>
+
+                {/* RESET */}
+                <button
+                  onClick={() =>
+                    setQuery({
+                      page: 1,
+                      limit: 10,
+                      search: "",
+                      start: today,
+                      end: today,
+                      status: "",
+                    })
+                  }
+                  className="
+                    w-full
+                    bg-black
+                    text-white
+                    rounded-xl
+                    py-2
+                    text-sm
+                  "
                 >
+                  Reset Filter
+                </button>
 
-                  <td className="p-3">
-                    {new Date(
-                      row.tanggal_acara
-                    ).toLocaleDateString()}
-                  </td>
+              </div>
+            }
 
-                  <td className="p-3">
-                    {row.title || "-"}
-                  </td>
+            data={data}
+            total={data.length}
 
-                  <td className="p-3">
-                    {row.lokasi || "-"}
-                  </td>
+            query={query}
+            setQuery={setQuery}
 
-                  <td className="p-3">
-                    {row.status || "-"}
-                  </td>
+            columns={[
 
-                </tr>
-              ))}
-            </tbody>
+              {
+                label: "Tanggal",
+                key: "tanggal_acara",
+              },
 
-          </table>
+              {
+                label: "Title",
+                key: "title",
+              },
+
+              {
+                label: "Lokasi",
+                key: "lokasi",
+              },
+
+              {
+                label: "Status",
+                key: "status",
+              },
+
+            ]}
+
+            actions={[
+
+              {
+                label: "Detail",
+
+                onClick: (row) =>
+                  handleSelect(row),
+              },
+
+            ]}
+
+            /* ================= GRID ================= */
+
+            renderItem={(row) => (
+
+              <div
+                className="
+                  bg-white
+                  border
+                  rounded-3xl
+                  p-5
+                  space-y-4
+                  shadow-sm
+                "
+              >
+
+                {/* TOP */}
+                <div className="
+                  flex
+                  items-start
+                  justify-between
+                  gap-3
+                ">
+
+                  <div>
+
+                    <p className="
+                      font-semibold
+                      text-base
+                    ">
+                      {row.title ||
+
+                        row.ticketId
+                          ?.layananId
+                          ?.nama ||
+
+                        "-"}
+                    </p>
+
+                    <p className="
+                      text-sm
+                      text-gray-500
+                      mt-1
+                    ">
+                      {row.lokasi || "-"}
+                    </p>
+
+                  </div>
+
+                  <span
+                    className={`
+                      inline-flex
+                      items-center
+                      px-3
+                      py-1
+                      rounded-full
+                      text-xs
+                      font-medium
+                      ${getStatusBadge(
+                        row.status
+                      )}
+                    `}
+                  >
+                    {row.status}
+                  </span>
+
+                </div>
+
+                {/* DATE */}
+                <div>
+
+                  <p className="
+                    text-xs
+                    text-gray-400
+                  ">
+                    Tanggal Acara
+                  </p>
+
+                  <p className="
+                    text-sm
+                    font-medium
+                    mt-1
+                  ">
+                    {row.tanggal_acara
+
+                      ? new Date(
+                          row.tanggal_acara
+                        ).toLocaleDateString(
+                          "id-ID"
+                        )
+
+                      : "-"}
+                  </p>
+
+                </div>
+
+              </div>
+            )}
+
+          />
+
         )}
+
       </div>
 
-      {/* MODAL */}
+      {/* =================================================
+         LOADING
+      ================================================= */}
+
+      {loading && (
+
+        <p className="
+          text-sm
+          text-gray-500
+        ">
+          Loading...
+        </p>
+
+      )}
+
+      {/* =================================================
+         MODAL
+      ================================================= */}
+
       <DetailJadwalModal
         open={open}
         data={selected}
-        onClose={() => setOpen(false)}
+        onClose={() =>
+          setOpen(false)
+        }
       />
 
     </div>

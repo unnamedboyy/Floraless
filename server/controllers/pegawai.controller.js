@@ -1,3 +1,5 @@
+// pegawai controller untuk pegawai, karena pegawai memiliki relasi dengan user
+
 import Pegawai from "../models/pegawai.js";
 
 export const getPegawai = async (req, res, next) => {

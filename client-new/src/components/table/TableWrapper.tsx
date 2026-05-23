@@ -12,62 +12,112 @@ type Action = {
 };
 
 type Props = {
+
   data: any[];
   total: number;
 
   query: any;
+
   setQuery: (q: any) => void;
 
   columns: any[];
+
   actions?: Action[];
 
-  renderItem?: (row: any) => React.ReactNode;
+  renderItem?: (
+    row: any
+  ) => React.ReactNode;
 
   view?: "list" | "grid";
-  setView?: (v: "list" | "grid") => void;
+
+  setView?: (
+    v: "list" | "grid"
+  ) => void;
+
+  /* 🔥 FILTER DROPDOWN */
+  filterContent?: React.ReactNode;
 };
 
 export default function TableWrapper({
+
   data,
+
   total,
+
   query,
+
   setQuery,
+
   columns,
+
   actions = [],
+
   renderItem,
+
   view = "list",
+
   setView = () => {},
+
+  /* 🔥 ADD */
+  filterContent,
+
 }: Props) {
 
-  const handleSearch = (value: string) => {
-    setQuery({
-      ...query,
-      search: value,
-      page: 1,
-    });
-  };
+  /* ================= SEARCH ================= */
 
-  const handlePageChange = (p: number) => {
-    setQuery({
-      ...query,
-      page: p,
-    });
-  };
+  const handleSearch =
+    (value: string) => {
+
+      setQuery({
+        ...query,
+        search: value,
+        page: 1,
+      });
+    };
+
+  /* ================= PAGINATION ================= */
+
+  const handlePageChange =
+    (p: number) => {
+
+      setQuery({
+        ...query,
+        page: p,
+      });
+    };
+
+  /* ================= UI ================= */
 
   return (
+
     <div className="space-y-4">
 
       {/* TOOLBAR */}
       <TableToolbar
+
         view={view}
+
         setView={setView}
+
         onSearch={handleSearch}
+
+        filterContent={filterContent}
+
       />
 
       {/* CONTENT */}
       {data.length === 0 ? (
 
-        <div className="bg-white border rounded-xl p-6 text-sm text-gray-500">
+        <div
+          className="
+            bg-white
+            border
+            rounded-2xl
+            p-6
+            text-sm
+            text-gray-500
+          "
+        >
           Data tidak ditemukan
         </div>
 
@@ -90,10 +140,15 @@ export default function TableWrapper({
 
       {/* PAGINATION */}
       <Pagination
+
         page={query.page || 1}
+
         total={total || 0}
+
         limit={query.limit || 10}
+
         onChange={handlePageChange}
+
       />
 
     </div>

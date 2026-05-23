@@ -89,7 +89,7 @@ export default function LoginPage() {
             w-[500px]
             h-[500px]
             rounded-full
-            bg-cyan-400/10
+            bg-[#C9AE63]/10
             blur-3xl
           "
         />
@@ -142,7 +142,7 @@ export default function LoginPage() {
 
               <p
                 className="
-                  text-cyan-200
+                  text-[#C9AE63]
                   tracking-[0.35em]
                   text-sm
                   font-semibold
@@ -207,7 +207,7 @@ export default function LoginPage() {
                     px-7
                     py-3
                     rounded-2xl
-                    text-cyan-200
+                    text-[#C9AE63]
                     hover:text-white
                     transition
                   "
@@ -243,7 +243,7 @@ export default function LoginPage() {
 
               <p
                 className="
-                  text-cyan-200
+                  text-[#C9AE63]
                   tracking-[0.35em]
                   text-sm
                   font-semibold

@@ -197,3 +197,13 @@ export const logout =
     window.location.href =
       "/login";
   };
+
+  export const setProfile = (
+  data: any
+) => {
+
+  localStorage.setItem(
+    "profile",
+    JSON.stringify(data)
+  );
+};

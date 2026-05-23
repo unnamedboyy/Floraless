@@ -92,7 +92,7 @@ export default function RegisterPage() {
             w-[500px]
             h-[500px]
             rounded-full
-            bg-cyan-400/10
+            bg-[#C9AE63]/10
             blur-3xl
           "
         />
@@ -151,7 +151,7 @@ export default function RegisterPage() {
               {/* BRAND */}
               <p
                 className="
-                  text-cyan-200
+                  text-[#C9AE63]
                   tracking-[0.35em]
                   text-sm
                   font-semibold
@@ -241,7 +241,7 @@ export default function RegisterPage() {
 
               <p
                 className="
-                  text-cyan-200
+                  text-[#C9AE63]
                   tracking-[0.35em]
                   text-sm
                   font-semibold

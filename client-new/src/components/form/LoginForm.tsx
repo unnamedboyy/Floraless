@@ -134,7 +134,7 @@ export default function LoginForm() {
       if (role === "pelanggan") {
 
         window.location.href =
-          "/pelanggan/dashboard";
+          "/";
 
         return;
 
@@ -200,7 +200,7 @@ export default function LoginForm() {
             placeholder:text-white/50
             outline-none
             transition
-            focus:border-cyan-300/50
+            focus:border-[#C9AE63]-300/50
             focus:bg-white/15
           "
         />
@@ -249,7 +249,7 @@ export default function LoginForm() {
               placeholder:text-white/50
               outline-none
               transition
-              focus:border-cyan-300/50
+              focus:border-[#C9AE63]-300/50
               focus:bg-white/15
             "
           />
@@ -336,7 +336,7 @@ export default function LoginForm() {
           href="/register"
           className="
             font-semibold
-            text-cyan-200
+            text-[#C9AE63]
             hover:text-white
             transition
           "

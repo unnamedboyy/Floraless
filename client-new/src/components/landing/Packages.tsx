@@ -83,7 +83,7 @@ export default function Packages() {
               className="
                 text-sm
                 tracking-[0.3em]
-                text-cyan-200
+                text-[#D4B36A]
               "
             >
               PACKAGES

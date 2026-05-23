@@ -12,7 +12,7 @@ import FeaturedPortfolio from "@/components/landing/FeaturedPortfolio";
 
 export default function HomePage() {
   return (
-    <main className="bg-[#ffffff] overflow-x-hidden">
+    <main className="bg-[#ffffff] overflow-hidden">
 
       <Hero />
 
@@ -29,10 +29,6 @@ export default function HomePage() {
       </Reveal>
 
       <Reveal>
-        <FeaturedPortfolio />
-      </Reveal>
-
-      <Reveal>
         <ProcessAndConsultation />
       </Reveal>
 
@@ -46,10 +42,6 @@ export default function HomePage() {
 
       <Reveal>
         <Review />
-      </Reveal>
-
-      <Reveal>
-        <FaqSection />
       </Reveal>
 
     </main>

@@ -91,11 +91,8 @@ export const useAuth =
             "role",
             decoded.role,
             {
-
               expires: 1,
-
               path: "/",
-
               sameSite: "lax",
             }
           );
@@ -262,17 +259,11 @@ export const useAuth =
       };
 
     return {
-
       handleLogin,
-
       logout,
-
       loading,
-
       getToken,
-
       getRole,
-
       isAuthenticated,
     };
   };

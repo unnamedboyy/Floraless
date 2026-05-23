@@ -1,70 +1,211 @@
+// pelanggan controller untuk pelanggan, karena pelanggan memiliki relasi dengan user
+
 import Pelanggan from "../models/pelanggan.js";
+import User from "../models/user.js";
 
-export const getPelanggan = async (req, res, next) => {
-  try {
-    const { page = 1, limit = 10, search } = req.query;
+/* =====================================================
+   GET ALL
+===================================================== */
 
-    let filter = { isDeleted: false };
+export const getPelanggan =
+  async (req, res, next) => {
 
-    if (search) {
-      filter.nama = { $regex: search, $options: "i" };
+    try {
+
+      const {
+        page = 1,
+        limit = 10,
+        search,
+      } = req.query;
+
+      let filter = {
+        isActive: true,
+      };
+
+      if (search) {
+
+        filter.nama = {
+          $regex: search,
+          $options: "i",
+        };
+      }
+
+      const skip =
+        (page - 1) * limit;
+
+      const data =
+        await Pelanggan.find(filter)
+
+          .populate(
+            "userId",
+            "username role"
+          )
+
+          .skip(skip)
+
+          .limit(Number(limit))
+
+          .sort({
+            createdAt: -1,
+          });
+
+      const total =
+        await Pelanggan.countDocuments(
+          filter
+        );
+
+      res.json({
+        data,
+        total,
+        page: Number(page),
+      });
+
+    } catch (err) {
+
+      next(err);
     }
+  };
 
-    const skip = (page - 1) * limit;
+/* =====================================================
+   GET DETAIL
+===================================================== */
 
-    const data = await Pelanggan.find(filter)
-      .skip(skip)
-      .limit(Number(limit));
+export const getPelangganById =
+  async (req, res, next) => {
 
-    const total = await Pelanggan.countDocuments(filter);
+    try {
 
-    res.json({
-      data,
-      total,
-      page: Number(page),
-    });
-  } catch (err) {
-    next(err);
-  }
-};
+      const data =
+        await Pelanggan.findById(
+          req.params.id
+        ).populate(
+          "userId",
+          "username role"
+        );
 
-export const createPelanggan = async (req, res, next) => {
-  try {
-    const pelanggan = await Pelanggan.create({
-      ...req.body,
-      isDeleted: false,
-    });
+      if (!data) {
 
-    res.json(pelanggan);
-  } catch (err) {
-    next(err);
-  }
-};
+        return res.status(404).json({
+          message:
+            "Pelanggan tidak ditemukan",
+        });
+      }
 
-export const updatePelanggan = async (req, res, next) => {
-  try {
-    const pelanggan = await Pelanggan.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+      res.json(data);
 
-    res.json(pelanggan);
-  } catch (err) {
-    next(err);
-  }
-};
+    } catch (err) {
 
-export const deletePelanggan = async (req, res, next) => {
-  try {
-    const pelanggan = await Pelanggan.findByIdAndUpdate(
-      req.params.id,
-      { isDeleted: true },
-      { new: true }
-    );
+      next(err);
+    }
+  };
 
-    res.json({ message: "Soft deleted", pelanggan });
-  } catch (err) {
-    next(err);
-  }
-};
+/* =====================================================
+   CREATE
+===================================================== */
+
+export const createPelanggan =
+  async (req, res, next) => {
+
+    try {
+
+      const pelanggan =
+        await Pelanggan.create({
+          ...req.body,
+          isActive: true,
+        });
+
+      res.json(pelanggan);
+
+    } catch (err) {
+
+      next(err);
+    }
+  };
+
+/* =====================================================
+   UPDATE
+===================================================== */
+
+export const updatePelanggan =
+  async (req, res, next) => {
+
+    try {
+
+      const pelanggan =
+        await Pelanggan.findByIdAndUpdate(
+
+          req.params.id,
+
+          req.body,
+
+          {
+            new: true,
+          }
+
+        ).populate(
+          "userId",
+          "username role"
+        );
+
+      if (!pelanggan) {
+
+        return res.status(404).json({
+          message:
+            "Pelanggan tidak ditemukan",
+        });
+      }
+
+      res.json(pelanggan);
+
+    } catch (err) {
+
+      next(err);
+    }
+  };
+
+/* =====================================================
+   SOFT DELETE
+===================================================== */
+
+export const deletePelanggan =
+  async (req, res, next) => {
+
+    try {
+
+      const pelanggan =
+        await Pelanggan.findById(
+          req.params.id
+        );
+
+      if (!pelanggan) {
+
+        return res.status(404).json({
+          message:
+            "Pelanggan tidak ditemukan",
+        });
+      }
+
+      pelanggan.isActive = false;
+
+      await pelanggan.save();
+
+      await User.findByIdAndUpdate(
+
+        pelanggan.userId,
+
+        {
+          isActive: false,
+        }
+
+      );
+
+      res.json({
+        message:
+          "Pelanggan berhasil dinonaktifkan",
+      });
+
+    } catch (err) {
+
+      next(err);
+    }
+  };

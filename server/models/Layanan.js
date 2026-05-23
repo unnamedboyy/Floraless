@@ -4,6 +4,10 @@ const layananSchema = new mongoose.Schema({
   nama: String,
   deskripsi: String,
   harga: Number,
+  thumbnail: {
+      type: String,
+      default: "",
+  },
   isActive: {
     type: Boolean,
     default: true

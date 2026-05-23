@@ -56,14 +56,14 @@ export default function Hero() {
 
           <div className="mt-8 flex gap-4">
             <Link
-              href="/user/calendar"
+              href="/booking"
               className="rounded-full bg-[#C9AE63] px-6 py-3 text-sm font-semibold text-white hover:opacity-90"
             >
               Booking Sekarang
             </Link>
 
             <Link
-              href="/#packages"
+              href="/layanan"
               className="rounded-full border border-white px-6 py-3 text-sm font-semibold text-white hover:bg-white/10"
             >
               Lihat Paket

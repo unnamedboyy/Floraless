@@ -1,410 +1,911 @@
 "use client";
 
-import { useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import api from "@/lib/axios";
+
+import {
+  X,
+  CheckCircle2,
+  XCircle,
+  Clock3,
+  ExternalLink,
+  UploadCloud,
+} from "lucide-react";
 
 type Props = {
+
   open: boolean;
-  onClose: () => void;
+
   data: any;
+
+  onClose: () => void;
+
   onApprove: (
     id: string,
     bukti: string
-  ) => void;
+  ) => Promise<void>;
 
   onReject: (
     id: string,
     alasan: string
-  ) => void;
+  ) => Promise<void>;
 };
 
 export default function CashbackDetailModal({
+
   open,
-  onClose,
+
   data,
+
+  onClose,
+
   onApprove,
+
   onReject,
+
 }: Props) {
 
-  const [bukti, setBukti] =
+  /* =====================================================
+     STATE
+  ===================================================== */
+
+  const [buktiTf,
+    setBuktiTf] =
     useState("");
 
-  const [alasan, setAlasan] =
+  const [alasan,
+    setAlasan] =
     useState("");
 
-  const [loadingApprove, setLoadingApprove] =
+  const [preview,
+    setPreview] =
+    useState("");
+
+  const [uploading,
+    setUploading] =
     useState(false);
 
-  const [loadingReject, setLoadingReject] =
+  const [loadingApprove,
+    setLoadingApprove] =
     useState(false);
 
-  if (!open || !data) return null;
+  const [loadingReject,
+    setLoadingReject] =
+    useState(false);
 
-  const statusClass =
-    data.status === "approved"
-      ? "bg-green-100 text-green-700 border-green-200"
-      : data.status === "rejected"
-      ? "bg-red-100 text-red-700 border-red-200"
-      : "bg-yellow-100 text-yellow-700 border-yellow-200";
+  /* =====================================================
+     ESC CLOSE
+  ===================================================== */
 
-  const handleApprove = async () => {
+  useEffect(() => {
 
-    try {
+    const handleEsc =
+      (e: KeyboardEvent) => {
 
-      setLoadingApprove(true);
+        if (
+          e.key === "Escape"
+        ) {
+          onClose();
+        }
+      };
 
-      await onApprove(
-        data._id,
-        bukti
+    window.addEventListener(
+      "keydown",
+      handleEsc
+    );
+
+    return () => {
+
+      window.removeEventListener(
+        "keydown",
+        handleEsc
       );
+    };
 
-    } finally {
+  }, [onClose]);
 
-      setLoadingApprove(false);
+  /* =====================================================
+     RESET
+  ===================================================== */
 
+  useEffect(() => {
+
+    if (!open) {
+
+      setBuktiTf("");
+
+      setPreview("");
+
+      setAlasan("");
     }
+
+  }, [open]);
+
+  /* =====================================================
+     APPROVE
+  ===================================================== */
+
+  const handleApproveClick =
+    async () => {
+
+      try {
+
+        if (!buktiTf) {
+
+          return alert(
+            "Upload bukti transfer terlebih dahulu"
+          );
+        }
+
+        setLoadingApprove(true);
+
+        await onApprove(
+          data._id,
+          buktiTf
+        );
+
+      } catch (err) {
+
+        console.error(err);
+
+      } finally {
+
+        setLoadingApprove(false);
+      }
+    };
+
+  /* =====================================================
+     REJECT
+  ===================================================== */
+
+  const handleRejectClick =
+    async () => {
+
+      try {
+
+        if (!alasan) {
+
+          return alert(
+            "Alasan reject wajib diisi"
+          );
+        }
+
+        setLoadingReject(true);
+
+        await onReject(
+          data._id,
+          alasan
+        );
+
+      } catch (err) {
+
+        console.error(err);
+
+      } finally {
+
+        setLoadingReject(false);
+      }
+    };
+
+  /* =====================================================
+     UPLOAD IMAGE
+  ===================================================== */
+
+  const handleUpload =
+    async (
+      e: React.ChangeEvent<HTMLInputElement>
+    ) => {
+
+      try {
+
+        const file =
+          e.target.files?.[0];
+
+        if (!file)
+          return;
+
+        setUploading(true);
+
+        /* PREVIEW */
+        setPreview(
+          URL.createObjectURL(
+            file
+          )
+        );
+
+        const formData =
+          new FormData();
+
+        formData.append(
+          "image",
+          file
+        );
+
+        const res =
+          await api.post(
+
+            "/upload",
+
+            formData,
+
+            {
+              headers: {
+                "Content-Type":
+                  "multipart/form-data",
+              },
+            }
+          );
+
+        setBuktiTf(
+          res.data.url
+        );
+
+      } catch (err) {
+
+        console.error(err);
+
+        alert(
+          "Gagal upload gambar"
+        );
+
+      } finally {
+
+        setUploading(false);
+      }
+    };
+
+  /* =====================================================
+     CLOSE
+  ===================================================== */
+
+  if (!open || !data)
+    return null;
+
+  /* =====================================================
+     STATUS
+  ===================================================== */
+
+  const statusConfig = {
+
+    pending: {
+
+      label: "Pending",
+
+      icon:
+        <Clock3 size={14} />,
+
+      className: `
+        bg-yellow-100
+        text-yellow-700
+        border-yellow-200
+      `,
+    },
+
+    approved: {
+
+      label: "Approved",
+
+      icon:
+        <CheckCircle2 size={14} />,
+
+      className: `
+        bg-green-100
+        text-green-700
+        border-green-200
+      `,
+    },
+
+    rejected: {
+
+      label: "Rejected",
+
+      icon:
+        <XCircle size={14} />,
+
+      className: `
+        bg-red-100
+        text-red-700
+        border-red-200
+      `,
+    },
   };
 
-  const handleReject = async () => {
+  const status =
+    statusConfig[
+      data.status as keyof typeof statusConfig
+    ];
 
-    try {
-
-      setLoadingReject(true);
-
-      await onReject(
-        data._id,
-        alasan
-      );
-
-    } finally {
-
-      setLoadingReject(false);
-
-    }
-  };
+  /* =====================================================
+     UI
+  ===================================================== */
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
 
-      {/* CARD */}
+    <div className="
+      fixed
+      inset-0
+      z-[999]
+      flex
+      items-center
+      justify-center
+      bg-black/50
+      backdrop-blur-sm
+      p-4
+    ">
+
+      {/* BACKDROP */}
+      <div
+        onClick={onClose}
+        className="
+          absolute
+          inset-0
+        "
+      />
+
+      {/* MODAL */}
       <div className="
+        relative
+        z-10
         w-full
-        max-w-2xl
-        bg-white
-        rounded-3xl
-        shadow-2xl
+        max-w-5xl
         overflow-hidden
-        animate-in fade-in zoom-in-95 duration-200
+        rounded-[32px]
+        border
+        border-black/10
+        bg-white
+        shadow-2xl
       ">
 
         {/* HEADER */}
-        <div className="px-6 py-5 border-b flex items-start justify-between">
+        <div className="
+          sticky
+          top-0
+          z-20
+          flex
+          items-center
+          justify-between
+          border-b
+          bg-white
+          px-6
+          py-5
+        ">
 
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">
+
+            <h2 className="
+              text-2xl
+              font-bold
+              text-black
+            ">
               Detail Cashback
             </h2>
 
-            <p className="text-sm text-gray-500 mt-1">
-              Informasi lengkap klaim cashback
+            <p className="
+              mt-1
+              text-sm
+              text-gray-500
+            ">
+              Informasi lengkap claim cashback pelanggan
             </p>
+
           </div>
 
           <button
             onClick={onClose}
             className="
-              w-10 h-10
-              rounded-2xl
-              hover:bg-gray-100
+              flex
+              h-11
+              w-11
+              items-center
+              justify-center
+              rounded-full
+              border
               transition
-              text-gray-500
+              hover:bg-gray-100
             "
           >
-            ✕
+            <X size={20} />
           </button>
 
         </div>
 
-        {/* BODY */}
-        <div className="p-6 space-y-6">
+        {/* CONTENT */}
+        <div className="
+          max-h-[85vh]
+          overflow-y-auto
+          px-6
+          py-6
+        ">
 
           {/* STATUS */}
-          <div className="flex items-center justify-between">
+          <div className="
+            mb-6
+            flex
+            items-center
+            justify-between
+            gap-4
+            flex-wrap
+          ">
 
-            <div>
-              <div className="text-sm text-gray-500">
-                Status Klaim
-              </div>
+            <div className={`
+              inline-flex
+              items-center
+              gap-2
+              rounded-full
+              border
+              px-4
+              py-2
+              text-sm
+              font-semibold
 
-              <div className="
-                mt-2
-                inline-flex
-                px-4 py-2
-                rounded-full
-                border
-                text-sm
+              ${status.className}
+            `}>
+
+              {status.icon}
+
+              {status.label}
+
+            </div>
+
+            <div className="
+              text-sm
+              text-gray-500
+            ">
+
+              Claim dibuat pada:
+
+              {" "}
+
+              <span className="
                 font-medium
+                text-black
               ">
-                <span className={statusClass}>
-                  {data.status}
-                </span>
-              </div>
+
+                {
+                  new Date(
+                    data.createdAt
+                  ).toLocaleString(
+                    "id-ID"
+                  )
+                }
+
+              </span>
+
             </div>
 
           </div>
 
-          {/* INFO GRID */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* GRID */}
+          <div className="
+            grid
+            grid-cols-1
+            gap-5
+            md:grid-cols-2
+          ">
 
-            <Field
-              label="Pelanggan"
+            <InfoCard
+              title="Pelanggan"
               value={
-                data.pelangganId?.nama
+                data.pelangganId
+                  ?.nama || "-"
               }
             />
 
-            <Field
-              label="Kode Voucher"
-              value={data.kode_voucher}
-            />
-
-            <Field
-              label="Bank"
-              value={data.bank}
-            />
-
-            <Field
-              label="No Rekening"
+            <InfoCard
+              title="Kode Voucher"
               value={
-                data.nomor_rekening
+                data.kode_voucher || "-"
               }
             />
 
-            <Field
-              label="Nama Rekening"
+            <InfoCard
+              title="Bank"
               value={
-                data.nama_rekening
+                data.bank || "-"
               }
             />
 
-            <Field
-              label="Tanggal Klaim"
+            <InfoCard
+              title="No Rekening"
               value={
-                data.createdAt
-                  ? new Date(
-                      data.createdAt
-                    ).toLocaleString()
-                  : "-"
+                data.nomor_rekening || "-"
               }
+            />
+
+            <InfoCard
+              title="Nama Rekening"
+              value={
+                data.nama_rekening || "-"
+              }
+            />
+
+            <InfoCard
+              title="Nominal Cashback"
+              value={`Rp ${(
+                data.amount || 0
+              ).toLocaleString(
+                "id-ID"
+              )}`}
             />
 
           </div>
 
-          {/* BUKTI */}
-          {data.bukti_tf && (
+          {/* BUKTI TF */}
+          {
+            data.bukti_tf && (
 
-            <div className="
-              border rounded-2xl p-4
-              bg-gray-50/70
-            ">
-
-              <div className="text-sm font-medium mb-3">
-                Bukti Transfer
-              </div>
-
-              <a
-                href={data.bukti_tf}
-                target="_blank"
-                className="
-                  inline-flex
-                  items-center
-                  gap-2
-                  px-4 py-2
-                  rounded-xl
-                  bg-black
-                  text-white
-                  text-sm
-                  hover:opacity-90
-                  transition
-                "
-              >
-                Lihat Bukti
-              </a>
-
-            </div>
-
-          )}
-
-          {/* ALASAN */}
-          {data.alasan && (
-
-            <div className="
-              border border-red-200
-              bg-red-50
-              rounded-2xl
-              p-4
-            ">
-
-              <div className="text-sm font-medium text-red-700 mb-2">
-                Alasan Penolakan
-              </div>
-
-              <div className="text-sm text-red-600">
-                {data.alasan}
-              </div>
-
-            </div>
-
-          )}
-
-          {/* ACTION */}
-          {data.status === "pending" && (
-
-            <div className="space-y-5">
-
-              {/* APPROVE */}
               <div className="
-                border rounded-2xl p-5
-                space-y-4
+                mt-6
+                rounded-[28px]
+                border
+                p-6
               ">
 
-                <div>
-                  <h3 className="font-semibold text-gray-900">
-                    Approve Cashback
-                  </h3>
+                <div className="
+                  flex
+                  items-center
+                  justify-between
+                  gap-4
+                  flex-wrap
+                ">
 
-                  <p className="text-sm text-gray-500 mt-1">
-                    Masukkan bukti transfer untuk approval
-                  </p>
+                  <div>
+
+                    <h3 className="
+                      text-lg
+                      font-semibold
+                    ">
+                      Bukti Transfer
+                    </h3>
+
+                    <p className="
+                      mt-1
+                      text-sm
+                      text-gray-500
+                    ">
+                      Bukti transfer cashback
+                    </p>
+
+                  </div>
+
+                  <a
+                    href={data.bukti_tf}
+                    target="_blank"
+                    className="
+                      inline-flex
+                      items-center
+                      gap-2
+                      rounded-2xl
+                      border
+                      px-4
+                      py-2
+                      text-sm
+                      font-medium
+                      transition
+                      hover:bg-gray-100
+                    "
+                  >
+
+                    <ExternalLink size={16} />
+
+                    Open Image
+
+                  </a>
+
                 </div>
 
-                <input
-                  placeholder="URL bukti transfer"
-                  value={bukti}
-                  onChange={(e) =>
-                    setBukti(
-                      e.target.value
-                    )
-                  }
+                <img
+                  src={data.bukti_tf}
+                  alt="Bukti TF"
                   className="
+                    mt-5
                     w-full
-                    rounded-2xl
+                    rounded-3xl
                     border
-                    px-4 py-3
-                    text-sm
-                    focus:outline-none
-                    focus:ring-2
-                    focus:ring-black
+                    object-cover
                   "
                 />
 
+              </div>
+            )
+          }
+
+          {/* APPROVE */}
+          {
+            data.status ===
+            "pending" && (
+
+              <div className="
+                mt-6
+                rounded-[28px]
+                border
+                p-6
+              ">
+
+                <h3 className="
+                  text-2xl
+                  font-bold
+                ">
+                  Approve Cashback
+                </h3>
+
+                <p className="
+                  mt-2
+                  text-gray-500
+                ">
+                  Upload bukti transfer cashback.
+                </p>
+
+                {/* FILE */}
+                <label className="
+                  mt-5
+                  flex
+                  h-44
+                  cursor-pointer
+                  flex-col
+                  items-center
+                  justify-center
+                  rounded-3xl
+                  border-2
+                  border-dashed
+                  border-gray-300
+                  bg-gray-50
+                  transition
+                  hover:border-black
+                ">
+
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleUpload}
+                  />
+
+                  {
+                    uploading ? (
+
+                      <div className="
+                        text-center
+                      ">
+
+                        <p className="
+                          text-lg
+                          font-semibold
+                        ">
+                          Uploading...
+                        </p>
+
+                      </div>
+
+                    ) : (
+
+                      <div className="
+                        text-center
+                      ">
+
+                        <div className="
+                          mb-3
+                          flex
+                          justify-center
+                        ">
+                          <UploadCloud size={40} />
+                        </div>
+
+                        <p className="
+                          text-lg
+                          font-semibold
+                        ">
+                          Upload Bukti Transfer
+                        </p>
+
+                        <p className="
+                          mt-2
+                          text-sm
+                          text-gray-500
+                        ">
+                          PNG, JPG, JPEG
+                        </p>
+
+                      </div>
+                    )
+                  }
+
+                </label>
+
+                {/* PREVIEW */}
+                {
+                  preview && (
+
+                    <div className="
+                      mt-5
+                    ">
+
+                      <img
+                        src={preview}
+                        alt="Preview"
+                        className="
+                          w-full
+                          rounded-3xl
+                          border
+                          object-cover
+                        "
+                      />
+
+                    </div>
+                  )
+                }
+
+                {/* BUTTON */}
                 <button
-                  onClick={handleApprove}
-                  disabled={loadingApprove}
+                  onClick={
+                    handleApproveClick
+                  }
+
+                  disabled={
+                    loadingApprove ||
+                    uploading ||
+                    !buktiTf
+                  }
+
                   className="
+                    mt-5
+                    h-14
                     w-full
-                    py-3
                     rounded-2xl
                     bg-green-600
+                    text-lg
+                    font-semibold
                     text-white
-                    hover:bg-green-700
                     transition
-                    text-sm
-                    font-medium
+                    hover:bg-green-700
                     disabled:opacity-50
                   "
                 >
-                  {loadingApprove
-                    ? "Processing..."
-                    : "Approve Cashback"}
+
+                  {
+                    loadingApprove
+
+                      ? "Processing..."
+
+                      : "Approve Cashback"
+                  }
+
                 </button>
 
               </div>
+            )
+          }
 
-              {/* REJECT */}
+          {/* REJECT */}
+          {
+            data.status ===
+            "pending" && (
+
               <div className="
-                border rounded-2xl p-5
-                space-y-4
+                mt-6
+                rounded-[28px]
+                border
+                p-6
               ">
 
-                <div>
-                  <h3 className="font-semibold text-gray-900">
-                    Reject Cashback
-                  </h3>
+                <h3 className="
+                  text-2xl
+                  font-bold
+                ">
+                  Reject Cashback
+                </h3>
 
-                  <p className="text-sm text-gray-500 mt-1">
-                    Berikan alasan penolakan klaim
-                  </p>
-                </div>
+                <p className="
+                  mt-2
+                  text-gray-500
+                ">
+                  Berikan alasan penolakan cashback.
+                </p>
 
                 <textarea
-                  placeholder="Masukkan alasan reject..."
+                  rows={5}
                   value={alasan}
                   onChange={(e) =>
                     setAlasan(
                       e.target.value
                     )
                   }
-                  rows={4}
+                  placeholder="
+                    Masukkan alasan reject...
+                  "
                   className="
+                    mt-5
                     w-full
                     rounded-2xl
                     border
-                    px-4 py-3
-                    text-sm
-                    resize-none
-                    focus:outline-none
+                    px-5
+                    py-4
+                    outline-none
+                    transition
                     focus:ring-2
                     focus:ring-black
                   "
                 />
 
                 <button
-                  onClick={handleReject}
-                  disabled={loadingReject}
+                  onClick={
+                    handleRejectClick
+                  }
+
+                  disabled={
+                    loadingReject
+                  }
+
                   className="
+                    mt-5
+                    h-14
                     w-full
-                    py-3
                     rounded-2xl
                     bg-red-600
+                    text-lg
+                    font-semibold
                     text-white
-                    hover:bg-red-700
                     transition
-                    text-sm
-                    font-medium
+                    hover:bg-red-700
                     disabled:opacity-50
                   "
                 >
-                  {loadingReject
-                    ? "Processing..."
-                    : "Reject Cashback"}
+
+                  {
+                    loadingReject
+
+                      ? "Processing..."
+
+                      : "Reject Cashback"
+                  }
+
                 </button>
 
               </div>
+            )
+          }
 
-            </div>
+          {/* REJECT REASON */}
+          {
+            data.status ===
+            "rejected" &&
 
-          )}
+            data.alasan && (
 
-        </div>
+              <div className="
+                mt-6
+                rounded-[28px]
+                border
+                border-red-200
+                bg-red-50
+                p-6
+              ">
 
-        {/* FOOTER */}
-        <div className="border-t px-6 py-4 flex justify-end">
+                <h3 className="
+                  text-xl
+                  font-bold
+                  text-red-700
+                ">
+                  Alasan Penolakan
+                </h3>
 
-          <button
-            onClick={onClose}
-            className="
-              px-5 py-2.5
-              rounded-2xl
-              bg-black
-              text-white
-              hover:opacity-90
-              transition
-              text-sm
-              font-medium
-            "
-          >
-            Tutup
-          </button>
+                <p className="
+                  mt-3
+                  leading-relaxed
+                  text-red-600
+                ">
+                  {
+                    data.alasan
+                  }
+                </p>
+
+              </div>
+            )
+          }
 
         </div>
 
@@ -415,31 +916,48 @@ export default function CashbackDetailModal({
 }
 
 /* =========================================================
-   FIELD
+   INFO CARD
 ========================================================= */
 
-function Field({
-  label,
+function InfoCard({
+
+  title,
+
   value,
+
 }: {
-  label: string;
-  value?: any;
+
+  title: string;
+
+  value: string;
 }) {
 
   return (
+
     <div className="
-      border rounded-2xl p-4
-      bg-gray-50/70
-      space-y-1
+      rounded-[28px]
+      border
+      p-6
     ">
 
-      <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-        {label}
-      </div>
+      <p className="
+        text-sm
+        uppercase
+        tracking-widest
+        text-gray-400
+      ">
+        {title}
+      </p>
 
-      <div className="text-sm font-semibold text-gray-900 break-words">
-        {value || "-"}
-      </div>
+      <p className="
+        mt-3
+        text-2xl
+        font-bold
+        text-black
+        break-words
+      ">
+        {value}
+      </p>
 
     </div>
   );

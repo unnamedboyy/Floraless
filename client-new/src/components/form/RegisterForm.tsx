@@ -166,7 +166,7 @@ export default function RegisterForm() {
             placeholder:text-white/50
             outline-none
             transition
-            focus:border-cyan-300/50
+            focus:border-[#C9AE63]-300/50
             focus:bg-white/15
           "
         />
@@ -210,7 +210,7 @@ export default function RegisterForm() {
             placeholder:text-white/50
             outline-none
             transition
-            focus:border-cyan-300/50
+            focus:border-[#C9AE63]-300/50
             focus:bg-white/15
           "
         />
@@ -254,7 +254,7 @@ export default function RegisterForm() {
             placeholder:text-white/50
             outline-none
             transition
-            focus:border-cyan-300/50
+            focus:border-[#C9AE63]-300/50
             focus:bg-white/15
           "
         />
@@ -305,7 +305,7 @@ export default function RegisterForm() {
               placeholder:text-white/50
               outline-none
               transition
-              focus:border-cyan-300/50
+              focus:border-[#C9AE63]-300/50
               focus:bg-white/15
             "
           />
@@ -418,7 +418,7 @@ export default function RegisterForm() {
           href="/login"
           className="
             font-semibold
-            text-cyan-200
+            text-[#C9AE63]
             hover:text-white
             transition
           "

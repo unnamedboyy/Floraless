@@ -22,6 +22,7 @@ import jadwalRoutes from "./routes/jadwal.router.js";
 import dashboardRoutes from "./routes/dashboard.router.js";
 import pegawaiRouter from "./routes/pegawai.router.js";
 import pelangganRouter from "./routes/pelanggan.router.js";
+import uploadRoutes from "./routes/upload.router.js";
 
 import errorHandler from "./middlewares/errorHandler.js";
 
@@ -59,6 +60,12 @@ app.use("/api/jadwal", jadwalRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/pegawai", pegawaiRouter);
 app.use("/api/pelanggan", pelangganRouter);
+app.use("/uploads", express.static("public/uploads"));
+
+app.use(
+  "/api/upload",
+  uploadRoutes
+);
 
 app.use(errorHandler);
 

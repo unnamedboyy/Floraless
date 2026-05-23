@@ -3,6 +3,11 @@
 type Column = {
   label: string;
   key: string;
+
+  render?: (
+    value: any,
+    row?: any
+  ) => React.ReactNode;
 };
 
 type Action = {
@@ -30,11 +35,24 @@ export default function DataTable({
     <div className="bg-white border rounded-xl overflow-hidden">
 
       {/* HEADER */}
-      <div className="grid grid-cols-12 border-b px-4 py-3 text-sm font-medium text-gray-500">
-        {columns.map((col, i) => (
-          <div key={i} className="col-span-2">
-            {col.label}
-          </div>
+          <div
+            className="
+              grid
+              grid-cols-12
+              border-b
+              px-4
+              py-3
+              text-sm
+              font-medium
+              bg-zinc-900
+              text-white
+              rounded-t-xl
+            ">
+
+            {columns.map((col, i) => (
+              <div key={i} className="col-span-2">
+                {col.label}
+              </div>
         ))}
 
         {actions.length > 0 && (
@@ -50,11 +68,28 @@ export default function DataTable({
           key={i}
           className="grid grid-cols-12 border-b px-4 py-3 text-sm items-center"
         >
-          {columns.map((col, j) => (
-            <div key={j} className="col-span-2">
-              {getValue(row, col.key) || "-"}
-            </div>
-          ))}
+          {columns.map((col, j) => {
+
+            const value =
+              getValue(
+                row,
+                col.key
+              );
+
+            return (
+
+              <div
+                key={j}
+                className="col-span-2"
+              >
+
+                {col.render
+                  ? col.render(value, row)
+                  : value || "-"}
+
+              </div>
+            );
+          })}
 
           {actions.length > 0 && (
             <div className="col-span-2 flex justify-end gap-2">

@@ -12,8 +12,8 @@ import {
 const router = express.Router();
 
 router.get("/", auth, role("admin"), getPelanggan);
-router.post("/", auth, role("admin"), createPelanggan);
-router.put("/:id", auth, role("admin"), updatePelanggan);
+router.post("/", auth, role("admin", "pelanggan"), createPelanggan);
+router.put("/:id", auth, role("admin", "pelanggan"), updatePelanggan);
 
 // 🔥 soft delete
 router.patch("/:id/delete", auth, role("admin"), deletePelanggan);

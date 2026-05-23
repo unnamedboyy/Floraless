@@ -7,69 +7,229 @@ import { logActivity } from "../utils/logger.js";
 
 /* ================= CREATE CLAIM (PELANGGAN) ================= */
 
-export const createClaim = async (req, res, next) => {
-  try {
-    const { code, nama_rekening, nomor_rekening, bank } = req.body;
+export const createClaim =
+  async (
+    req,
+    res,
+    next
+  ) => {
 
-    const pelanggan = await Pelanggan.findOne({
-      userId: req.user.id,
-    });
+    try {
 
-    if (!pelanggan)
-      throw { status: 404, message: "Pelanggan tidak ditemukan" };
+      /* =========================================
+         CUSTOMER
+      ========================================= */
 
-    const voucher = await Voucher.findOne({ code });
+      const pelanggan =
+        await Pelanggan.findOne({
 
-    if (!voucher)
-      throw { status: 404, message: "Voucher tidak ditemukan" };
+          userId:
+            req.user.id,
+        });
 
-    if (voucher.pelangganId.toString() !== pelanggan._id.toString()) {
-      throw { status: 403, message: "Voucher bukan milik anda" };
+      if (!pelanggan) {
+
+        throw {
+
+          status: 404,
+
+          message:
+            "Pelanggan tidak ditemukan",
+        };
+      }
+
+      /* =========================================
+         BODY
+      ========================================= */
+
+      const {
+
+        voucherCode,
+
+        code,
+
+        bank,
+
+        nomor_rekening,
+
+        nama_rekening,
+
+      } = req.body;
+
+      const finalCode =
+
+        voucherCode ||
+        code ||
+        "";
+
+      if (!finalCode) {
+
+        throw {
+
+          status: 400,
+
+          message:
+            "Kode voucher wajib diisi",
+        };
+      }
+
+      /* =========================================
+         FIND VOUCHER
+      ========================================= */
+
+      const voucher =
+        await Voucher.findOne({
+
+          code:
+            finalCode.trim(),
+        });
+
+      if (!voucher) {
+
+        throw {
+
+          status: 404,
+
+          message:
+            "Voucher tidak ditemukan",
+        };
+      }
+
+      /* =========================================
+         VALIDATION
+      ========================================= */
+
+      if (
+        voucher.isUsed
+      ) {
+
+        throw {
+
+          status: 400,
+
+          message:
+            "Voucher sudah digunakan",
+        };
+      }
+
+      if (
+
+        voucher.pelangganId
+          .toString() !==
+
+        pelanggan._id
+          .toString()
+
+      ) {
+
+        throw {
+
+          status: 403,
+
+          message:
+            "Voucher bukan milik Anda",
+        };
+      }
+
+      if (
+
+        voucher.expiredAt &&
+
+        new Date(
+          voucher.expiredAt
+        ) < new Date()
+
+      ) {
+
+        throw {
+
+          status: 400,
+
+          message:
+            "Voucher sudah expired",
+        };
+      }
+
+      /* =========================================
+         DUPLICATE CLAIM
+      ========================================= */
+
+      const existingClaim =
+        await CashbackClaim.findOne({
+
+          voucherId:
+            voucher._id,
+        });
+
+      if (
+        existingClaim
+      ) {
+
+        throw {
+
+          status: 400,
+
+          message:
+            "Voucher sudah pernah diclaim",
+        };
+      }
+
+      /* =========================================
+         CREATE CLAIM
+      ========================================= */
+
+      const claim =
+        await CashbackClaim.create({
+
+          voucherId:
+            voucher._id,
+
+          pelangganId:
+            pelanggan._id,
+
+          kode_voucher:
+            voucher.code,
+
+          amount:
+            voucher.amount,
+
+          bank,
+
+          nomor_rekening,
+
+          nama_rekening,
+
+          status:
+            "pending",
+        });
+
+      /* =========================================
+         UPDATE VOUCHER
+      ========================================= */
+
+      voucher.isUsed =
+        true;
+
+      await voucher.save();
+
+      /* =========================================
+         RESPONSE
+      ========================================= */
+
+      res.json({
+
+        message:
+          "Claim cashback berhasil",
+
+        data:
+          claim,
+      });
+
+    } catch (err) {
+
+      next(err);
     }
-
-    if (voucher.isUsed) {
-      throw { status: 400, message: "Voucher sudah digunakan" };
-    }
-
-    if (voucher.expiredAt && voucher.expiredAt < new Date()) {
-      throw { status: 400, message: "Voucher sudah expired" };
-    }
-
-    const existing = await CashbackClaim.findOne({
-      voucherId: voucher._id,
-      status: "pending",
-    });
-
-    if (existing) {
-      throw {
-        status: 400,
-        message: "Voucher sedang dalam proses klaim",
-      };
-    }
-
-    const claim = await CashbackClaim.create({
-      voucherId: voucher._id,
-      pelangganId: pelanggan._id,
-      kode_voucher: voucher.code,
-      nama_rekening,
-      nomor_rekening,
-      bank,
-    });
-
-    await logActivity({
-      userId: req.user.id,
-      action: "CREATE_CLAIM",
-      customDescription: `Pelanggan membuat klaim cashback dengan kode ${voucher.code}`,
-    });
-
-    res.json({
-      message: "Klaim berhasil dibuat, menunggu approval",
-      claim,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
+  };
 
 /* ================= PROCESS CLAIM (ADMIN / PEGAWAI PIC) ================= */
 

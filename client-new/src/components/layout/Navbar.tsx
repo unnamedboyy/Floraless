@@ -145,7 +145,7 @@ export default function Navbar() {
     ["Beranda", "/"],
     ["Tentang", "/tentang"],
     ["Galeri", "/gallery"],
-    ["Portfolio", "/portfolio"],
+    ["Layanan", "/layanan"],
     ["Kontak", "/kontak"],
   ];
 
@@ -156,7 +156,7 @@ export default function Navbar() {
   const customerMenu = [
     {
       label: "Pesanan Saya",
-      href: "/profile/pesanan",
+      href: "/profile/orders",
       icon: (
         <ShoppingBag size={16} />
       ),
@@ -348,7 +348,7 @@ export default function Navbar() {
                 <>
 
                   <Link
-                    href="/pemesanan"
+                    href="/booking"
                     className="
                       rounded-full
                       bg-[#C9AE63]
@@ -754,7 +754,7 @@ export default function Navbar() {
                   <>
 
                     <Link
-                      href="/pemesanan"
+                      href="/booking"
                     >
                       Pemesanan
                     </Link>

@@ -1,3 +1,5 @@
+// auth controller untuk mengelola autentikasi dan manajemen user (pelanggan, pegawai, admin)
+
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
@@ -88,14 +90,11 @@ export const registerAdmin = async (req, res, next) => {
 };
 
 // LOGIN
-// LOGIN
 export const login = async (req, res, next) => {
   try {
 
     const { username, password } = req.body;
-
     /* ================= USER ================= */
-
     const user = await User.findOne({
       username
     });
@@ -108,7 +107,6 @@ export const login = async (req, res, next) => {
     }
 
     /* ================= PASSWORD ================= */
-
     const match = await bcrypt.compare(
       password,
       user.password
@@ -122,7 +120,6 @@ export const login = async (req, res, next) => {
     }
 
     /* ================= TOKEN ================= */
-
     const token = jwt.sign(
       {
         id: user._id,
@@ -135,7 +132,6 @@ export const login = async (req, res, next) => {
     );
 
     /* ================= PROFILE ================= */
-
     let profile = null;
 
     if (user.role === "pelanggan") {
@@ -166,7 +162,6 @@ export const login = async (req, res, next) => {
     }
 
     /* ================= RESPONSE ================= */
-
     res.json({
       message: "Login berhasil",
 

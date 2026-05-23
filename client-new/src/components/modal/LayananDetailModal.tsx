@@ -1,131 +1,325 @@
 "use client";
 
+import Image from "next/image";
+
 type Props = {
   open: boolean;
   onClose: () => void;
   data: any;
 };
 
-const formatRupiah = (num: number) =>
-  "Rp " + (num || 0).toLocaleString("id-ID");
+const formatRupiah =
+  (num: number) =>
+
+    "Rp " +
+
+    (num || 0).toLocaleString(
+      "id-ID"
+    );
 
 export default function DetailLayananModal({
+
   open,
+
   onClose,
+
   data,
+
 }: Props) {
 
-  if (!open || !data) return null;
+  if (!open || !data)
+    return null;
 
-  const statusClass = data.isActive
-    ? "bg-green-100 text-green-700 border-green-200"
-    : "bg-red-100 text-red-700 border-red-200";
+  const statusClass =
+    data.isActive
+
+      ? `
+        bg-green-100
+        text-green-700
+        border-green-200
+      `
+
+      : `
+        bg-red-100
+        text-red-700
+        border-red-200
+      `;
+
+  const imageUrl =
+
+    data.thumbnail ||
+
+    "/service-default.jpg";
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
 
-      {/* CARD */}
+    <div className="
+      fixed
+      inset-0
+      z-50
+      flex
+      items-center
+      justify-center
+      bg-black/50
+      backdrop-blur-sm
+      p-4
+    ">
+
+      {/* =================================================
+         CARD
+      ================================================= */}
+
       <div className="
         w-full
-        max-w-2xl
-        bg-white
-        rounded-3xl
-        shadow-2xl
+        max-w-4xl
         overflow-hidden
-        animate-in fade-in zoom-in-95 duration-200
+        rounded-[36px]
+        bg-white
+        shadow-2xl
+        animate-in
+        fade-in
+        zoom-in-95
+        duration-200
       ">
 
-        {/* HEADER */}
-        <div className="px-6 py-5 border-b flex items-start justify-between">
+        {/* =================================================
+           IMAGE
+        ================================================= */}
 
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">
-              Detail Layanan
-            </h2>
+        <div className="
+          relative
+          h-[320px]
+          overflow-hidden
+        ">
 
-            <p className="text-sm text-gray-500 mt-1">
-              Informasi lengkap layanan dekorasi
-            </p>
-          </div>
+          <Image
+            src={imageUrl}
+            alt={data.nama}
+            fill
+            className="
+              object-cover
+            "
+          />
 
+          {/* OVERLAY */}
+          <div className="
+            absolute
+            inset-0
+            bg-gradient-to-t
+            from-black/70
+            via-black/20
+            to-transparent
+          " />
+
+          {/* CLOSE */}
           <button
             onClick={onClose}
             className="
-              w-10 h-10
+              absolute
+              right-6
+              top-6
+              flex
+              h-11
+              w-11
+              items-center
+              justify-center
               rounded-2xl
-              hover:bg-gray-100
+              bg-white/20
+              text-white
+              backdrop-blur
               transition
-              text-gray-500
+              hover:bg-white/30
             "
           >
             ✕
           </button>
 
-        </div>
-
-        {/* BODY */}
-        <div className="p-6 space-y-6">
-
-          {/* TOP */}
-          <div className="flex items-start justify-between gap-4">
-
-            <div className="space-y-2">
-
-              <div className="text-2xl font-semibold text-gray-900">
-                {data.nama || "-"}
-              </div>
-
-              <div className="text-3xl font-bold text-black">
-                {formatRupiah(data.harga)}
-              </div>
-
-            </div>
-
-            <div
-              className={`
-                px-4 py-2
-                rounded-full
-                border
-                text-sm
-                font-medium
-                ${statusClass}
-              `}
-            >
-              {data.isActive
-                ? "Aktif"
-                : "Nonaktif"}
-            </div>
-
-          </div>
-
-          {/* DESKRIPSI */}
+          {/* CONTENT */}
           <div className="
-            border rounded-2xl
-            p-5
-            bg-gray-50/70
-            space-y-2
+            absolute
+            inset-x-0
+            bottom-0
+            p-8
+            text-white
           ">
 
-            <div className="text-sm font-medium text-gray-700">
-              Deskripsi
-            </div>
+            <p className="
+              text-xs
+              uppercase
+              tracking-[0.35em]
+              text-[#D4B36A]
+            ">
+              Floraless Service
+            </p>
 
-            <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
-              {data.deskripsi || "-"}
+            <div className="
+              mt-4
+              flex
+              flex-col
+              gap-5
+              md:flex-row
+              md:items-end
+              md:justify-between
+            ">
+
+              <div>
+
+                <h2 className="
+                  text-4xl
+                  font-semibold
+                  tracking-tight
+                ">
+                  {data.nama || "-"}
+                </h2>
+
+                <p className="
+                  mt-3
+                  text-3xl
+                  font-bold
+                ">
+                  {
+                    formatRupiah(
+                      data.harga
+                    )
+                  }
+                </p>
+
+              </div>
+
+              <div
+                className={`
+                  inline-flex
+                  w-fit
+                  items-center
+                  rounded-full
+                  border
+                  px-5
+                  py-2
+                  text-sm
+                  font-medium
+                  backdrop-blur
+                  ${statusClass}
+                `}
+              >
+
+                {data.isActive
+
+                  ? "Layanan Aktif"
+
+                  : "Layanan Nonaktif"}
+
+              </div>
+
             </div>
 
           </div>
 
-          {/* INFO GRID */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        </div>
+
+        {/* =================================================
+           BODY
+        ================================================= */}
+
+        <div className="
+          p-7
+          space-y-7
+        ">
+
+          {/* =================================================
+             DESCRIPTION
+          ================================================= */}
+
+          <div className="
+            rounded-[30px]
+            border
+            border-[#EFE7DA]
+            bg-[#FAF7F2]
+            p-6
+          ">
+
+            <div className="
+              flex
+              items-center
+              justify-between
+              gap-4
+            ">
+
+              <div>
+
+                <p className="
+                  text-xs
+                  uppercase
+                  tracking-[0.3em]
+                  text-[#C9AE63]
+                ">
+                  Description
+                </p>
+
+                <h3 className="
+                  mt-3
+                  text-2xl
+                  font-semibold
+                ">
+                  Detail Layanan
+                </h3>
+
+              </div>
+
+              <div className="
+                hidden
+                rounded-full
+                bg-black
+                px-5
+                py-2
+                text-xs
+                font-medium
+                tracking-[0.2em]
+                text-white
+                md:block
+              ">
+                FLORALESS
+              </div>
+
+            </div>
+
+            <div className="
+              mt-6
+              text-[15px]
+              leading-relaxed
+              text-neutral-600
+              whitespace-pre-wrap
+            ">
+
+              {data.deskripsi ||
+
+                "Tidak ada deskripsi layanan."}
+
+            </div>
+
+          </div>
+
+          {/* =================================================
+             INFO GRID
+          ================================================= */}
+
+          <div className="
+            grid
+            gap-5
+            md:grid-cols-2
+          ">
 
             <Field
               label="Dibuat"
               value={
+
                 data.createdAt
+
                   ? new Date(
                       data.createdAt
-                    ).toLocaleString()
+                    ).toLocaleString(
+                      "id-ID"
+                    )
+
                   : "-"
               }
             />
@@ -133,10 +327,15 @@ export default function DetailLayananModal({
             <Field
               label="Terakhir Update"
               value={
+
                 data.updatedAt
+
                   ? new Date(
                       data.updatedAt
-                    ).toLocaleString()
+                    ).toLocaleString(
+                      "id-ID"
+                    )
+
                   : "-"
               }
             />
@@ -145,20 +344,30 @@ export default function DetailLayananModal({
 
         </div>
 
-        {/* FOOTER */}
-        <div className="border-t px-6 py-4 flex justify-end">
+        {/* =================================================
+           FOOTER
+        ================================================= */}
+
+        <div className="
+          flex
+          justify-end
+          border-t
+          px-7
+          py-5
+        ">
 
           <button
             onClick={onClose}
             className="
-              px-5 py-2.5
               rounded-2xl
               bg-black
-              text-white
-              hover:opacity-90
-              transition
+              px-6
+              py-3
               text-sm
               font-medium
+              text-white
+              transition
+              hover:opacity-90
             "
           >
             Tutup
@@ -177,27 +386,48 @@ export default function DetailLayananModal({
 ========================================================= */
 
 function Field({
+
   label,
+
   value,
+
 }: {
+
   label: string;
+
   value?: any;
 }) {
 
   return (
+
     <div className="
-      border rounded-2xl p-4
-      bg-gray-50/70
-      space-y-1
+      rounded-[28px]
+      border
+      border-[#EFE7DA]
+      bg-white
+      p-6
+      shadow-sm
     ">
 
-      <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+      <p className="
+        text-xs
+        uppercase
+        tracking-[0.25em]
+        text-neutral-400
+      ">
         {label}
-      </div>
+      </p>
 
-      <div className="text-sm font-semibold text-gray-900 break-words">
+      <p className="
+        mt-4
+        text-base
+        font-semibold
+        leading-relaxed
+        text-black
+        break-words
+      ">
         {value || "-"}
-      </div>
+      </p>
 
     </div>
   );
