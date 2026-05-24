@@ -1,4 +1,5 @@
 import "./globals.css";
+import { Toaster } from "react-hot-toast";
 
 export const metadata = {
   title: "Floraless",
@@ -11,14 +12,56 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id">
+      <html lang="id">
 
-      <body>
+        <body>
 
-        {children}
+          {children}
 
-      </body>
+          <Toaster
+            position="top-right"
+            reverseOrder={false}
+            toastOptions={{
 
-    </html>
+              duration: 3000,
+
+              style: {
+
+                background: "#111827",
+                color: "#fff",
+
+                borderRadius: "18px",
+
+                padding: "14px 18px",
+
+                fontSize: "14px",
+
+                boxShadow:
+                  "0 10px 30px rgba(15,23,42,0.08)",
+              },
+
+              success: {
+
+                iconTheme: {
+
+                  primary: "#10B981",
+                  secondary: "#fff",
+                },
+              },
+
+              error: {
+
+                iconTheme: {
+
+                  primary: "#EF4444",
+                  secondary: "#fff",
+                },
+              },
+            }}
+          />
+
+        </body>
+
+      </html>
   );
 }

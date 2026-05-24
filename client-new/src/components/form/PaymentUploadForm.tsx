@@ -1,33 +1,86 @@
 "use client";
 
 import {
+
   useState,
+
 } from "react";
 
-import Image
-from "next/image";
+import Image from "next/image";
+
+import toast from "react-hot-toast";
 
 import {
+
+  CreditCard,
+
+  Upload,
+
+  Landmark,
+
+  User2,
+
+  Receipt,
+
+  CheckCircle2,
+
+  X,
+
+} from "lucide-react";
+
+import BaseModal from "@/components/form/BaseModal";
+
+import {
+
   createPayment,
+
 } from "@/services/payment.service";
 
+/* =========================================================
+   TYPES
+========================================================= */
+
 type Props = {
+
+  open: boolean;
+
+  onClose: () => void;
 
   ticketId: string;
 
   onSuccess?: () => void;
 };
 
-export default function PaymentUploadForm({
+/* =========================================================
+   COMPONENT
+========================================================= */
+
+export default function PaymentUploadModal({
+
+  open,
+
+  onClose,
+
   ticketId,
+
   onSuccess,
+
 }: Props) {
+
+  /* =====================================================
+     STATE
+  ===================================================== */
 
   const [loading, setLoading] =
     useState(false);
 
   const [preview, setPreview] =
     useState("");
+
+  const [file, setFile] =
+    useState<File | null>(
+      null
+    );
 
   const [form, setForm] =
     useState({
@@ -39,14 +92,9 @@ export default function PaymentUploadForm({
       bank_pengirim: "",
     });
 
-  const [file, setFile] =
-    useState<File | null>(
-      null
-    );
-
-  /* =========================================================
+  /* =====================================================
      CHANGE
-  ========================================================= */
+  ===================================================== */
 
   const handleChange =
     (
@@ -62,9 +110,9 @@ export default function PaymentUploadForm({
       });
     };
 
-  /* =========================================================
+  /* =====================================================
      FILE
-  ========================================================= */
+  ===================================================== */
 
   const handleFile =
     (
@@ -81,15 +129,16 @@ export default function PaymentUploadForm({
       setFile(selected);
 
       setPreview(
+
         URL.createObjectURL(
           selected
         )
       );
     };
 
-  /* =========================================================
+  /* =====================================================
      SUBMIT
-  ========================================================= */
+  ===================================================== */
 
   const handleSubmit =
     async (
@@ -102,9 +151,33 @@ export default function PaymentUploadForm({
 
         if (!file) {
 
-          return alert(
-            "Upload bukti transfer"
+          toast.error(
+            "Upload bukti transfer terlebih dahulu"
           );
+
+          return;
+        }
+
+        if (
+          !form.nama_pengirim.trim()
+        ) {
+
+          toast.error(
+            "Nama pengirim wajib diisi"
+          );
+
+          return;
+        }
+
+        if (
+          !form.bank_pengirim.trim()
+        ) {
+
+          toast.error(
+            "Bank pengirim wajib diisi"
+          );
+
+          return;
         }
 
         setLoading(true);
@@ -141,8 +214,8 @@ export default function PaymentUploadForm({
           fd
         );
 
-        alert(
-          "Payment berhasil dikirim"
+        toast.success(
+          "Pembayaran berhasil dikirim"
         );
 
         setFile(null);
@@ -158,18 +231,20 @@ export default function PaymentUploadForm({
           bank_pengirim: "",
         });
 
+        onClose();
+
         onSuccess?.();
 
       } catch (err: any) {
 
         console.error(err);
 
-        alert(
+        toast.error(
 
           err?.response?.data
             ?.message ||
 
-          "Gagal upload payment"
+          "Gagal upload pembayaran"
         );
 
       } finally {
@@ -178,271 +253,861 @@ export default function PaymentUploadForm({
       }
     };
 
+  /* =====================================================
+     UI
+  ===================================================== */
+
   return (
 
-    <form
-      onSubmit={handleSubmit}
-      className="
-        rounded-[2rem]
-        border
-        bg-white
-        p-8
-        shadow-sm
-      "
+    <BaseModal
+
+      open={open}
+
+      onClose={onClose}
+
+      maxWidth="max-w-4xl"
     >
 
       {/* =====================================================
-         HEADER
+          HEADER
       ===================================================== */}
 
-      <div>
+      <div className="
 
-        <p className="
-          text-sm
-          uppercase
-          tracking-[0.3em]
-          text-[#C9AE63]
-        ">
-          Payment
-        </p>
+        px-8
+        py-7
 
-        <h2 className="
-          mt-3
-          text-3xl
-          font-bold
-        ">
-          Upload Pembayaran
-        </h2>
+        border-b
+        border-slate-200
 
-        <p className="
-          mt-4
-          text-gray-600
-        ">
-          Upload bukti transfer pembayaran
-          untuk melanjutkan proses dekorasi.
-        </p>
+        flex
+        items-start
+        justify-between
+
+      ">
+
+        <div>
+
+          <div className="
+            flex
+            items-center
+            gap-3
+            flex-wrap
+          ">
+
+            <h2 className="
+
+              text-[38px]
+              leading-none
+
+              font-bold
+
+              tracking-tight
+
+              text-[#0F172A]
+
+            ">
+
+              Upload{" "}
+
+              <span className="
+                text-[#64748B]
+              ">
+                pembayaran
+              </span>
+
+            </h2>
+
+            <div className="
+
+              h-10
+              px-4
+
+              rounded-2xl
+
+              bg-emerald-50
+
+              border
+              border-emerald-200
+
+              text-emerald-700
+
+              inline-flex
+              items-center
+              justify-center
+
+              text-sm
+              font-semibold
+
+            ">
+
+              Payment
+
+            </div>
+
+          </div>
+
+          <p className="
+
+            text-slate-500
+            text-sm
+
+            mt-3
+
+          ">
+            Upload bukti transfer pembayaran untuk proses verifikasi pesanan
+          </p>
+
+        </div>
+
+        <button
+
+          onClick={onClose}
+
+          className="
+
+            w-12
+            h-12
+
+            rounded-2xl
+
+            border
+            border-slate-200
+
+            flex
+            items-center
+            justify-center
+
+            text-slate-500
+
+            hover:bg-slate-100
+
+            transition
+
+          "
+        >
+
+          <X size={20} />
+
+        </button>
 
       </div>
 
       {/* =====================================================
-         FORM
+          BODY
       ===================================================== */}
 
-      <div className="
-        mt-8
-        grid
-        gap-6
-      ">
+      <form
 
-        {/* ===================================================
-           TIPE
-        =================================================== */}
+        id="payment-form"
 
-        <div>
+        onSubmit={handleSubmit}
 
-          <label className="
-            text-sm
-            font-medium
+        className="
+
+          px-8
+          py-8
+
+          space-y-7
+
+          overflow-y-auto
+
+        "
+      >
+
+        {/* =====================================================
+            INFORMASI PEMBAYARAN
+        ===================================================== */}
+
+        <Section title="Informasi Pembayaran">
+
+          <div className="
+
+            grid
+            grid-cols-1
+            md:grid-cols-2
+
+            gap-5
+
           ">
-            Tipe Pembayaran
-          </label>
 
-          <select
-            name="tipe"
-            value={form.tipe}
-            onChange={handleChange}
-            className="
-              mt-2
-              w-full
-              rounded-2xl
-              border
-              px-5
-              py-4
-              outline-none
-            "
-          >
+            {/* TIPE */}
+            <SelectField
 
-            <option value="DP1">
-              DP1
-            </option>
+              label="Tipe Pembayaran"
 
-            <option value="DP2">
-              DP2
-            </option>
+              icon={
+                <CreditCard
+                  size={18}
+                />
+              }
 
-            <option value="PELUNASAN">
-              Pelunasan
-            </option>
+              name="tipe"
 
-          </select>
+              value={
+                form.tipe
+              }
 
-        </div>
+              onChange={
+                handleChange
+              }
 
-        {/* ===================================================
-           NAMA
-        =================================================== */}
+            >
 
-        <div>
+              <option value="DP1">
+                DP 1
+              </option>
 
-          <label className="
-            text-sm
-            font-medium
-          ">
-            Nama Pengirim
-          </label>
+              <option value="DP2">
+                DP 2
+              </option>
 
-          <input
-            type="text"
-            name="nama_pengirim"
-            value={
-              form.nama_pengirim
-            }
-            onChange={handleChange}
-            placeholder="Nama rekening pengirim"
-            className="
-              mt-2
-              w-full
-              rounded-2xl
-              border
-              px-5
-              py-4
-              outline-none
-            "
-            required
-          />
+              <option value="PELUNASAN">
+                Pelunasan
+              </option>
 
-        </div>
+            </SelectField>
 
-        {/* ===================================================
-           BANK
-        =================================================== */}
+            {/* NAMA */}
+            <InputField
 
-        <div>
+              label="Nama Pengirim"
 
-          <label className="
-            text-sm
-            font-medium
-          ">
-            Bank Pengirim
-          </label>
+              icon={
+                <User2
+                  size={18}
+                />
+              }
 
-          <input
-            type="text"
-            name="bank_pengirim"
-            value={
-              form.bank_pengirim
-            }
-            onChange={handleChange}
-            placeholder="BCA / BRI / Mandiri"
-            className="
-              mt-2
-              w-full
-              rounded-2xl
-              border
-              px-5
-              py-4
-              outline-none
-            "
-            required
-          />
+              type="text"
 
-        </div>
+              name="nama_pengirim"
 
-        {/* ===================================================
-           FILE
-        =================================================== */}
+              value={
+                form.nama_pengirim
+              }
 
-        <div>
+              onChange={
+                handleChange
+              }
 
-          <label className="
-            text-sm
-            font-medium
-          ">
-            Bukti Transfer
-          </label>
+              placeholder="
+                Nama pemilik rekening
+              "
+            />
 
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFile}
-            className="
-              mt-2
-              block
-              w-full
-            "
-            required
-          />
-
-        </div>
-
-        {/* ===================================================
-           PREVIEW
-        =================================================== */}
-
-        {
-          preview && (
-
+            {/* BANK */}
             <div className="
-              overflow-hidden
-              rounded-3xl
-              border
+              md:col-span-2
             ">
 
-              <Image
-                src={preview}
-                alt="preview"
-                width={1200}
-                height={900}
-                className="
-                  h-auto
-                  w-full
-                  object-cover
+              <InputField
+
+                label="Bank Pengirim"
+
+                icon={
+                  <Landmark
+                    size={18}
+                  />
+                }
+
+                type="text"
+
+                name="bank_pengirim"
+
+                value={
+                  form.bank_pengirim
+                }
+
+                onChange={
+                  handleChange
+                }
+
+                placeholder="
+                  Contoh: BCA, Mandiri, BNI
                 "
               />
 
             </div>
-          )
-        }
 
-      </div>
+          </div>
+
+        </Section>
+
+        {/* =====================================================
+            UPLOAD
+        ===================================================== */}
+
+        <Section title="Bukti Transfer">
+
+          <div className="
+            space-y-5
+          ">
+
+            <label className="
+
+              relative
+
+              flex
+              flex-col
+              items-center
+              justify-center
+
+              gap-4
+
+              border-2
+              border-dashed
+              border-slate-300
+
+              rounded-[30px]
+
+              bg-slate-50
+
+              p-10
+
+              cursor-pointer
+
+              hover:border-slate-400
+              hover:bg-slate-100/60
+
+              transition
+
+            ">
+
+              <div className="
+
+                w-16
+                h-16
+
+                rounded-3xl
+
+                bg-[#0F172A]
+
+                text-white
+
+                flex
+                items-center
+                justify-center
+
+              ">
+
+                <Upload
+                  size={26}
+                />
+
+              </div>
+
+              <div className="
+                text-center
+              ">
+
+                <p className="
+
+                  text-base
+                  font-semibold
+
+                  text-[#0F172A]
+
+                ">
+                  Upload Bukti Transfer
+                </p>
+
+                <p className="
+
+                  text-sm
+                  text-slate-500
+
+                  mt-2
+
+                ">
+                  PNG, JPG, JPEG maksimal 5MB
+                </p>
+
+              </div>
+
+              <input
+
+                type="file"
+
+                accept="image/*"
+
+                onChange={
+                  handleFile
+                }
+
+                className="
+                  hidden
+                "
+              />
+
+            </label>
+
+            {/* PREVIEW */}
+            {
+
+              preview && (
+
+                <div className="
+
+                  overflow-hidden
+
+                  rounded-[30px]
+
+                  border
+                  border-slate-200
+
+                  bg-white
+
+                  p-4
+
+                ">
+
+                  <div className="
+
+                    relative
+
+                    w-full
+                    h-[320px]
+
+                    rounded-[24px]
+
+                    overflow-hidden
+
+                  ">
+
+                    <Image
+
+                      src={preview}
+
+                      alt="Preview"
+
+                      fill
+
+                      className="
+                        object-cover
+                      "
+                    />
+
+                  </div>
+
+                </div>
+              )
+            }
+
+          </div>
+
+        </Section>
+
+        {/* =====================================================
+            INFO
+        ===================================================== */}
+
+        <div className="
+
+          rounded-[30px]
+
+          border
+          border-emerald-200
+
+          bg-emerald-50
+
+          p-5
+
+          flex
+          items-start
+
+          gap-4
+
+        ">
+
+          <div className="
+
+            w-11
+            h-11
+
+            rounded-2xl
+
+            bg-emerald-100
+
+            flex
+            items-center
+            justify-center
+
+            text-emerald-700
+
+            shrink-0
+
+          ">
+
+            <CheckCircle2
+              size={20}
+            />
+
+          </div>
+
+          <div>
+
+            <h4 className="
+
+              text-sm
+              font-semibold
+
+              text-emerald-900
+
+            ">
+              Informasi Pembayaran
+            </h4>
+
+            <p className="
+
+              text-sm
+
+              text-emerald-700
+
+              mt-1
+
+              leading-relaxed
+
+            ">
+              Setelah pembayaran dikirim, admin akan melakukan verifikasi terlebih dahulu sebelum pembayaran dikonfirmasi.
+            </p>
+
+          </div>
+
+        </div>
+
+      </form>
 
       {/* =====================================================
-         ACTION
+          FOOTER
       ===================================================== */}
 
       <div className="
-        mt-10
+
+        px-8
+        py-6
+
+        border-t
+        border-slate-200
+
+        bg-white
+
+        flex
+        items-center
+        justify-between
+
+        gap-5
+        flex-wrap
+
       ">
 
+        <p className="
+
+          text-sm
+          text-slate-500
+
+        ">
+          Pastikan bukti transfer terlihat jelas sebelum dikirim.
+        </p>
+
         <button
+
           type="submit"
+
+          form="payment-form"
+
           disabled={loading}
-          className="
-            rounded-full
-            bg-black
+
+          className={`
+
+            h-14
             px-8
-            py-4
+
+            rounded-2xl
+
+            bg-[#0F172A]
+
+            text-white
+
             text-sm
             font-semibold
-            text-white
+
+            inline-flex
+            items-center
+            justify-center
+
+            gap-2
+
             transition
-            hover:opacity-90
-            disabled:opacity-50
-          "
+
+            ${
+
+              loading
+
+                ? `
+                  opacity-50
+                  cursor-not-allowed
+                `
+
+                : `
+                  hover:opacity-90
+                `
+            }
+
+          `}
         >
 
+          <Upload
+            size={17}
+          />
+
           {
+
             loading
 
-              ? "Uploading..."
+              ? "Mengupload..."
 
-              : "Upload Pembayaran"
+              : "Kirim Pembayaran"
           }
 
         </button>
 
       </div>
 
-    </form>
+    </BaseModal>
+  );
+}
+
+/* =========================================================
+   SECTION
+========================================================= */
+
+function Section({
+
+  title,
+
+  children,
+
+}: any) {
+
+  return (
+
+    <div className="
+
+      border
+      border-slate-200
+
+      rounded-[32px]
+
+      bg-white
+
+      p-6
+
+      space-y-5
+
+      shadow-sm
+
+    ">
+
+      <h3 className="
+
+        text-[26px]
+        font-bold
+
+        tracking-tight
+
+        text-[#0F172A]
+
+      ">
+        {title}
+      </h3>
+
+      {children}
+
+    </div>
+  );
+}
+
+/* =========================================================
+   INPUT FIELD
+========================================================= */
+
+function InputField({
+
+  label,
+
+  icon,
+
+  ...props
+
+}: any) {
+
+  return (
+
+    <div className="
+      space-y-2
+    ">
+
+      <label className="
+
+        text-sm
+        font-medium
+
+        text-slate-700
+
+      ">
+        {label}
+      </label>
+
+      <div className="
+        relative
+      ">
+
+        <div className="
+
+          absolute
+          left-4
+          top-1/2
+          -translate-y-1/2
+
+          text-slate-400
+
+        ">
+          {icon}
+        </div>
+
+        <input
+
+          {...props}
+
+          className="
+
+            w-full
+
+            h-[58px]
+
+            pl-12
+            pr-4
+
+            rounded-2xl
+
+            border
+            border-slate-200
+
+            bg-white
+
+            text-sm
+
+            outline-none
+
+            transition
+
+            focus:border-slate-400
+            focus:ring-4
+            focus:ring-slate-100
+
+          "
+        />
+
+      </div>
+
+    </div>
+  );
+}
+
+/* =========================================================
+   SELECT FIELD
+========================================================= */
+
+function SelectField({
+
+  label,
+
+  icon,
+
+  children,
+
+  ...props
+
+}: any) {
+
+  return (
+
+    <div className="
+      space-y-2
+    ">
+
+      <label className="
+
+        text-sm
+        font-medium
+
+        text-slate-700
+
+      ">
+        {label}
+      </label>
+
+      <div className="
+        relative
+      ">
+
+        <div className="
+
+          absolute
+          left-4
+          top-1/2
+          -translate-y-1/2
+
+          text-slate-400
+
+          pointer-events-none
+
+          z-10
+
+        ">
+          {icon}
+        </div>
+
+        <select
+
+          {...props}
+
+          className="
+
+            w-full
+
+            h-[58px]
+
+            pl-12
+            pr-4
+
+            rounded-2xl
+
+            border
+            border-slate-200
+
+            bg-white
+
+            text-sm
+
+            outline-none
+
+            transition
+
+            focus:border-slate-400
+            focus:ring-4
+            focus:ring-slate-100
+
+          "
+        >
+
+          {children}
+
+        </select>
+
+      </div>
+
+    </div>
   );
 }

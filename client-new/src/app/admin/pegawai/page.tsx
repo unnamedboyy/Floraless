@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from "react";
-
 import { useUsers } from "@/hooks/useUsers";
-
 import TableWrapper from "@/components/table/TableWrapper";
-
 import UserFormModal from "@/components/form/UserFormModal";
-
 import DetailUserModal from "@/components/modal/DetailUserModal";
+
+import toast from "react-hot-toast";
 
 import {
   createUser,
@@ -75,16 +73,27 @@ export default function PegawaiPage() {
         }
 
         setOpenForm(false);
-
         setSelected(null);
+
+        toast.success(
+          "Pegawai berhasil ditambahkan"
+        );
 
         reload();
 
       } catch (err) {
 
+        console.error(
+          "ERROR RESPONSE:",
+          (err as any).response?.data
+        );
+
         console.error(err);
 
-        alert(
+        toast.error(
+          (err as any)
+            .response?.data?.message ||
+
           "Gagal menyimpan data"
         );
       }
@@ -110,10 +119,18 @@ export default function PegawaiPage() {
 
       } catch (err) {
 
+        console.error(
+          "ERROR RESPONSE:",
+          (err as any).response?.data
+        );
+
         console.error(err);
 
-        alert(
-          "Gagal menghapus"
+        toast.error(
+          (err as any)
+            .response?.data?.message ||
+
+          "Gagal menghapus data"
         );
       }
     };

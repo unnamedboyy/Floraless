@@ -1,6 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import {
+
+  useEffect,
+  useState,
+
+} from "react";
+
+import toast from "react-hot-toast";
 
 import TableWrapper from "@/components/table/TableWrapper";
 
@@ -11,16 +18,28 @@ import JadwalFormModal from "@/components/form/JadwalFormModal";
 import DetailJadwalModal from "@/components/modal/DetailJadwalModal";
 
 import {
+
   createJadwal,
+
   updateJadwal,
+
   deleteJadwal,
+
 } from "@/services/jadwal.service";
 
-import { useJadwal } from "@/hooks/useJadwal";
+import {
+  getPegawai,
+} from "@/services/pegawai.service";
+
+import {
+  useJadwal,
+} from "@/hooks/useJadwal";
 
 export default function JadwalPage() {
 
-  /* ================= STATE ================= */
+  /* =====================================================
+     STATE
+  ===================================================== */
 
   const [view, setView] =
     useState<"list" | "grid">(
@@ -32,14 +51,21 @@ export default function JadwalPage() {
       "table"
     );
 
-  const [query, setQuery] = useState({
-    page: 1,
-    limit: 10,
-    search: "",
-    start: "",
-    end: "",
-    status: "",
-  });
+  const [query, setQuery] =
+    useState({
+
+      page: 1,
+
+      limit: 10,
+
+      search: "",
+
+      start: "",
+
+      end: "",
+
+      status: "",
+    });
 
   const [openForm, setOpenForm] =
     useState(false);
@@ -50,32 +76,99 @@ export default function JadwalPage() {
   const [selected, setSelected] =
     useState<any>(null);
 
-  /* ================= DATA ================= */
+  const [pegawai, setPegawai] =
+    useState<any[]>([]);
+
+  const [submitLoading, setSubmitLoading] =
+    useState(false);
+
+  /* =====================================================
+     DATA
+  ===================================================== */
 
   const {
+
     data = [],
+
     loading,
+
     refetch,
+
   } = useJadwal(query);
 
-  /* ================= ACTION ================= */
+  /* =====================================================
+     FETCH PEGAWAI
+  ===================================================== */
+
+  const fetchPegawai =
+    async () => {
+
+      try {
+
+        const res =
+          await getPegawai({});
+
+        setPegawai(
+
+          res?.data?.data ||
+
+          res?.data ||
+
+          []
+        );
+
+      } catch (err) {
+
+        console.error(err);
+
+        toast.error(
+          "Gagal memuat data pegawai"
+        );
+      }
+    };
+
+  /* =====================================================
+     EFFECT
+  ===================================================== */
+
+  useEffect(() => {
+
+    fetchPegawai();
+
+  }, []);
+
+  /* =====================================================
+     ACTION
+  ===================================================== */
 
   const handleSubmit =
     async (form: any) => {
 
       try {
 
+        setSubmitLoading(true);
+
         if (selected?._id) {
 
           await updateJadwal(
+
             selected._id,
+
             form
+          );
+
+          toast.success(
+            "Jadwal berhasil diperbarui"
           );
 
         } else {
 
           await createJadwal(
             form
+          );
+
+          toast.success(
+            "Jadwal berhasil dibuat"
           );
         }
 
@@ -85,13 +178,20 @@ export default function JadwalPage() {
 
         refetch();
 
-      } catch (err) {
+      } catch (err: any) {
 
         console.error(err);
 
-        alert(
-          "Gagal menyimpan"
+        toast.error(
+
+          err?.response?.data?.message ||
+
+          "Gagal menyimpan jadwal"
         );
+
+      } finally {
+
+        setSubmitLoading(false);
       }
     };
 
@@ -100,7 +200,7 @@ export default function JadwalPage() {
 
       if (
         !confirm(
-          "Hapus jadwal?"
+          "Hapus jadwal ini?"
         )
       ) return;
 
@@ -110,507 +210,926 @@ export default function JadwalPage() {
           row._id
         );
 
+        toast.success(
+          "Jadwal berhasil dihapus"
+        );
+
         refetch();
 
-      } catch (err) {
+      } catch (err: any) {
 
         console.error(err);
 
-        alert(
-          "Gagal menghapus"
+        toast.error(
+
+          err?.response?.data?.message ||
+
+          "Gagal menghapus jadwal"
         );
       }
     };
 
-  /* ================= BADGE ================= */
+  /* =====================================================
+     STATUS BADGE
+  ===================================================== */
 
   const getStatusBadge =
     (status: string) => {
 
       const map: any = {
 
-        pending:
-          "bg-yellow-100 text-yellow-700 border border-yellow-200",
+        available: `
 
-        approved:
-          "bg-blue-100 text-blue-700 border border-blue-200",
+          bg-emerald-50
+          text-emerald-700
+          border
+          border-emerald-200
+        `,
 
-        done:
-          "bg-green-100 text-green-700 border border-green-200",
+        booked: `
+
+          bg-amber-50
+          text-amber-700
+          border
+          border-amber-200
+        `,
+
+        ongoing: `
+
+          bg-blue-50
+          text-blue-700
+          border
+          border-blue-200
+        `,
+
+        done: `
+
+          bg-slate-100
+          text-slate-700
+          border
+          border-slate-200
+        `,
       };
 
       return (
         map[status] ||
-        "bg-gray-100 text-gray-700 border"
+
+        `
+          bg-gray-100
+          text-gray-700
+          border
+        `
       );
     };
 
-  /* ================= UI ================= */
+  /* =====================================================
+     UI
+  ===================================================== */
 
   return (
 
-    <div className="p-6 space-y-5">
+    <div className="
+      p-6
+      space-y-5
+    ">
 
-      {/* ================= HEADER ================= */}
-      <div className="flex items-center justify-between">
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
+
+      <div className="
+        flex
+        items-center
+        justify-between
+        gap-5
+        flex-wrap
+      ">
 
         <div>
 
-          <h1 className="text-2xl font-bold">
+          <h1 className="
+            text-3xl
+            font-bold
+            tracking-tight
+            text-[#0F172A]
+          ">
             Kelola Jadwal
           </h1>
 
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="
+            text-sm
+            text-slate-500
+            mt-2
+          ">
             Kelola jadwal acara dan penugasan pegawai
           </p>
 
         </div>
 
         <button
+
           onClick={() => {
 
             setSelected(null);
 
             setOpenForm(true);
           }}
+
           className="
-            bg-black
-            text-white
-            px-4
-            py-2.5
+            h-12
+            px-5
+
             rounded-2xl
+
+            bg-[#0F172A]
+
+            text-white
+
             text-sm
+            font-semibold
+
+            hover:opacity-90
+
+            transition
           "
         >
-          + Tambah
+
+          + Tambah Jadwal
+
         </button>
 
       </div>
 
-      {/* ================= MODE SWITCH ================= */}
-      <div className="flex gap-2">
+      {/* =====================================================
+          MODE SWITCH
+      ===================================================== */}
+
+      <div className="
+        flex
+        gap-2
+      ">
 
         <button
+
           onClick={() =>
             setMode("table")
           }
+
           className={`
-            px-4
-            py-2
+
+            h-11
+            px-5
+
             rounded-2xl
+
             text-sm
+            font-semibold
+
+            transition
+
             ${
+
               mode === "table"
-                ? "bg-black text-white"
-                : "border bg-white"
+
+                ? `
+                  bg-[#0F172A]
+                  text-white
+                `
+
+                : `
+                  border
+                  border-slate-200
+                  bg-white
+                  text-slate-700
+                `
             }
+
           `}
         >
+
           Table
+
         </button>
 
         <button
+
           onClick={() =>
             setMode("calendar")
           }
+
           className={`
-            px-4
-            py-2
+
+            h-11
+            px-5
+
             rounded-2xl
+
             text-sm
+            font-semibold
+
+            transition
+
             ${
+
               mode === "calendar"
-                ? "bg-black text-white"
-                : "border bg-white"
+
+                ? `
+                  bg-[#0F172A]
+                  text-white
+                `
+
+                : `
+                  border
+                  border-slate-200
+                  bg-white
+                  text-slate-700
+                `
             }
+
           `}
         >
+
           Calendar
+
         </button>
 
       </div>
 
-      {/* ================= CONTENT ================= */}
-      {mode === "table" ? (
+      {/* =====================================================
+          CONTENT
+      ===================================================== */}
 
-        <TableWrapper
+      {
 
-          /* 🔥 VIEW */
-          view={view}
-          setView={setView}
+        mode === "table"
 
-          /* 🔥 FILTER */
-          filterContent={
+          ? (
 
-            <div className="space-y-3">
+            <TableWrapper
 
-              {/* STATUS */}
-              <div>
+              /* ================= VIEW ================= */
 
-                <p className="text-xs text-gray-500 mb-1">
-                  Status Jadwal
-                </p>
+              view={view}
 
-                <select
-                  value={query.status}
-                  onChange={(e) =>
-                    setQuery((prev) => ({
-                      ...prev,
-                      status:
-                        e.target.value,
-                      page: 1,
-                    }))
+              setView={setView}
+
+              /* ================= FILTER ================= */
+
+              filterContent={
+
+                <div className="
+                  space-y-5
+                ">
+
+                  {/* STATUS */}
+                  <div className="
+                    space-y-2
+                  ">
+
+                    <label className="
+                      text-xs
+                      font-semibold
+                      uppercase
+                      tracking-wider
+                      text-slate-500
+                    ">
+                      Status Jadwal
+                    </label>
+
+                    <select
+
+                      value={query.status}
+
+                      onChange={(e) =>
+                        setQuery((prev) => ({
+
+                          ...prev,
+
+                          status:
+                            e.target.value,
+
+                          page: 1,
+                        }))
+                      }
+
+                      className="
+                        w-full
+                        h-12
+
+                        rounded-2xl
+
+                        border
+                        border-slate-200
+
+                        bg-white
+
+                        px-4
+
+                        text-sm
+
+                        outline-none
+
+                        transition-all
+
+                        focus:border-slate-400
+                      "
+                    >
+
+                      <option value="">
+                        Semua Status
+                      </option>
+
+                      <option value="available">
+                        Available
+                      </option>
+
+                      <option value="booked">
+                        Booked
+                      </option>
+
+                      <option value="ongoing">
+                        Ongoing
+                      </option>
+
+                      <option value="done">
+                        Done
+                      </option>
+
+                    </select>
+
+                  </div>
+
+                  {/* START DATE */}
+                  <div className="
+                    space-y-2
+                  ">
+
+                    <label className="
+                      text-xs
+                      font-semibold
+                      uppercase
+                      tracking-wider
+                      text-slate-500
+                    ">
+                      Dari Tanggal
+                    </label>
+
+                    <input
+
+                      type="date"
+
+                      value={query.start}
+
+                      onChange={(e) =>
+                        setQuery((prev) => ({
+
+                          ...prev,
+
+                          start:
+                            e.target.value,
+
+                          page: 1,
+                        }))
+                      }
+
+                      className="
+                        w-full
+                        h-12
+
+                        rounded-2xl
+
+                        border
+                        border-slate-200
+
+                        bg-white
+
+                        px-4
+
+                        text-sm
+
+                        outline-none
+
+                        transition-all
+
+                        focus:border-slate-400
+                      "
+                    />
+
+                  </div>
+
+                  {/* END DATE */}
+                  <div className="
+                    space-y-2
+                  ">
+
+                    <label className="
+                      text-xs
+                      font-semibold
+                      uppercase
+                      tracking-wider
+                      text-slate-500
+                    ">
+                      Sampai Tanggal
+                    </label>
+
+                    <input
+
+                      type="date"
+
+                      value={query.end}
+
+                      onChange={(e) =>
+                        setQuery((prev) => ({
+
+                          ...prev,
+
+                          end:
+                            e.target.value,
+
+                          page: 1,
+                        }))
+                      }
+
+                      className="
+                        w-full
+                        h-12
+
+                        rounded-2xl
+
+                        border
+                        border-slate-200
+
+                        bg-white
+
+                        px-4
+
+                        text-sm
+
+                        outline-none
+
+                        transition-all
+
+                        focus:border-slate-400
+                      "
+                    />
+
+                  </div>
+
+                  {/* LIMIT */}
+                  <div className="
+                    space-y-2
+                  ">
+
+                    <label className="
+                      text-xs
+                      font-semibold
+                      uppercase
+                      tracking-wider
+                      text-slate-500
+                    ">
+                      Data per halaman
+                    </label>
+
+                    <select
+
+                      value={query.limit}
+
+                      onChange={(e) =>
+                        setQuery((prev) => ({
+
+                          ...prev,
+
+                          limit: Number(
+                            e.target.value
+                          ),
+
+                          page: 1,
+                        }))
+                      }
+
+                      className="
+                        w-full
+                        h-12
+
+                        rounded-2xl
+
+                        border
+                        border-slate-200
+
+                        bg-white
+
+                        px-4
+
+                        text-sm
+
+                        outline-none
+
+                        transition-all
+
+                        focus:border-slate-400
+                      "
+                    >
+
+                      <option value={5}>
+                        5
+                      </option>
+
+                      <option value={10}>
+                        10
+                      </option>
+
+                      <option value={20}>
+                        20
+                      </option>
+
+                      <option value={50}>
+                        50
+                      </option>
+
+                    </select>
+
+                  </div>
+
+                  {/* RESET */}
+                  <button
+
+                    onClick={() =>
+                      setQuery({
+
+                        page: 1,
+
+                        limit: 10,
+
+                        search: "",
+
+                        start: "",
+
+                        end: "",
+
+                        status: "",
+                      })
+                    }
+
+                    className="
+                      w-full
+                      h-12
+
+                      rounded-2xl
+
+                      bg-[#0F172A]
+
+                      text-white
+
+                      text-sm
+                      font-semibold
+
+                      hover:opacity-90
+
+                      transition
+                    "
+                  >
+
+                    Reset Filter
+
+                  </button>
+
+                </div>
+              }
+
+              data={data}
+
+              total={data.length}
+
+              query={query}
+
+              setQuery={setQuery}
+
+              columns={[
+
+                {
+                  label: "Tanggal",
+
+                  key: "tanggal_acara",
+                },
+
+                {
+                  label: "Pegawai",
+
+                  key: "pegawaiId.nama",
+                },
+
+                {
+                  label: "Lokasi",
+
+                  key: "lokasi",
+                },
+
+                {
+
+                  label: "Status",
+
+                  key: "status",
+
+                  render: (row: any) => (
+
+                    <div className={`
+
+                      h-9
+                      px-4
+
+                      rounded-2xl
+
+                      inline-flex
+                      items-center
+                      justify-center
+
+                      text-xs
+                      font-semibold
+
+                      border
+
+                      ${getStatusBadge(
+                        row.status
+                      )}
+
+                    `}>
+
+                      {row.status}
+
+                    </div>
+                  ),
+                },
+
+              ]}
+
+              actions={[
+
+                {
+
+                  label: "Detail",
+
+                  onClick: (row) => {
+
+                    setSelected(row);
+
+                    setOpenDetail(true);
+                  },
+                },
+
+                {
+
+                  label: "Edit",
+
+                  onClick: (row) => {
+
+                    setSelected(row);
+
+                    setOpenForm(true);
+                  },
+                },
+
+                {
+
+                  label: "Delete",
+
+                  onClick: handleDelete,
+                },
+
+              ]}
+
+              /* ================= GRID ================= */
+
+              renderItem={(row) => (
+
+                <div className="
+
+                  bg-white
+
+                  border
+                  border-slate-200
+
+                  rounded-3xl
+
+                  p-5
+
+                  space-y-4
+
+                  shadow-sm
+
+                ">
+
+                  {/* TOP */}
+                  <div className="
+                    flex
+                    items-start
+                    justify-between
+                    gap-3
+                  ">
+
+                    <div>
+
+                      <p className="
+                        font-semibold
+                        text-base
+                        text-[#0F172A]
+                      ">
+
+                        {
+
+                          row.title ||
+
+                          row.ticketId
+                            ?.layananId
+                            ?.nama ||
+
+                          "-"
+                        }
+
+                      </p>
+
+                      <p className="
+                        text-sm
+                        text-slate-500
+                        mt-1
+                      ">
+
+                        {
+                          row.pegawaiId
+                            ?.nama || "-"
+                        }
+
+                      </p>
+
+                    </div>
+
+                    <span className={`
+
+                      inline-flex
+                      items-center
+
+                      px-3
+                      py-1
+
+                      rounded-full
+
+                      text-xs
+                      font-medium
+
+                      ${getStatusBadge(
+                        row.status
+                      )}
+
+                    `}>
+
+                      {row.status}
+
+                    </span>
+
+                  </div>
+
+                  {/* DATE */}
+                  <div>
+
+                    <p className="
+                      text-xs
+                      text-slate-400
+                    ">
+                      Tanggal Acara
+                    </p>
+
+                    <p className="
+                      text-sm
+                      font-medium
+                      mt-1
+                    ">
+
+                      {
+
+                        row.tanggal_acara
+
+                          ? new Date(
+                              row.tanggal_acara
+                            )
+
+                            .toLocaleDateString(
+                              "id-ID"
+                            )
+
+                          : "-"
+                      }
+
+                    </p>
+
+                  </div>
+
+                  {/* LOCATION */}
+                  <div className="
+                    pt-2
+                    border-t
+                    border-slate-100
+                  ">
+
+                    <p className="
+                      text-xs
+                      text-slate-400
+                    ">
+                      Lokasi
+                    </p>
+
+                    <p className="
+                      text-sm
+                      mt-1
+                      line-clamp-2
+                    ">
+                      {row.lokasi || "-"}
+                    </p>
+
+                  </div>
+
+                  {/* CATATAN */}
+                  {
+
+                    row.catatan && (
+
+                      <div className="
+                        pt-2
+                        border-t
+                        border-slate-100
+                      ">
+
+                        <p className="
+                          text-xs
+                          text-slate-400
+                        ">
+                          Catatan
+                        </p>
+
+                        <p className="
+                          text-sm
+                          mt-1
+                          line-clamp-2
+                          text-slate-600
+                        ">
+                          {row.catatan}
+                        </p>
+
+                      </div>
+                    )
                   }
-                  className="
-                    w-full
-                    border
-                    rounded-xl
-                    px-3
-                    py-2
-                    text-sm
-                  "
-                >
 
-                  <option value="">
-                    Semua
-                  </option>
+                </div>
+              )}
 
-                  <option value="pending">
-                    Pending
-                  </option>
+            />
 
-                  <option value="approved">
-                    Approved
-                  </option>
+          )
 
-                  <option value="done">
-                    Done
-                  </option>
+          : (
 
-                </select>
+            <JadwalCalendar
 
-              </div>
+              data={data}
 
-              {/* DATE START */}
-              <div>
+              refetch={refetch}
 
-                <p className="text-xs text-gray-500 mb-1">
-                  Dari Tanggal
-                </p>
-
-                <input
-                  type="date"
-                  value={query.start}
-                  onChange={(e) =>
-                    setQuery((prev) => ({
-                      ...prev,
-                      start:
-                        e.target.value,
-                      page: 1,
-                    }))
-                  }
-                  className="
-                    w-full
-                    border
-                    rounded-xl
-                    px-3
-                    py-2
-                    text-sm
-                  "
-                />
-
-              </div>
-
-              {/* DATE END */}
-              <div>
-
-                <p className="text-xs text-gray-500 mb-1">
-                  Sampai Tanggal
-                </p>
-
-                <input
-                  type="date"
-                  value={query.end}
-                  onChange={(e) =>
-                    setQuery((prev) => ({
-                      ...prev,
-                      end:
-                        e.target.value,
-                      page: 1,
-                    }))
-                  }
-                  className="
-                    w-full
-                    border
-                    rounded-xl
-                    px-3
-                    py-2
-                    text-sm
-                  "
-                />
-
-              </div>
-
-              {/* LIMIT */}
-              <div>
-
-                <p className="text-xs text-gray-500 mb-1">
-                  Data per halaman
-                </p>
-
-                <select
-                  value={query.limit}
-                  onChange={(e) =>
-                    setQuery((prev) => ({
-                      ...prev,
-                      limit: Number(
-                        e.target.value
-                      ),
-                      page: 1,
-                    }))
-                  }
-                  className="
-                    w-full
-                    border
-                    rounded-xl
-                    px-3
-                    py-2
-                    text-sm
-                  "
-                >
-
-                  <option value={5}>
-                    5
-                  </option>
-
-                  <option value={10}>
-                    10
-                  </option>
-
-                  <option value={20}>
-                    20
-                  </option>
-
-                  <option value={50}>
-                    50
-                  </option>
-
-                </select>
-
-              </div>
-
-              {/* RESET */}
-              <button
-                onClick={() =>
-                  setQuery({
-                    page: 1,
-                    limit: 10,
-                    search: "",
-                    start: "",
-                    end: "",
-                    status: "",
-                  })
-                }
-                className="
-                  w-full
-                  bg-black
-                  text-white
-                  rounded-xl
-                  py-2
-                  text-sm
-                "
-              >
-                Reset Filter
-              </button>
-
-            </div>
-          }
-
-          data={data}
-          total={data.length}
-
-          query={query}
-          setQuery={setQuery}
-
-          columns={[
-
-            {
-              label: "Tanggal",
-              key: "tanggal_acara",
-            },
-
-            {
-              label: "Pegawai",
-              key: "pegawaiId.nama",
-            },
-
-            {
-              label: "Lokasi",
-              key: "lokasi",
-            },
-
-            {
-              label: "Status",
-              key: "status",
-            },
-
-          ]}
-
-          actions={[
-
-            {
-              label: "Detail",
-
-              onClick: (row) => {
+              onSelect={(row: any) => {
 
                 setSelected(row);
 
                 setOpenDetail(true);
-              },
-            },
+              }}
+            />
+          )
+      }
 
-            {
-              label: "Edit",
+      {/* =====================================================
+          LOADING
+      ===================================================== */}
 
-              onClick: (row) => {
+      {
 
-                setSelected(row);
+        loading && (
 
-                setOpenForm(true);
-              },
-            },
+          <p className="
+            text-sm
+            text-slate-500
+          ">
+            Loading...
+          </p>
+        )
+      }
 
-            {
-              label: "Delete",
+      {/* =====================================================
+          FORM
+      ===================================================== */}
 
-              onClick: handleDelete,
-            },
-
-          ]}
-
-          /* ================= GRID ================= */
-
-          renderItem={(row) => (
-
-            <div
-              className="
-                bg-white
-                border
-                rounded-3xl
-                p-5
-                space-y-4
-                shadow-sm
-              "
-            >
-
-              {/* TOP */}
-              <div className="flex items-start justify-between gap-3">
-
-                <div>
-
-                  <p className="font-semibold text-base">
-                    {row.title ||
-
-                      row.ticketId
-                        ?.layananId
-                        ?.nama ||
-
-                      "-"}
-                  </p>
-
-                  <p className="text-sm text-gray-500 mt-1">
-                    {row.pegawaiId
-                      ?.nama || "-"}
-                  </p>
-
-                </div>
-
-                <span
-                  className={`
-                    inline-flex
-                    items-center
-                    px-3
-                    py-1
-                    rounded-full
-                    text-xs
-                    font-medium
-                    ${getStatusBadge(
-                      row.status
-                    )}
-                  `}
-                >
-                  {row.status}
-                </span>
-
-              </div>
-
-              {/* DATE */}
-              <div>
-
-                <p className="text-xs text-gray-400">
-                  Tanggal Acara
-                </p>
-
-                <p className="text-sm font-medium mt-1">
-                  {row.tanggal_acara
-
-                    ? new Date(
-                        row.tanggal_acara
-                      ).toLocaleDateString(
-                        "id-ID"
-                      )
-
-                    : "-"}
-                </p>
-
-              </div>
-
-              {/* LOCATION */}
-              <div className="pt-2 border-t">
-
-                <p className="text-xs text-gray-400">
-                  Lokasi
-                </p>
-
-                <p className="text-sm mt-1">
-                  {row.lokasi || "-"}
-                </p>
-
-              </div>
-
-            </div>
-          )}
-
-        />
-
-      ) : (
-
-        <JadwalCalendar
-          data={data}
-          refetch={refetch}
-
-          onSelect={(row: any) => {
-
-            setSelected(row);
-
-            setOpenDetail(true);
-          }}
-        />
-
-      )}
-
-      {/* ================= LOADING ================= */}
-      {loading && (
-
-        <p className="text-sm text-gray-500">
-          Loading...
-        </p>
-
-      )}
-
-      {/* ================= FORM ================= */}
       <JadwalFormModal
+
         open={openForm}
+
+        pegawaiList={pegawai}
+
+        loading={submitLoading}
 
         onClose={() => {
 
@@ -624,8 +1143,12 @@ export default function JadwalPage() {
         initialData={selected}
       />
 
-      {/* ================= DETAIL ================= */}
+      {/* =====================================================
+          DETAIL
+      ===================================================== */}
+
       <DetailJadwalModal
+
         open={openDetail}
 
         data={selected}

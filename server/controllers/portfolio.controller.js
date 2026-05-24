@@ -7,7 +7,9 @@ from "../utils/deleteFile.js";
 import { logActivity }
 from "../utils/logger.js";
 
-/* ================= HELPERS ================= */
+/* =====================================================
+   HELPERS
+===================================================== */
 
 const generateSlug = (text) => {
 
@@ -105,7 +107,9 @@ const ensureCoverExists =
     await firstImage.save();
   };
 
-/* ================= CREATE ================= */
+/* =====================================================
+   CREATE
+===================================================== */
 
 export const createPortfolio =
   async (req, res, next) => {
@@ -123,6 +127,60 @@ export const createPortfolio =
       const galleryFiles =
         req.files?.gallery || [];
 
+      /* ================= VALIDATION ================= */
+
+      if (!title?.trim()) {
+
+        throw {
+
+          status: 400,
+
+          message:
+            "Judul portfolio wajib diisi",
+        };
+      }
+
+      if (
+        title.trim().length < 3
+      ) {
+
+        throw {
+
+          status: 400,
+
+          message:
+            "Judul portfolio minimal 3 karakter",
+        };
+      }
+
+      if (
+        excerpt &&
+        excerpt.length > 500
+      ) {
+
+        throw {
+
+          status: 400,
+
+          message:
+            "Excerpt terlalu panjang",
+        };
+      }
+
+      if (
+        content &&
+        content.length > 10000
+      ) {
+
+        throw {
+
+          status: 400,
+
+          message:
+            "Content terlalu panjang",
+        };
+      }
+
       if (
         galleryFiles.length === 0
       ) {
@@ -136,6 +194,8 @@ export const createPortfolio =
         };
       }
 
+      /* ================= CREATE ================= */
+
       const portfolio =
         await Portfolio.create({
 
@@ -144,7 +204,8 @@ export const createPortfolio =
               layananIds
             ),
 
-          title,
+          title:
+            title.trim(),
 
           slug:
             generateSlug(title),
@@ -217,7 +278,9 @@ export const createPortfolio =
     }
   };
 
-/* ================= GET ALL ================= */
+/* =====================================================
+   GET ALL
+===================================================== */
 
 export const getPortfolios =
   async (
@@ -260,7 +323,9 @@ export const getPortfolios =
     }
   };
 
-/* ================= FEATURED ================= */
+/* =====================================================
+   FEATURED
+===================================================== */
 
 export const getFeaturedPortfolios =
   async (
@@ -305,7 +370,9 @@ export const getFeaturedPortfolios =
     }
   };
 
-/* ================= BY LAYANAN ================= */
+/* =====================================================
+   BY LAYANAN
+===================================================== */
 
 export const getPortfolioByLayanan =
   async (
@@ -351,7 +418,9 @@ export const getPortfolioByLayanan =
     }
   };
 
-/* ================= DETAIL ================= */
+/* =====================================================
+   DETAIL
+===================================================== */
 
 export const getPortfolioById =
   async (
@@ -419,7 +488,9 @@ export const getPortfolioById =
     }
   };
 
-/* ================= SLUG ================= */
+/* =====================================================
+   SLUG
+===================================================== */
 
 export const getPortfolioBySlug =
   async (
@@ -491,7 +562,9 @@ export const getPortfolioBySlug =
     }
   };
 
-/* ================= UPDATE ================= */
+/* =====================================================
+   UPDATE
+===================================================== */
 
 export const updatePortfolio =
   async (
@@ -527,41 +600,82 @@ export const updatePortfolio =
         isFeatured,
       } = req.body;
 
-      if (title) {
+      /* ================= VALIDATION ================= */
 
-        portfolio.title =
-          title;
+      if (!title?.trim()) {
 
-        portfolio.slug =
-          generateSlug(title);
+        throw {
+
+          status: 400,
+
+          message:
+            "Judul portfolio wajib diisi",
+        };
       }
 
-      if (excerpt !== undefined) {
+      if (
+        title.trim().length < 3
+      ) {
 
-        portfolio.excerpt =
-          excerpt;
+        throw {
+
+          status: 400,
+
+          message:
+            "Judul portfolio minimal 3 karakter",
+        };
       }
 
-      if (content !== undefined) {
+      if (
+        excerpt &&
+        excerpt.length > 500
+      ) {
 
-        portfolio.content =
-          content;
+        throw {
+
+          status: 400,
+
+          message:
+            "Excerpt terlalu panjang",
+        };
       }
 
-      if (layananIds !== undefined) {
+      if (
+        content &&
+        content.length > 10000
+      ) {
 
-        portfolio.layananIds =
-          parseLayananIds(
-            layananIds
-          );
+        throw {
+
+          status: 400,
+
+          message:
+            "Content terlalu panjang",
+        };
       }
 
-      if (isFeatured !== undefined) {
+      /* ================= UPDATE DATA ================= */
 
-        portfolio.isFeatured =
-          isFeatured === "true" ||
-          isFeatured === true;
-      }
+      portfolio.title =
+        title.trim();
+
+      portfolio.slug =
+        generateSlug(title);
+
+      portfolio.excerpt =
+        excerpt || "";
+
+      portfolio.content =
+        content || "";
+
+      portfolio.layananIds =
+        parseLayananIds(
+          layananIds
+        );
+
+      portfolio.isFeatured =
+        isFeatured === "true" ||
+        isFeatured === true;
 
       await portfolio.save();
 
@@ -718,7 +832,9 @@ export const updatePortfolio =
     }
   };
 
-/* ================= DELETE ================= */
+/* =====================================================
+   DELETE
+===================================================== */
 
 export const deletePortfolio =
   async (
@@ -793,7 +909,9 @@ export const deletePortfolio =
     }
   };
 
-/* ================= RELATED ================= */
+/* =====================================================
+   RELATED
+===================================================== */
 
 export const getRelatedPortfolio =
   async (
@@ -863,7 +981,9 @@ export const getRelatedPortfolio =
     }
   };
 
-/* ================= SET COVER ================= */
+/* =====================================================
+   SET COVER
+===================================================== */
 
 export const setCoverPortfolioImage =
   async (req, res, next) => {
@@ -918,6 +1038,10 @@ export const setCoverPortfolioImage =
       next(err);
     }
   };
+
+/* =====================================================
+   REORDER IMAGES
+===================================================== */
 
 export const reorderPortfolioImages =
   async (req, res, next) => {

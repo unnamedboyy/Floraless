@@ -115,7 +115,7 @@ export const rejectPayment =
 
     const res =
       await api.patch(
-        `/payments/${id}/approve`,
+        `/payments/${id}/reject`,
         {
           status: "rejected",
           catatan,

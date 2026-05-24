@@ -60,13 +60,9 @@ app.use("/api/jadwal", jadwalRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/pegawai", pegawaiRouter);
 app.use("/api/pelanggan", pelangganRouter);
-app.use("/uploads", express.static("public/uploads"));
 
-app.use(
-  "/api/upload",
-  uploadRoutes
-);
-
+app.use("/api/upload",uploadRoutes);
+app.use("/uploads", express.static("uploads"));
 app.use(errorHandler);
 
 app.listen(process.env.PORT, () =>

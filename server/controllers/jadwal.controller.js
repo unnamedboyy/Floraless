@@ -77,6 +77,7 @@ export const createJadwal = async (req, res, next) => {
       ticketId,
       title,
       lokasi,
+      catatan,
       status
     } = req.body;
 
@@ -102,7 +103,8 @@ export const createJadwal = async (req, res, next) => {
       title,
       lokasi,
       tanggal_acara,
-      status: status || "booked"
+      status: status || "booked",
+      catatan: catatan || ""
     });
 
     await logActivity({

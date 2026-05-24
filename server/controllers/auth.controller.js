@@ -1,307 +1,918 @@
-// auth controller untuk mengelola autentikasi dan manajemen user (pelanggan, pegawai, admin)
+// auth controller untuk autentikasi + orchestrator user multi role
 
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+
 import User from "../models/user.js";
 import Pelanggan from "../models/pelanggan.js";
-import Admin from "../models/admin.js";
 import Pegawai from "../models/pegawai.js";
+import Admin from "../models/admin.js";
 
-const createUser = async (username, password, role) => {
-  const hash = await bcrypt.hash(password, 10);
+import {
+  createPegawaiProfile,
+} from "./pegawai.controller.js";
+
+import {
+  createPelangganProfile,
+} from "./pelanggan.controller.js";
+
+/* =====================================================
+   CREATE USER
+===================================================== */
+
+const createUser = async (
+  username,
+  password,
+  role
+) => {
+
+  const hash =
+    await bcrypt.hash(password, 10);
 
   return await User.create({
+
     username,
+
     password: hash,
-    role
+
+    role,
+
+    isActive: true,
   });
 };
 
-// REGISTER PELANGGAN
-export const registerPelanggan = async (req, res, next) => {
-  try {
-    const { username, password, nama, no_telp } = req.body;
+/* =====================================================
+   GET MODEL BY ROLE
+===================================================== */
 
-    const existing = await User.findOne({ username });
-    if (existing) {
-      throw { status: 400, message: "Username sudah digunakan" };
-    }
+const getModelByRole = (
+  role
+) => {
 
-    const user = await createUser(username, password, "pelanggan");
-
-    const pelanggan = await Pelanggan.create({
-      userId: user._id,
-      nama,
-      no_telp
-    });
-
-    res.json({ user, pelanggan });
-  } catch (err) {
-    next(err);
+  if (role === "pelanggan") {
+    return Pelanggan;
   }
+
+  if (role === "pegawai") {
+    return Pegawai;
+  }
+
+  if (role === "admin") {
+    return Admin;
+  }
+
+  throw {
+    status: 400,
+    message:
+      "Role tidak valid",
+  };
 };
 
-// REGISTER PEGAWAI
-export const registerPegawai = async (req, res, next) => {
-  try {
-    const { username, password, nama, no_telp } = req.body;
+/* =====================================================
+   REGISTER PELANGGAN
+===================================================== */
 
-    const existing = await User.findOne({ username });
-    if (existing) {
-      throw { status: 400, message: "Username sudah digunakan" };
-    }
+export const registerPelanggan =
+  async (req, res, next) => {
 
-    const user = await createUser(username, password, "pegawai");
+    try {
 
-    const pegawai = await Pegawai.create({
-      userId: user._id,
-      nama,
-      no_telp
-    });
+      const {
 
-    res.json({ user, pegawai });
-  } catch (err) {
-    next(err);
-  }
-};
+        username,
+        password,
 
-// REGISTER ADMIN
-export const registerAdmin = async (req, res, next) => {
-  try {
-    const { username, password, nama, no_telp } = req.body;
+        nama,
+        no_telp,
+        email,
 
-    const existing = await User.findOne({ username });
-    if (existing) {
-      throw { status: 400, message: "Username sudah digunakan" };
-    }
+        profile,
 
-    const user = await createUser(username, password, "admin");
+        alamat,
 
-    const admin = await Admin.create({
-      userId: user._id,
-      nama,
-      no_telp
-    });
+        jenis_kelamin,
 
-    res.json({ user, admin });
-  } catch (err) {
-    next(err);
-  }
-};
+        tanggal_lahir,
 
-// LOGIN
-export const login = async (req, res, next) => {
-  try {
+        bio,
 
-    const { username, password } = req.body;
-    /* ================= USER ================= */
-    const user = await User.findOne({
-      username
-    });
+      } = req.body;
 
-    if (!user) {
-      throw {
-        status: 404,
-        message: "User tidak ditemukan"
-      };
-    }
+      /* =========================
+         CHECK USERNAME
+      ========================= */
 
-    /* ================= PASSWORD ================= */
-    const match = await bcrypt.compare(
-      password,
-      user.password
-    );
+      const existing =
+        await User.findOne({
+          username,
+        });
 
-    if (!match) {
-      throw {
-        status: 400,
-        message: "Password salah"
-      };
-    }
+      if (existing) {
 
-    /* ================= TOKEN ================= */
-    const token = jwt.sign(
-      {
-        id: user._id,
-        role: user.role,
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "1d",
+        throw {
+          status: 400,
+          message:
+            "Username sudah digunakan",
+        };
       }
-    );
 
-    /* ================= PROFILE ================= */
-    let profile = null;
+      /* =========================
+         CREATE USER
+      ========================= */
 
-    if (user.role === "pelanggan") {
+      const user =
+        await createUser(
+          username,
+          password,
+          "pelanggan"
+        );
 
-      profile = await Pelanggan
-        .findOne({
-          userId: user._id,
+      /* =========================
+         CREATE PROFILE
+      ========================= */
+
+      const pelanggan =
+        await createPelangganProfile({
+
+          userId:
+            user._id,
+
+          nama,
+
+          no_telp,
+
+          email,
+
+          profile,
+
+          alamat,
+
+          jenis_kelamin,
+
+          tanggal_lahir,
+
+          bio,
         });
 
-    } else if (
-      user.role === "pegawai"
-    ) {
+      /* =========================
+         RESPONSE
+      ========================= */
 
-      profile = await Pegawai
-        .findOne({
-          userId: user._id,
-        });
+      res.json({
 
-    } else if (
-      user.role === "admin"
-    ) {
+        success: true,
 
-      profile = await Admin
-        .findOne({
-          userId: user._id,
-        });
+        message:
+          "Pelanggan berhasil dibuat",
+
+        user,
+
+        pelanggan,
+      });
+
+    } catch (err) {
+
+      next(err);
 
     }
+  };
 
-    /* ================= RESPONSE ================= */
-    res.json({
-      message: "Login berhasil",
+/* =====================================================
+   REGISTER PEGAWAI
+===================================================== */
 
-      token,
+export const registerPegawai =
+  async (req, res, next) => {
 
-      user: {
-        _id: user._id,
-        username: user.username,
-        role: user.role,
-        isActive: user.isActive,
-      },
+    try {
 
-      profile,
-    });
+      const {
 
-  } catch (err) {
+        username,
+        password,
 
-    next(err);
+        nama,
+        no_telp,
+        email,
 
-  }
-};
+        profile,
 
-// GET ALL USER BY ROLE 
-export const getUsersByRole = async (req, res, next) => {
-  try {
-    const { role } = req.params;
-    const { page = 1, limit = 10, search = "" } = req.query;
+        alamat,
 
-    let Model;
-    if (role === "pelanggan") Model = Pelanggan;
-    else if (role === "pegawai") Model = Pegawai;
-    else if (role === "admin") Model = Admin;
-    else throw { status: 400, message: "Role tidak valid" };
+        jenis_kelamin,
 
-    const filter = {
-      isActive: true,
-      nama: { $regex: search, $options: "i" }
-    };
+        tanggal_lahir,
 
-    const data = await Model.find(filter)
-      .populate("userId")
-      .skip((page - 1) * limit)
-      .limit(Number(limit));
+        tanggal_masuk,
 
-    const total = await Model.countDocuments(filter);
+        bio,
 
-    res.json({
-      data,
-      total,
-      page: Number(page),
-      totalPages: Math.ceil(total / limit)
-    });
+      } = req.body;
 
-  } catch (err) {
-    next(err);
-  }
-};
+      /* =========================
+         CHECK USERNAME
+      ========================= */
 
-// GET BY ID
-export const getUserById = async (req, res, next) => {
-  try {
-    const { role, id } = req.params;
+      const existing =
+        await User.findOne({
+          username,
+        });
 
-    let Model;
-    if (role === "pelanggan") Model = Pelanggan;
-    else if (role === "pegawai") Model = Pegawai;
-    else if (role === "admin") Model = Admin;
-    else throw { status: 400, message: "Role tidak valid" };
+      if (existing) {
 
-    const data = await Model.findById(id).populate("userId");
+        throw {
+          status: 400,
+          message:
+            "Username sudah digunakan",
+        };
+      }
 
-    if (!data) throw { status: 404, message: "Data tidak ditemukan" };
+      /* =========================
+         CREATE USER
+      ========================= */
 
-    res.json(data);
-  } catch (err) {
-    next(err);
-  }
-};
+      const user =
+        await createUser(
+          username,
+          password,
+          "pegawai"
+        );
 
-// UPDATE
-export const updateUser = async (req, res, next) => {
-  try {
-    const { role, id } = req.params;
+      /* =========================
+         CREATE PROFILE
+      ========================= */
 
-    let Model;
-    if (role === "pelanggan") Model = Pelanggan;
-    else if (role === "pegawai") Model = Pegawai;
-    else if (role === "admin") Model = Admin;
-    else throw { status: 400, message: "Role tidak valid" };
+      const pegawai =
+        await createPegawaiProfile({
 
-    const data = await Model.findByIdAndUpdate(id, req.body, { new: true });
+          userId:
+            user._id,
 
-    if (!data) throw { status: 404, message: "Data tidak ditemukan" };
+          nama,
 
-    res.json(data);
-  } catch (err) {
-    next(err);
-  }
-};
+          no_telp,
 
-// DELETE
-export const deleteUser = async (req, res, next) => {
-  try {
-    const { role, id } = req.params;
+          email,
 
-    let Model;
-    if (role === "pelanggan") Model = Pelanggan;
-    else if (role === "pegawai") Model = Pegawai;
-    else if (role === "admin") Model = Admin;
-    else throw { status: 400, message: "Role tidak valid" };
+          profile,
 
-    const data = await Model.findByIdAndUpdate(id, { isActive: false });
-    if (!data) throw { status: 404, message: "Data tidak ditemukan" };
+          alamat,
 
-    await Model.findByIdAndUpdate(id, { isActive: false });
+          jenis_kelamin,
 
-    res.json({ message: "Berhasil dihapus" });
-  } catch (err) {
-    next(err);
-  }
-};
+          tanggal_lahir,
 
-// DELETE (Permanent)
-export const deleteUserPermanent = async (req, res, next) => {
-  try {
-    const { role, id } = req.params;
+          tanggal_masuk,
 
-    let Model;
-    if (role === "pelanggan") Model = Pelanggan;
-    else if (role === "pegawai") Model = Pegawai;
-    else if (role === "admin") Model = Admin;
-    else throw { status: 400, message: "Role tidak valid" };
+          bio,
+        });
 
-    const data = await Model.findByIdAndDelete(id);
-    if (!data) throw { status: 404, message: "Data tidak ditemukan" };
+      /* =========================
+         RESPONSE
+      ========================= */
 
-    await User.findByIdAndDelete(data.userId);
+      res.json({
 
-    res.json({ message: "Berhasil dihapus" });
-  } catch (err) {
-    next(err);
-  }
-};
+        success: true,
+
+        message:
+          "Pegawai berhasil dibuat",
+
+        user,
+
+        pegawai,
+      });
+
+    } catch (err) {
+
+      next(err);
+
+    }
+  };
+
+/* =====================================================
+   REGISTER ADMIN
+===================================================== */
+
+export const registerAdmin =
+  async (req, res, next) => {
+
+    try {
+
+      const {
+
+        username,
+        password,
+
+        nama,
+        no_telp,
+
+      } = req.body;
+
+      const existing =
+        await User.findOne({
+          username,
+        });
+
+      if (existing) {
+
+        throw {
+          status: 400,
+          message:
+            "Username sudah digunakan",
+        };
+      }
+
+      const user =
+        await createUser(
+          username,
+          password,
+          "admin"
+        );
+
+      const admin =
+        await Admin.create({
+
+          userId: user._id,
+
+          nama,
+
+          no_telp,
+
+          isActive: true,
+        });
+
+      res.json({
+
+        success: true,
+
+        message:
+          "Admin berhasil dibuat",
+
+        user,
+
+        admin,
+      });
+
+    } catch (err) {
+
+      next(err);
+
+    }
+  };
+
+/* =====================================================
+   LOGIN
+===================================================== */
+
+export const login =
+  async (req, res, next) => {
+
+    try {
+
+      const {
+        username,
+        password,
+      } = req.body;
+
+      /* =========================
+         FIND USER
+      ========================= */
+
+      const user =
+        await User.findOne({
+          username,
+        });
+
+      if (!user) {
+
+        throw {
+          status: 404,
+          message:
+            "User tidak ditemukan",
+        };
+      }
+
+      /* =========================
+         CHECK ACTIVE
+      ========================= */
+
+      if (!user.isActive) {
+
+        throw {
+          status: 403,
+          message:
+            "Akun sudah dinonaktifkan",
+        };
+      }
+
+      /* =========================
+         CHECK PASSWORD
+      ========================= */
+
+      const match =
+        await bcrypt.compare(
+          password,
+          user.password
+        );
+
+      if (!match) {
+
+        throw {
+          status: 400,
+          message:
+            "Password salah",
+        };
+      }
+
+      /* =========================
+         TOKEN
+      ========================= */
+
+      const token = jwt.sign(
+
+        {
+          id: user._id,
+          role: user.role,
+        },
+
+        process.env.JWT_SECRET,
+
+        {
+          expiresIn: "1d",
+        }
+      );
+
+      /* =========================
+         PROFILE
+      ========================= */
+
+      let profile = null;
+
+      if (
+        user.role === "pelanggan"
+      ) {
+
+        profile =
+          await Pelanggan.findOne({
+            userId: user._id,
+          });
+      }
+
+      else if (
+        user.role === "pegawai"
+      ) {
+
+        profile =
+          await Pegawai.findOne({
+            userId: user._id,
+          });
+      }
+
+      else if (
+        user.role === "admin"
+      ) {
+
+        profile =
+          await Admin.findOne({
+            userId: user._id,
+          });
+      }
+
+      /* =========================
+         RESPONSE
+      ========================= */
+
+      res.json({
+
+        success: true,
+
+        message:
+          "Login berhasil",
+
+        token,
+
+        user: {
+
+          _id:
+            user._id,
+
+          username:
+            user.username,
+
+          role:
+            user.role,
+
+          isActive:
+            user.isActive,
+        },
+
+        profile,
+      });
+
+    } catch (err) {
+
+      next(err);
+
+    }
+  };
+
+/* =====================================================
+   GET USERS BY ROLE
+===================================================== */
+
+export const getUsersByRole =
+  async (req, res, next) => {
+
+    try {
+
+      const { role } =
+        req.params;
+
+      const {
+        page = 1,
+        limit = 10,
+        search = "",
+      } = req.query;
+
+      const Model =
+        getModelByRole(role);
+
+      const filter = {
+
+        isActive: true,
+
+        nama: {
+
+          $regex: search,
+
+          $options: "i",
+        },
+      };
+
+      const data =
+        await Model.find(filter)
+
+          .populate(
+            "userId",
+            "username role isActive"
+          )
+
+          .skip(
+            (page - 1) * limit
+          )
+
+          .limit(Number(limit))
+
+          .sort({
+            createdAt: -1,
+          });
+
+      const total =
+        await Model.countDocuments(
+          filter
+        );
+
+      res.json({
+
+        success: true,
+
+        data,
+
+        total,
+
+        page: Number(page),
+
+        totalPages:
+          Math.ceil(
+            total / limit
+          ),
+      });
+
+    } catch (err) {
+
+      next(err);
+
+    }
+  };
+
+/* =====================================================
+   GET USER BY ID
+===================================================== */
+
+export const getUserById =
+  async (req, res, next) => {
+
+    try {
+
+      const {
+        role,
+        id,
+      } = req.params;
+
+      const Model =
+        getModelByRole(role);
+
+      const data =
+        await Model.findById(id)
+
+          .populate(
+            "userId",
+            "username role isActive"
+          );
+
+      if (!data) {
+
+        throw {
+          status: 404,
+          message:
+            "Data tidak ditemukan",
+        };
+      }
+
+      res.json({
+
+        success: true,
+
+        data,
+      });
+
+    } catch (err) {
+
+      next(err);
+
+    }
+  };
+
+/* =====================================================
+   UPDATE USER
+===================================================== */
+
+export const updateUser =
+  async (req, res, next) => {
+
+    try {
+
+      const {
+        role,
+        id,
+      } = req.params;
+
+      const Model =
+        getModelByRole(role);
+
+      const existing =
+        await Model.findById(id);
+
+      if (!existing) {
+
+        throw {
+          status: 404,
+          message:
+            "Data tidak ditemukan",
+        };
+      }
+
+      /* =========================
+         UPDATE USERNAME
+      ========================= */
+
+      if (req.body.username) {
+
+        const checkUsername =
+          await User.findOne({
+
+            username:
+              req.body.username,
+
+            _id: {
+              $ne:
+                existing.userId,
+            },
+          });
+
+        if (checkUsername) {
+
+          throw {
+            status: 400,
+            message:
+              "Username sudah digunakan",
+          };
+        }
+
+        await User.findByIdAndUpdate(
+
+          existing.userId,
+
+          {
+            username:
+              req.body.username,
+          }
+        );
+      }
+
+      /* =========================
+        PROFILE IMAGE
+      ========================= */
+
+      let profileImage =
+        req.body.profile;
+
+      if (req.file) {
+
+        profileImage =
+          `/uploads/misc/${req.file.filename}`;
+      }
+
+      /* =========================
+         PAYLOAD
+      ========================= */
+
+      const payload = {
+
+        nama:
+          req.body.nama,
+
+        no_telp:
+          req.body.no_telp,
+
+        email:
+          req.body.email,
+
+        profile:
+          profileImage,
+
+        alamat:
+          req.body.alamat,
+
+        jenis_kelamin:
+          req.body.jenis_kelamin,
+
+        tanggal_lahir:
+          req.body.tanggal_lahir,
+
+        bio:
+          req.body.bio,
+      };
+
+      /* =========================
+         PEGAWAI ONLY
+      ========================= */
+
+      if (role === "pegawai") {
+
+        payload.tanggal_masuk =
+          req.body.tanggal_masuk;
+      }
+
+      /* =========================
+         UPDATE
+      ========================= */
+
+      const data =
+        await Model.findByIdAndUpdate(
+
+          id,
+
+          payload,
+
+          {
+            new: true,
+          }
+
+        ).populate(
+          "userId",
+          "username role isActive"
+        );
+
+      res.json({
+
+        success: true,
+
+        message:
+          "Data berhasil diperbarui",
+
+        data,
+      });
+
+    } catch (err) {
+
+      next(err);
+
+    }
+  };
+
+/* =====================================================
+   DELETE USER (SOFT DELETE)
+===================================================== */
+
+export const deleteUser =
+  async (req, res, next) => {
+
+    try {
+
+      const {
+        role,
+        id,
+      } = req.params;
+
+      const Model =
+        getModelByRole(role);
+
+      const data =
+        await Model.findById(id);
+
+      if (!data) {
+
+        throw {
+          status: 404,
+          message:
+            "Data tidak ditemukan",
+        };
+      }
+
+      /* =========================
+         NONAKTIF PROFILE
+      ========================= */
+
+      data.isActive = false;
+
+      await data.save();
+
+      /* =========================
+         NONAKTIF USER
+      ========================= */
+
+      await User.findByIdAndUpdate(
+
+        data.userId,
+
+        {
+          isActive: false,
+        }
+      );
+
+      res.json({
+
+        success: true,
+
+        message:
+          "User berhasil dinonaktifkan",
+      });
+
+    } catch (err) {
+
+      next(err);
+
+    }
+  };
+
+/* =====================================================
+   DELETE USER PERMANENT
+===================================================== */
+
+export const deleteUserPermanent =
+  async (req, res, next) => {
+
+    try {
+
+      const {
+        role,
+        id,
+      } = req.params;
+
+      const Model =
+        getModelByRole(role);
+
+      const data =
+        await Model.findByIdAndDelete(
+          id
+        );
+
+      if (!data) {
+
+        throw {
+          status: 404,
+          message:
+            "Data tidak ditemukan",
+        };
+      }
+
+      await User.findByIdAndDelete(
+        data.userId
+      );
+
+      res.json({
+
+        success: true,
+
+        message:
+          "User berhasil dihapus permanen",
+      });
+
+    } catch (err) {
+
+      next(err);
+
+    }
+  };

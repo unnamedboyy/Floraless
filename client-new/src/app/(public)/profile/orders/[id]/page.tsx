@@ -18,6 +18,7 @@ import {
   MapPin,
   User,
   Wallet,
+  Upload,
 } from "lucide-react";
 
 import {
@@ -76,6 +77,9 @@ export default function OrderDetailPage() {
 
   const [data, setData] =
     useState<any>(null);
+
+  const [openPayment, setOpenPayment] =
+    useState(false);
 
   /* =========================================================
      FETCH
@@ -167,276 +171,114 @@ export default function OrderDetailPage() {
 
   return (
 
-    <div className="
-      space-y-8
-    ">
-
-      {/* =====================================================
-         HEADER
-      ===================================================== */}
+    <>
 
       <div className="
-        rounded-[2rem]
-        border
-        bg-white
-        p-8
-        shadow-sm
+        space-y-8
       ">
 
+        {/* =====================================================
+           HEADER
+        ===================================================== */}
+
         <div className="
-          flex
-          flex-col
-          gap-6
-          lg:flex-row
-          lg:items-center
-          lg:justify-between
+          rounded-[2rem]
+          border
+          bg-white
+          p-8
+          shadow-sm
         ">
-
-          <div>
-
-            <div className="
-              flex
-              flex-wrap
-              items-center
-              gap-3
-            ">
-
-              <span className={`
-                rounded-xl
-                px-3
-                py-1
-                text-xs
-                font-semibold
-                ${getStatusColor(ticket?.status)}
-              `}>
-
-                {
-                  ticket?.status
-                }
-
-              </span>
-
-              <p className="
-                text-sm
-                text-gray-500
-              ">
-                Ticket ID:
-                {" "}
-                {
-                  ticket?._id
-                }
-              </p>
-
-            </div>
-
-            <h1 className="
-              mt-5
-              text-4xl
-              font-bold
-            ">
-
-              {
-                detail?.nama_acara ||
-                "Acara"
-              }
-
-            </h1>
-
-            <div className="
-              mt-5
-              flex
-              flex-wrap
-              gap-6
-            ">
-
-              <div className="
-                flex
-                items-center
-                gap-2
-                text-gray-600
-              ">
-
-                <MapPin size={18} />
-
-                {
-                  detail?.lokasi ||
-                  "-"
-                }
-
-              </div>
-
-              <div className="
-                flex
-                items-center
-                gap-2
-                text-gray-600
-              ">
-
-                <CalendarDays size={18} />
-
-                {
-                  detail?.tanggal_acara
-
-                    ? new Date(
-                        detail.tanggal_acara
-                      ).toLocaleDateString(
-                        "id-ID",
-                        {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        }
-                      )
-
-                    : "-"
-                }
-
-              </div>
-
-            </div>
-
-          </div>
 
           <div className="
             flex
-            flex-wrap
-            gap-3
+            flex-col
+            gap-6
+            lg:flex-row
+            lg:items-center
+            lg:justify-between
           ">
 
-            <Link
-              href="/profile/orders"
-              className="
-                rounded-full
-                border
-                px-6
-                py-3
-                text-sm
-                font-semibold
-                transition
-                hover:bg-gray-100
-              "
-            >
-              Kembali
-            </Link>
+            <div>
 
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* =====================================================
-         GRID
-      ===================================================== */}
-
-      <div className="
-        grid
-        gap-8
-        xl:grid-cols-[1fr_380px]
-      ">
-
-        {/* ===================================================
-           LEFT
-        =================================================== */}
-
-        <div className="
-          space-y-8
-        ">
-
-          {/* =================================================
-             DETAIL ACARA
-          ================================================= */}
-
-          <div className="
-            rounded-[2rem]
-            border
-            bg-white
-            p-8
-            shadow-sm
-          ">
-
-            <div className="
-              flex
-              items-center
-              gap-3
-            ">
-
-              <FileText size={22} />
-
-              <h2 className="
-                text-2xl
-                font-bold
+              <div className="
+                flex
+                flex-wrap
+                items-center
+                gap-3
               ">
-                Detail Acara
-              </h2>
 
-            </div>
+                <span className={`
+                  rounded-xl
+                  px-3
+                  py-1
+                  text-xs
+                  font-semibold
+                  ${getStatusColor(ticket?.status)}
+                `}>
 
-            <div className="
-              mt-8
-              grid
-              gap-8
-              md:grid-cols-2
-            ">
+                  {
+                    ticket?.status
+                  }
 
-              <div>
+                </span>
 
                 <p className="
                   text-sm
                   text-gray-500
                 ">
-                  Nama Acara
-                </p>
-
-                <p className="
-                  mt-2
-                  text-lg
-                  font-semibold
-                ">
+                  Ticket ID:
+                  {" "}
                   {
-                    detail?.nama_acara ||
-                    "-"
+                    ticket?._id
                   }
                 </p>
 
               </div>
 
-              <div>
+              <h1 className="
+                mt-5
+                text-4xl
+                font-bold
+              ">
 
-                <p className="
-                  text-sm
-                  text-gray-500
-                ">
-                  Lokasi
-                </p>
+                {
+                  detail?.nama_acara ||
+                  "Acara"
+                }
 
-                <p className="
-                  mt-2
-                  text-lg
-                  font-semibold
+              </h1>
+
+              <div className="
+                mt-5
+                flex
+                flex-wrap
+                gap-6
+              ">
+
+                <div className="
+                  flex
+                  items-center
+                  gap-2
+                  text-gray-600
                 ">
+
+                  <MapPin size={18} />
+
                   {
                     detail?.lokasi ||
                     "-"
                   }
-                </p>
 
-              </div>
+                </div>
 
-              <div>
-
-                <p className="
-                  text-sm
-                  text-gray-500
+                <div className="
+                  flex
+                  items-center
+                  gap-2
+                  text-gray-600
                 ">
-                  Tanggal Acara
-                </p>
 
-                <p className="
-                  mt-2
-                  text-lg
-                  font-semibold
-                ">
+                  <CalendarDays size={18} />
 
                   {
                     detail?.tanggal_acara
@@ -446,7 +288,6 @@ export default function OrderDetailPage() {
                         ).toLocaleDateString(
                           "id-ID",
                           {
-                            weekday: "long",
                             day: "numeric",
                             month: "long",
                             year: "numeric",
@@ -456,80 +297,68 @@ export default function OrderDetailPage() {
                       : "-"
                   }
 
-                </p>
-
-              </div>
-
-              <div>
-
-                <p className="
-                  text-sm
-                  text-gray-500
-                ">
-                  Layanan
-                </p>
-
-                <p className="
-                  mt-2
-                  text-lg
-                  font-semibold
-                ">
-                  {
-                    layanan?.nama ||
-                    "-"
-                  }
-                </p>
+                </div>
 
               </div>
 
             </div>
 
             <div className="
-              mt-8
+              flex
+              flex-wrap
+              gap-3
             ">
 
-              <p className="
-                text-sm
-                text-gray-500
-              ">
-                Catatan
-              </p>
-
-              <div className="
-                mt-3
-                rounded-2xl
-                bg-gray-50
-                p-5
-                text-gray-700
-              ">
-
-                {
-                  detail?.catatan ||
-                  "Tidak ada catatan tambahan."
-                }
-
-              </div>
+              <Link
+                href="/profile/orders"
+                className="
+                  rounded-full
+                  border
+                  px-6
+                  py-3
+                  text-sm
+                  font-semibold
+                  transition
+                  hover:bg-gray-100
+                "
+              >
+                Kembali
+              </Link>
 
             </div>
 
           </div>
 
-          {/* =================================================
-             PAYMENT HISTORY
-          ================================================= */}
+        </div>
+
+        {/* =====================================================
+           GRID
+        ===================================================== */}
+
+        <div className="
+          grid
+          gap-8
+          xl:grid-cols-[1fr_380px]
+        ">
+
+          {/* ===================================================
+             LEFT
+          =================================================== */}
 
           <div className="
-            rounded-[2rem]
-            border
-            bg-white
-            p-8
-            shadow-sm
+            space-y-8
           ">
 
+            {/* =================================================
+               DETAIL ACARA
+            ================================================= */}
+
             <div className="
-              flex
-              items-center
-              justify-between
+              rounded-[2rem]
+              border
+              bg-white
+              p-8
+              shadow-sm
             ">
 
               <div className="
@@ -538,480 +367,557 @@ export default function OrderDetailPage() {
                 gap-3
               ">
 
-                <Wallet size={22} />
+                <FileText size={22} />
 
                 <h2 className="
                   text-2xl
                   font-bold
                 ">
-                  Riwayat Pembayaran
+                  Detail Acara
                 </h2>
 
               </div>
 
-            </div>
+              <div className="
+                mt-8
+                grid
+                gap-8
+                md:grid-cols-2
+              ">
 
-            <div className="
-              mt-8
-              space-y-4
-            ">
+                <div>
 
-              {
-                payments.length === 0 ? (
-
-                  <div className="
-                    rounded-2xl
-                    bg-gray-50
-                    p-6
-                    text-center
+                  <p className="
+                    text-sm
                     text-gray-500
                   ">
+                    Nama Acara
+                  </p>
 
-                    Belum ada pembayaran.
+                  <p className="
+                    mt-2
+                    text-lg
+                    font-semibold
+                  ">
+                    {
+                      detail?.nama_acara ||
+                      "-"
+                    }
+                  </p>
 
-                  </div>
+                </div>
 
-                ) : (
+                <div>
 
-                  payments.map(
-                    (item: any) => (
-
-                      <div
-                        key={item._id}
-                        className="
-                          rounded-2xl
-                          border
-                          p-5
-                        "
-                      >
-
-                        <div className="
-                          flex
-                          flex-col
-                          gap-4
-                          md:flex-row
-                          md:items-center
-                          md:justify-between
-                        ">
-
-                          <div>
-
-                            <div className="
-                              flex
-                              items-center
-                              gap-3
-                            ">
-
-                              <span className="
-                                rounded-xl
-                                bg-black
-                                px-3
-                                py-1
-                                text-xs
-                                font-semibold
-                                text-white
-                              ">
-
-                                {
-                                  item.tipe
-                                }
-
-                              </span>
-
-                              <span className={`
-                                rounded-xl
-                                px-3
-                                py-1
-                                text-xs
-                                font-semibold
-
-                                ${
-                                  item.status === "approved"
-
-                                    ? `
-                                      bg-green-100
-                                      text-green-700
-                                    `
-
-                                    : item.status === "pending"
-
-                                      ? `
-                                        bg-yellow-100
-                                        text-yellow-700
-                                      `
-
-                                      : `
-                                        bg-red-100
-                                        text-red-700
-                                      `
-                                }
-                              `}>
-
-                                {
-                                  item.status
-                                }
-
-                              </span>
-
-                            </div>
-
-                            <h3 className="
-                              mt-4
-                              text-2xl
-                              font-bold
-                            ">
-
-                              {
-                                formatRupiah(
-                                  item.jumlah
-                                )
-                              }
-
-                            </h3>
-
-                            <p className="
-                              mt-2
-                              text-sm
-                              text-gray-500
-                            ">
-
-                              {
-                                item.createdAt
-
-                                  ? new Date(
-                                      item.createdAt
-                                    ).toLocaleDateString(
-                                      "id-ID",
-                                      {
-                                        day: "numeric",
-                                        month: "long",
-                                        year: "numeric",
-                                      }
-                                    )
-
-                                  : "-"
-                              }
-
-                            </p>
-
-                          </div>
-
-                          {
-                            item.catatan && (
-
-                              <div className="
-                                max-w-sm
-                                rounded-2xl
-                                bg-gray-50
-                                p-4
-                                text-sm
-                                text-gray-600
-                              ">
-
-                                {
-                                  item.catatan
-                                }
-
-                              </div>
-                            )
-                          }
-
-                        </div>
-
-                      </div>
-                    )
-                  )
-                )
-              }
-
-            </div>
-
-          </div>
-
-          {/* =================================================
-             ACTIVITY LOGS
-          ================================================= */}
-
-          <div className="
-            rounded-[2rem]
-            border
-            bg-white
-            p-8
-            shadow-sm
-          ">
-
-            <h2 className="
-              text-2xl
-              font-bold
-            ">
-              Activity Timeline
-            </h2>
-
-            <div className="
-              mt-10
-              space-y-6
-            ">
-
-              {
-                logs.length === 0 ? (
-
-                  <div className="
-                    rounded-2xl
-                    bg-gray-50
-                    p-6
-                    text-center
+                  <p className="
+                    text-sm
                     text-gray-500
                   ">
+                    Lokasi
+                  </p>
 
-                    Belum ada aktivitas.
+                  <p className="
+                    mt-2
+                    text-lg
+                    font-semibold
+                  ">
+                    {
+                      detail?.lokasi ||
+                      "-"
+                    }
+                  </p>
 
-                  </div>
+                </div>
 
-                ) : (
+                <div>
 
-                  logs.map(
-                    (log: any, index: number) => (
+                  <p className="
+                    text-sm
+                    text-gray-500
+                  ">
+                    Tanggal Acara
+                  </p>
 
-                      <div
-                        key={log._id}
-                        className="
-                          relative
-                          flex
-                          gap-5
-                        "
-                      >
+                  <p className="
+                    mt-2
+                    text-lg
+                    font-semibold
+                  ">
 
-                        {/* LINE */}
+                    {
+                      detail?.tanggal_acara
 
-                        {
-                          index !==
-                          logs.length - 1 && (
-
-                            <div className="
-                              absolute
-                              left-[15px]
-                              top-8
-                              h-full
-                              w-[2px]
-                              bg-gray-200
-                            " />
+                        ? new Date(
+                            detail.tanggal_acara
+                          ).toLocaleDateString(
+                            "id-ID",
+                            {
+                              weekday: "long",
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            }
                           )
-                        }
 
-                        {/* DOT */}
+                        : "-"
+                    }
 
-                        <div className="
-                          relative
-                          z-10
-                          mt-1
-                          h-8
-                          w-8
-                          rounded-full
-                          bg-black
-                        " />
+                  </p>
 
-                        {/* CONTENT */}
+                </div>
 
-                        <div className="
-                          flex-1
-                          rounded-2xl
-                          border
-                          p-5
-                        ">
+                <div>
+
+                  <p className="
+                    text-sm
+                    text-gray-500
+                  ">
+                    Layanan
+                  </p>
+
+                  <p className="
+                    mt-2
+                    text-lg
+                    font-semibold
+                  ">
+                    {
+                      layanan?.nama ||
+                      "-"
+                    }
+                  </p>
+
+                </div>
+
+              </div>
+
+              <div className="
+                mt-8
+              ">
+
+                <p className="
+                  text-sm
+                  text-gray-500
+                ">
+                  Catatan
+                </p>
+
+                <div className="
+                  mt-3
+                  rounded-2xl
+                  bg-gray-50
+                  p-5
+                  text-gray-700
+                ">
+
+                  {
+                    detail?.catatan ||
+                    "Tidak ada catatan tambahan."
+                  }
+
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* =================================================
+               PAYMENT HISTORY
+            ================================================= */}
+
+            <div className="
+              rounded-[2rem]
+              border
+              bg-white
+              p-8
+              shadow-sm
+            ">
+
+              <div className="
+                flex
+                items-center
+                justify-between
+                gap-4
+                flex-wrap
+              ">
+
+                <div className="
+                  flex
+                  items-center
+                  gap-3
+                ">
+
+                  <Wallet size={22} />
+
+                  <h2 className="
+                    text-2xl
+                    font-bold
+                  ">
+                    Riwayat Pembayaran
+                  </h2>
+
+                </div>
+
+                {/* BUTTON */}
+                <button
+
+                  onClick={() =>
+                    setOpenPayment(true)
+                  }
+
+                  className="
+
+                    h-12
+                    px-5
+
+                    rounded-2xl
+
+                    bg-[#0F172A]
+
+                    text-white
+
+                    text-sm
+                    font-semibold
+
+                    inline-flex
+                    items-center
+                    justify-center
+
+                    gap-2
+
+                    hover:opacity-90
+
+                    transition
+
+                  "
+                >
+
+                  <Upload size={17} />
+
+                  Upload Pembayaran
+
+                </button>
+
+              </div>
+
+              <div className="
+                mt-8
+                space-y-4
+              ">
+
+                {
+                  payments.length === 0 ? (
+
+                    <div className="
+                      rounded-2xl
+                      bg-gray-50
+                      p-6
+                      text-center
+                      text-gray-500
+                    ">
+
+                      Belum ada pembayaran.
+
+                    </div>
+
+                  ) : (
+
+                    payments.map(
+                      (item: any) => (
+
+                        <div
+                          key={item._id}
+                          className="
+                            rounded-2xl
+                            border
+                            p-5
+                          "
+                        >
 
                           <div className="
                             flex
-                            flex-wrap
-                            items-center
-                            justify-between
-                            gap-3
+                            flex-col
+                            gap-4
+                            md:flex-row
+                            md:items-center
+                            md:justify-between
                           ">
 
-                            <h3 className="
-                              font-bold
+                            <div>
+
+                              <div className="
+                                flex
+                                items-center
+                                gap-3
+                              ">
+
+                                <span className="
+                                  rounded-xl
+                                  bg-black
+                                  px-3
+                                  py-1
+                                  text-xs
+                                  font-semibold
+                                  text-white
+                                ">
+
+                                  {
+                                    item.tipe
+                                  }
+
+                                </span>
+
+                                <span className={`
+                                  rounded-xl
+                                  px-3
+                                  py-1
+                                  text-xs
+                                  font-semibold
+
+                                  ${
+                                    item.status === "approved"
+
+                                      ? `
+                                        bg-green-100
+                                        text-green-700
+                                      `
+
+                                      : item.status === "pending"
+
+                                        ? `
+                                          bg-yellow-100
+                                          text-yellow-700
+                                        `
+
+                                        : `
+                                          bg-red-100
+                                          text-red-700
+                                        `
+                                  }
+                                `}>
+
+                                  {
+                                    item.status
+                                  }
+
+                                </span>
+
+                              </div>
+
+                              <h3 className="
+                                mt-4
+                                text-2xl
+                                font-bold
+                              ">
+
+                                {
+                                  formatRupiah(
+                                    item.jumlah
+                                  )
+                                }
+
+                              </h3>
+
+                              <p className="
+                                mt-2
+                                text-sm
+                                text-gray-500
+                              ">
+
+                                {
+                                  item.createdAt
+
+                                    ? new Date(
+                                        item.createdAt
+                                      ).toLocaleDateString(
+                                        "id-ID",
+                                        {
+                                          day: "numeric",
+                                          month: "long",
+                                          year: "numeric",
+                                        }
+                                      )
+
+                                    : "-"
+                                }
+
+                              </p>
+
+                            </div>
+
+                            {
+                              item.catatan && (
+
+                                <div className="
+                                  max-w-sm
+                                  rounded-2xl
+                                  bg-gray-50
+                                  p-4
+                                  text-sm
+                                  text-gray-600
+                                ">
+
+                                  {
+                                    item.catatan
+                                  }
+
+                                </div>
+                              )
+                            }
+
+                          </div>
+
+                        </div>
+                      )
+                    )
+                  )
+                }
+
+              </div>
+
+            </div>
+
+            {/* =================================================
+               ACTIVITY LOGS
+            ================================================= */}
+
+            <div className="
+              rounded-[2rem]
+              border
+              bg-white
+              p-8
+              shadow-sm
+            ">
+
+              <h2 className="
+                text-2xl
+                font-bold
+              ">
+                Activity Timeline
+              </h2>
+
+              <div className="
+                mt-10
+                space-y-6
+              ">
+
+                {
+                  logs.length === 0 ? (
+
+                    <div className="
+                      rounded-2xl
+                      bg-gray-50
+                      p-6
+                      text-center
+                      text-gray-500
+                    ">
+
+                      Belum ada aktivitas.
+
+                    </div>
+
+                  ) : (
+
+                    logs.map(
+                      (log: any, index: number) => (
+
+                        <div
+                          key={log._id}
+                          className="
+                            relative
+                            flex
+                            gap-5
+                          "
+                        >
+
+                          {
+                            index !==
+                            logs.length - 1 && (
+
+                              <div className="
+                                absolute
+                                left-[15px]
+                                top-8
+                                h-full
+                                w-[2px]
+                                bg-gray-200
+                              " />
+                            )
+                          }
+
+                          <div className="
+                            relative
+                            z-10
+                            mt-1
+                            h-8
+                            w-8
+                            rounded-full
+                            bg-black
+                          " />
+
+                          <div className="
+                            flex-1
+                            rounded-2xl
+                            border
+                            p-5
+                          ">
+
+                            <div className="
+                              flex
+                              flex-wrap
+                              items-center
+                              justify-between
+                              gap-3
                             ">
 
-                              {
-                                log.action
-                              }
+                              <h3 className="
+                                font-bold
+                              ">
 
-                            </h3>
+                                {
+                                  log.action
+                                }
+
+                              </h3>
+
+                              <p className="
+                                text-sm
+                                text-gray-500
+                              ">
+
+                                {
+                                  log.createdAt
+
+                                    ? new Date(
+                                        log.createdAt
+                                      ).toLocaleString(
+                                        "id-ID"
+                                      )
+
+                                    : "-"
+                                }
+
+                              </p>
+
+                            </div>
 
                             <p className="
-                              text-sm
-                              text-gray-500
+                              mt-3
+                              text-gray-600
                             ">
 
                               {
-                                log.createdAt
-
-                                  ? new Date(
-                                      log.createdAt
-                                    ).toLocaleString(
-                                      "id-ID"
-                                    )
-
-                                  : "-"
+                                log.description
                               }
 
                             </p>
 
                           </div>
 
-                          <p className="
-                            mt-3
-                            text-gray-600
-                          ">
-
-                            {
-                              log.description
-                            }
-
-                          </p>
-
                         </div>
-
-                      </div>
+                      )
                     )
                   )
-                )
-              }
-
-            </div>
-
-          </div>
-
-            <PaymentUploadForm
-                ticketId={ticket._id}
-                onSuccess={fetchDetail}
-            />
-
-        </div>
-
-        {/* ===================================================
-           RIGHT
-        =================================================== */}
-
-        <div className="
-          space-y-8
-        ">
-
-          {/* =================================================
-             PAYMENT SUMMARY
-          ================================================= */}
-
-          <div className="
-            rounded-[2rem]
-            border
-            bg-white
-            p-8
-            shadow-sm
-          ">
-
-            <div className="
-              flex
-              items-center
-              gap-3
-            ">
-
-              <CreditCard size={22} />
-
-              <h2 className="
-                text-2xl
-                font-bold
-              ">
-                Payment Summary
-              </h2>
-
-            </div>
-
-            <div className="
-              mt-8
-              space-y-6
-            ">
-
-              <div>
-
-                <p className="
-                  text-sm
-                  text-gray-500
-                ">
-                  Total Harga
-                </p>
-
-                <p className="
-                  mt-2
-                  text-3xl
-                  font-bold
-                ">
-
-                  {
-                    formatRupiah(
-                      summary?.totalHarga || 0
-                    )
-                  }
-
-                </p>
-
-              </div>
-
-              <div className="
-                rounded-2xl
-                bg-green-50
-                p-5
-              ">
-
-                <p className="
-                  text-sm
-                  text-green-700
-                ">
-                  Total Dibayar
-                </p>
-
-                <p className="
-                  mt-2
-                  text-2xl
-                  font-bold
-                  text-green-700
-                ">
-
-                  {
-                    formatRupiah(
-                      summary?.totalDibayar || 0
-                    )
-                  }
-
-                </p>
-
-              </div>
-
-              <div className="
-                rounded-2xl
-                bg-red-50
-                p-5
-              ">
-
-                <p className="
-                  text-sm
-                  text-red-700
-                ">
-                  Sisa Tagihan
-                </p>
-
-                <p className="
-                  mt-2
-                  text-2xl
-                  font-bold
-                  text-red-700
-                ">
-
-                  {
-                    formatRupiah(
-                      summary?.sisa || 0
-                    )
-                  }
-
-                </p>
+                }
 
               </div>
 
@@ -1019,122 +925,255 @@ export default function OrderDetailPage() {
 
           </div>
 
-          {/* =================================================
-             PIC & JADWAL
-          ================================================= */}
+          {/* ===================================================
+             RIGHT
+          =================================================== */}
 
           <div className="
-            rounded-[2rem]
-            border
-            bg-white
-            p-8
-            shadow-sm
+            space-y-8
           ">
 
+            {/* =================================================
+               PAYMENT SUMMARY
+            ================================================= */}
+
             <div className="
-              flex
-              items-center
-              gap-3
+              rounded-[2rem]
+              border
+              bg-white
+              p-8
+              shadow-sm
             ">
 
-              <User size={22} />
-
-              <h2 className="
-                text-2xl
-                font-bold
+              <div className="
+                flex
+                items-center
+                gap-3
               ">
-                PIC & Jadwal
-              </h2>
+
+                <CreditCard size={22} />
+
+                <h2 className="
+                  text-2xl
+                  font-bold
+                ">
+                  Payment Summary
+                </h2>
+
+              </div>
+
+              <div className="
+                mt-8
+                space-y-6
+              ">
+
+                <div>
+
+                  <p className="
+                    text-sm
+                    text-gray-500
+                  ">
+                    Total Harga
+                  </p>
+
+                  <p className="
+                    mt-2
+                    text-3xl
+                    font-bold
+                  ">
+
+                    {
+                      formatRupiah(
+                        summary?.totalHarga || 0
+                      )
+                    }
+
+                  </p>
+
+                </div>
+
+                <div className="
+                  rounded-2xl
+                  bg-green-50
+                  p-5
+                ">
+
+                  <p className="
+                    text-sm
+                    text-green-700
+                  ">
+                    Total Dibayar
+                  </p>
+
+                  <p className="
+                    mt-2
+                    text-2xl
+                    font-bold
+                    text-green-700
+                  ">
+
+                    {
+                      formatRupiah(
+                        summary?.totalDibayar || 0
+                      )
+                    }
+
+                  </p>
+
+                </div>
+
+                <div className="
+                  rounded-2xl
+                  bg-red-50
+                  p-5
+                ">
+
+                  <p className="
+                    text-sm
+                    text-red-700
+                  ">
+                    Sisa Tagihan
+                  </p>
+
+                  <p className="
+                    mt-2
+                    text-2xl
+                    font-bold
+                    text-red-700
+                  ">
+
+                    {
+                      formatRupiah(
+                        summary?.sisa || 0
+                      )
+                    }
+
+                  </p>
+
+                </div>
+
+              </div>
 
             </div>
 
+            {/* =================================================
+               PIC & JADWAL
+            ================================================= */}
+
             <div className="
-              mt-8
-              space-y-6
+              rounded-[2rem]
+              border
+              bg-white
+              p-8
+              shadow-sm
             ">
 
-              <div>
+              <div className="
+                flex
+                items-center
+                gap-3
+              ">
 
-                <p className="
-                  text-sm
-                  text-gray-500
+                <User size={22} />
+
+                <h2 className="
+                  text-2xl
+                  font-bold
                 ">
-                  PIC
-                </p>
-
-                <p className="
-                  mt-2
-                  text-lg
-                  font-semibold
-                ">
-
-                  {
-                    pegawai?.nama ||
-                    "Belum ditentukan"
-                  }
-
-                </p>
+                  PIC & Jadwal
+                </h2>
 
               </div>
 
-              <div>
+              <div className="
+                mt-8
+                space-y-6
+              ">
 
-                <p className="
-                  text-sm
-                  text-gray-500
-                ">
-                  Status Jadwal
-                </p>
+                <div>
 
-                <p className="
-                  mt-2
-                  text-lg
-                  font-semibold
-                ">
+                  <p className="
+                    text-sm
+                    text-gray-500
+                  ">
+                    PIC
+                  </p>
 
-                  {
-                    jadwal?.status ||
-                    "-"
-                  }
+                  <p className="
+                    mt-2
+                    text-lg
+                    font-semibold
+                  ">
 
-                </p>
+                    {
+                      pegawai?.nama ||
+                      "Belum ditentukan"
+                    }
 
-              </div>
+                  </p>
 
-              <div>
+                </div>
 
-                <p className="
-                  text-sm
-                  text-gray-500
-                ">
-                  Tanggal Acara
-                </p>
+                <div>
 
-                <p className="
-                  mt-2
-                  text-lg
-                  font-semibold
-                ">
+                  <p className="
+                    text-sm
+                    text-gray-500
+                  ">
+                    Status Jadwal
+                  </p>
 
-                  {
-                    jadwal?.tanggal_acara
+                  <p className="
+                    mt-2
+                    text-lg
+                    font-semibold
+                  ">
 
-                      ? new Date(
-                          jadwal.tanggal_acara
-                        ).toLocaleDateString(
-                          "id-ID",
-                          {
-                            weekday: "long",
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          }
-                        )
+                    {
+                      jadwal?.status ||
+                      "-"
+                    }
 
-                      : "-"
-                  }
+                  </p>
 
-                </p>
+                </div>
+
+                <div>
+
+                  <p className="
+                    text-sm
+                    text-gray-500
+                  ">
+                    Tanggal Acara
+                  </p>
+
+                  <p className="
+                    mt-2
+                    text-lg
+                    font-semibold
+                  ">
+
+                    {
+                      jadwal?.tanggal_acara
+
+                        ? new Date(
+                            jadwal.tanggal_acara
+                          ).toLocaleDateString(
+                            "id-ID",
+                            {
+                              weekday: "long",
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            }
+                          )
+
+                        : "-"
+                    }
+
+                  </p>
+
+                </div>
 
               </div>
 
@@ -1146,6 +1185,28 @@ export default function OrderDetailPage() {
 
       </div>
 
-    </div>
+      {/* =====================================================
+         PAYMENT MODAL
+      ===================================================== */}
+
+      <PaymentUploadForm
+
+        open={openPayment}
+
+        onClose={() =>
+          setOpenPayment(false)
+        }
+
+        ticketId={ticket._id}
+
+        onSuccess={() => {
+
+          fetchDetail();
+
+          setOpenPayment(false);
+        }}
+      />
+
+    </>
   );
 }

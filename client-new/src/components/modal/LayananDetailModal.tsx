@@ -1,21 +1,39 @@
 "use client";
 
-import Image from "next/image";
+import {
+
+  X,
+
+  Tag,
+
+  Wallet,
+
+  Star,
+
+  CalendarDays,
+
+  AlignLeft,
+
+} from "lucide-react";
+
+import BaseModal from "@/components/form/BaseModal";
+
+/* =========================================================
+   TYPES
+========================================================= */
 
 type Props = {
+
   open: boolean;
+
   onClose: () => void;
+
   data: any;
 };
 
-const formatRupiah =
-  (num: number) =>
-
-    "Rp " +
-
-    (num || 0).toLocaleString(
-      "id-ID"
-    );
+/* =========================================================
+   COMPONENT
+========================================================= */
 
 export default function DetailLayananModal({
 
@@ -27,355 +45,557 @@ export default function DetailLayananModal({
 
 }: Props) {
 
-  if (!open || !data)
-    return null;
+  /* =====================================================
+     GUARD
+  ===================================================== */
 
-  const statusClass =
-    data.isActive
+  if (!open || !data) return null;
 
-      ? `
-        bg-green-100
-        text-green-700
-        border-green-200
-      `
-
-      : `
-        bg-red-100
-        text-red-700
-        border-red-200
-      `;
-
-  const imageUrl =
-
-    data.thumbnail ||
-
-    "/service-default.jpg";
+  /* =====================================================
+     UI
+  ===================================================== */
 
   return (
 
-    <div className="
-      fixed
-      inset-0
-      z-50
-      flex
-      items-center
-      justify-center
-      bg-black/50
-      backdrop-blur-sm
-      p-4
-    ">
+    <BaseModal
+      open={open}
+      onClose={onClose}
+      maxWidth="max-w-5xl"
+    >
 
-      {/* =================================================
-         CARD
-      ================================================= */}
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
 
       <div className="
-        w-full
-        max-w-4xl
-        overflow-hidden
-        rounded-[36px]
-        bg-white
-        shadow-2xl
-        animate-in
-        fade-in
-        zoom-in-95
-        duration-200
+
+        px-8
+        py-7
+
+        border-b
+        border-slate-200
+
+        flex
+        items-start
+        justify-between
+
       ">
 
-        {/* =================================================
-           IMAGE
-        ================================================= */}
+        <div>
 
-        <div className="
-          relative
-          h-[320px]
-          overflow-hidden
-        ">
-
-          <Image
-            src={imageUrl}
-            alt={data.nama}
-            fill
-            className="
-              object-cover
-            "
-          />
-
-          {/* OVERLAY */}
           <div className="
-            absolute
-            inset-0
-            bg-gradient-to-t
-            from-black/70
-            via-black/20
-            to-transparent
-          " />
 
-          {/* CLOSE */}
-          <button
-            onClick={onClose}
-            className="
-              absolute
-              right-6
-              top-6
-              flex
-              h-11
-              w-11
-              items-center
-              justify-center
-              rounded-2xl
-              bg-white/20
-              text-white
-              backdrop-blur
-              transition
-              hover:bg-white/30
-            "
-          >
-            ✕
-          </button>
+            flex
+            items-center
+            gap-3
 
-          {/* CONTENT */}
-          <div className="
-            absolute
-            inset-x-0
-            bottom-0
-            p-8
-            text-white
+            flex-wrap
+
           ">
 
-            <p className="
-              text-xs
-              uppercase
-              tracking-[0.35em]
-              text-[#D4B36A]
+            <h2 className="
+
+              text-[38px]
+              leading-none
+
+              font-bold
+
+              tracking-tight
+
+              text-[#0F172A]
+
             ">
-              Floraless Service
-            </p>
+              Detail{" "}
 
-            <div className="
-              mt-4
-              flex
-              flex-col
-              gap-5
-              md:flex-row
-              md:items-end
-              md:justify-between
-            ">
+              <span className="
+                text-violet-600
+              ">
+                layanan
+              </span>
+            </h2>
 
-              <div>
+            {
 
-                <h2 className="
-                  text-4xl
-                  font-semibold
-                  tracking-tight
-                ">
-                  {data.nama || "-"}
-                </h2>
+              data.isFeatured && (
 
-                <p className="
-                  mt-3
-                  text-3xl
-                  font-bold
-                ">
-                  {
-                    formatRupiah(
-                      data.harga
-                    )
-                  }
-                </p>
+                <div className="
 
-              </div>
+                  h-9
 
-              <div
-                className={`
-                  inline-flex
-                  w-fit
-                  items-center
+                  px-4
+
                   rounded-full
-                  border
-                  px-5
-                  py-2
+
+                  bg-amber-100
+
+                  text-amber-700
+
+                  inline-flex
+                  items-center
+                  gap-2
+
                   text-sm
-                  font-medium
-                  backdrop-blur
-                  ${statusClass}
-                `}
-              >
+                  font-semibold
 
-                {data.isActive
+                ">
 
-                  ? "Layanan Aktif"
+                  <Star size={16} />
 
-                  : "Layanan Nonaktif"}
+                  Featured
 
-              </div>
-
-            </div>
+                </div>
+              )
+            }
 
           </div>
 
+          <p className="
+
+            text-slate-500
+            text-sm
+
+            mt-3
+
+          ">
+            Informasi lengkap layanan FLORALESS
+          </p>
+
         </div>
 
-        {/* =================================================
-           BODY
-        ================================================= */}
+        <button
+
+          onClick={onClose}
+
+          className="
+
+            w-12
+            h-12
+
+            rounded-2xl
+
+            border
+            border-slate-200
+
+            flex
+            items-center
+            justify-center
+
+            text-slate-500
+
+            hover:bg-slate-100
+
+            transition
+
+          "
+        >
+          <X size={20} />
+        </button>
+
+      </div>
+
+      {/* =====================================================
+          BODY
+      ===================================================== */}
+
+      <div className="
+
+        flex-1
+
+        overflow-y-auto
+
+        px-8
+        py-8
+
+        space-y-7
+
+      ">
+
+        {/* =====================================================
+            THUMBNAIL
+        ===================================================== */}
 
         <div className="
-          p-7
-          space-y-7
+
+          rounded-[34px]
+
+          overflow-hidden
+
+          border
+          border-slate-200
+
+          bg-slate-100
+
         ">
 
-          {/* =================================================
-             DESCRIPTION
-          ================================================= */}
+          {
+
+            data.thumbnail
+
+              ? (
+
+                <img
+
+                  src={data.thumbnail}
+
+                  alt={data.nama}
+
+                  className="
+
+                    w-full
+
+                    aspect-[16/7]
+
+                    object-cover
+
+                  "
+                />
+              )
+
+              : (
+
+                <div className="
+
+                  aspect-[16/7]
+
+                  flex
+                  items-center
+                  justify-center
+
+                  text-slate-400
+
+                ">
+                  Tidak ada thumbnail
+                </div>
+              )
+          }
+
+        </div>
+
+        {/* =====================================================
+            MAIN INFO
+        ===================================================== */}
+
+        <div className="
+
+          grid
+          grid-cols-1
+          lg:grid-cols-3
+
+          gap-6
+
+        ">
+
+          {/* =====================================================
+              LEFT
+          ===================================================== */}
 
           <div className="
-            rounded-[30px]
-            border
-            border-[#EFE7DA]
-            bg-[#FAF7F2]
-            p-6
+
+            lg:col-span-2
+
+            space-y-6
+
           ">
 
-            <div className="
-              flex
-              items-center
-              justify-between
-              gap-4
-            ">
+            {/* =========================
+               BASIC
+            ========================= */}
 
-              <div>
+            <Section title="Informasi Layanan">
 
-                <p className="
-                  text-xs
-                  uppercase
-                  tracking-[0.3em]
-                  text-[#C9AE63]
-                ">
-                  Description
-                </p>
+              <div className="space-y-5">
 
-                <h3 className="
-                  mt-3
-                  text-2xl
-                  font-semibold
-                ">
-                  Detail Layanan
-                </h3>
+                <Field
+
+                  icon={<Tag size={18} />}
+
+                  label="Nama Layanan"
+
+                  value={data.nama}
+                />
+
+                <Field
+
+                  icon={<Wallet size={18} />}
+
+                  label="Harga"
+
+                  value={`Rp ${
+
+                    Number(
+                      data.harga || 0
+                    ).toLocaleString(
+                      "id-ID"
+                    )
+                  }`}
+                />
+
+                <Field
+
+                  icon={<Tag size={18} />}
+
+                  label="Kategori"
+
+                  value={
+                    data.kategori ||
+                    "-"
+                  }
+                />
 
               </div>
+
+            </Section>
+
+            {/* =========================
+               DESCRIPTION
+            ========================= */}
+
+            <Section title="Deskripsi">
 
               <div className="
-                hidden
-                rounded-full
-                bg-black
-                px-5
-                py-2
-                text-xs
-                font-medium
-                tracking-[0.2em]
-                text-white
-                md:block
+
+                flex
+                items-start
+                gap-4
+
               ">
-                FLORALESS
+
+                <div className="
+
+                  mt-1
+
+                  text-slate-400
+
+                ">
+                  <AlignLeft size={18} />
+                </div>
+
+                <div className="
+
+                  text-[15px]
+
+                  leading-relaxed
+
+                  text-slate-600
+
+                ">
+                  {
+
+                    data.deskripsi ||
+
+                    "Tidak ada deskripsi"
+                  }
+                </div>
+
               </div>
 
-            </div>
-
-            <div className="
-              mt-6
-              text-[15px]
-              leading-relaxed
-              text-neutral-600
-              whitespace-pre-wrap
-            ">
-
-              {data.deskripsi ||
-
-                "Tidak ada deskripsi layanan."}
-
-            </div>
+            </Section>
 
           </div>
 
-          {/* =================================================
-             INFO GRID
-          ================================================= */}
+          {/* =====================================================
+              RIGHT
+          ===================================================== */}
 
-          <div className="
-            grid
-            gap-5
-            md:grid-cols-2
-          ">
+          <div className="space-y-6">
 
-            <Field
-              label="Dibuat"
-              value={
+            {/* =========================
+               STATUS
+            ========================= */}
 
-                data.createdAt
+            <Section title="Status">
 
-                  ? new Date(
-                      data.createdAt
-                    ).toLocaleString(
-                      "id-ID"
-                    )
+              <div className="space-y-4">
 
-                  : "-"
-              }
-            />
+                <StatusBadge
 
-            <Field
-              label="Terakhir Update"
-              value={
+                  label="Status"
 
-                data.updatedAt
+                  active={
+                    data.isActive
+                  }
+                />
 
-                  ? new Date(
-                      data.updatedAt
-                    ).toLocaleString(
-                      "id-ID"
-                    )
+                <StatusBadge
 
-                  : "-"
-              }
-            />
+                  label="Featured"
+
+                  active={
+                    data.isFeatured
+                  }
+                />
+
+              </div>
+
+            </Section>
+
+            {/* =========================
+               TIMESTAMP
+            ========================= */}
+
+            <Section title="Informasi Sistem">
+
+              <div className="space-y-5">
+
+                <Field
+
+                  icon={
+                    <CalendarDays
+                      size={18}
+                    />
+                  }
+
+                  label="Dibuat"
+
+                  value={
+
+                    data.createdAt
+
+                      ? new Date(
+
+                          data.createdAt
+
+                        ).toLocaleString(
+                          "id-ID"
+                        )
+
+                      : "-"
+                  }
+                />
+
+                <Field
+
+                  icon={
+                    <CalendarDays
+                      size={18}
+                    />
+                  }
+
+                  label="Update Terakhir"
+
+                  value={
+
+                    data.updatedAt
+
+                      ? new Date(
+
+                          data.updatedAt
+
+                        ).toLocaleString(
+                          "id-ID"
+                        )
+
+                      : "-"
+                  }
+                />
+
+              </div>
+
+            </Section>
 
           </div>
-
-        </div>
-
-        {/* =================================================
-           FOOTER
-        ================================================= */}
-
-        <div className="
-          flex
-          justify-end
-          border-t
-          px-7
-          py-5
-        ">
-
-          <button
-            onClick={onClose}
-            className="
-              rounded-2xl
-              bg-black
-              px-6
-              py-3
-              text-sm
-              font-medium
-              text-white
-              transition
-              hover:opacity-90
-            "
-          >
-            Tutup
-          </button>
 
         </div>
 
       </div>
+
+      {/* =====================================================
+          FOOTER
+      ===================================================== */}
+
+      <div className="
+
+        px-8
+        py-6
+
+        border-t
+        border-slate-200
+
+        bg-white
+
+        flex
+        items-center
+        justify-end
+
+        sticky
+        bottom-0
+
+      ">
+
+        <button
+
+          onClick={onClose}
+
+          className="
+
+            h-12
+            px-6
+
+            rounded-2xl
+
+            bg-[#0F172A]
+
+            text-white
+
+            text-sm
+            font-semibold
+
+            hover:opacity-90
+
+            transition
+
+          "
+        >
+          Tutup
+        </button>
+
+      </div>
+
+    </BaseModal>
+  );
+}
+
+/* =========================================================
+   SECTION
+========================================================= */
+
+function Section({
+
+  title,
+
+  children,
+
+}: any) {
+
+  return (
+
+    <div className="
+
+      border
+      border-slate-200
+
+      rounded-[30px]
+
+      p-6
+
+      bg-white
+
+      space-y-5
+
+    ">
+
+      <h3 className="
+
+        text-xl
+        font-bold
+
+        text-[#0F172A]
+
+      ">
+        {title}
+      </h3>
+
+      {children}
 
     </div>
   );
@@ -387,47 +607,145 @@ export default function DetailLayananModal({
 
 function Field({
 
+  icon,
+
   label,
 
   value,
 
-}: {
-
-  label: string;
-
-  value?: any;
-}) {
+}: any) {
 
   return (
 
     <div className="
-      rounded-[28px]
-      border
-      border-[#EFE7DA]
-      bg-white
-      p-6
-      shadow-sm
+
+      flex
+      items-start
+      gap-4
+
     ">
 
-      <p className="
-        text-xs
-        uppercase
-        tracking-[0.25em]
-        text-neutral-400
+      <div className="
+
+        mt-1
+
+        text-slate-400
+
+      ">
+        {icon}
+      </div>
+
+      <div className="space-y-1">
+
+        <div className="
+
+          text-xs
+          font-medium
+
+          uppercase
+
+          tracking-wide
+
+          text-slate-400
+
+        ">
+          {label}
+        </div>
+
+        <div className="
+
+          text-[15px]
+          font-semibold
+
+          text-slate-700
+
+          break-words
+
+        ">
+          {value || "-"}
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
+
+/* =========================================================
+   STATUS BADGE
+========================================================= */
+
+function StatusBadge({
+
+  label,
+
+  active,
+
+}: any) {
+
+  return (
+
+    <div className="
+
+      flex
+      items-center
+      justify-between
+
+      gap-4
+
+    ">
+
+      <div className="
+
+        text-sm
+        font-medium
+
+        text-slate-600
+
       ">
         {label}
-      </p>
+      </div>
 
-      <p className="
-        mt-4
-        text-base
+      <div className={`
+
+        h-10
+
+        px-4
+
+        rounded-full
+
+        inline-flex
+        items-center
+
+        text-sm
         font-semibold
-        leading-relaxed
-        text-black
-        break-words
-      ">
-        {value || "-"}
-      </p>
+
+        ${
+          active
+
+            ? `
+              bg-emerald-100
+              text-emerald-700
+            `
+
+            : `
+              bg-red-100
+              text-red-700
+            `
+        }
+
+      `}>
+
+        {
+
+          active
+
+            ? "Aktif"
+
+            : "Nonaktif"
+        }
+
+      </div>
 
     </div>
   );

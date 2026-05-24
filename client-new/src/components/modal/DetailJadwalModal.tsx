@@ -1,100 +1,683 @@
 "use client";
 
+import {
+
+  CalendarDays,
+
+  MapPin,
+
+  User2,
+
+  Ticket,
+
+  ClipboardList,
+
+  Clock3,
+
+  X,
+
+  FileText,
+
+} from "lucide-react";
+
+import BaseModal from "@/components/form/BaseModal";
+
+/* =========================================================
+   TYPES
+========================================================= */
+
 interface Props {
+
   open: boolean;
+
   onClose: () => void;
+
   data: any;
 }
 
+/* =========================================================
+   COMPONENT
+========================================================= */
+
 export default function DetailJadwalModal({
+
   open,
+
   onClose,
+
   data
+
 }: Props) {
 
   if (!open || !data) return null;
 
+  /* =====================================================
+     STATUS STYLE
+  ===================================================== */
+
+  const statusMap: any = {
+
+    available: {
+
+      label: "Available",
+
+      className: `
+
+        bg-emerald-50
+        border-emerald-200
+        text-emerald-700
+      `,
+    },
+
+    booked: {
+
+      label: "Booked",
+
+      className: `
+
+        bg-amber-50
+        border-amber-200
+        text-amber-700
+      `,
+    },
+
+    ongoing: {
+
+      label: "Ongoing",
+
+      className: `
+
+        bg-blue-50
+        border-blue-200
+        text-blue-700
+      `,
+    },
+
+    done: {
+
+      label: "Done",
+
+      className: `
+
+        bg-slate-100
+        border-slate-200
+        text-slate-700
+      `,
+    },
+  };
+
+  const currentStatus =
+
+    statusMap[data.status] ||
+
+    statusMap.available;
+
+  /* =====================================================
+     FORMAT DATE
+  ===================================================== */
+
+  const formattedDate =
+
+    data.tanggal_acara
+
+      ? new Date(
+          data.tanggal_acara
+        )
+
+        .toLocaleDateString(
+
+          "id-ID",
+
+          {
+
+            weekday: "long",
+
+            year: "numeric",
+
+            month: "long",
+
+            day: "numeric",
+          }
+        )
+
+      : "-";
+
+  /* =====================================================
+     UI
+  ===================================================== */
+
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
 
-      <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl">
+    <BaseModal
 
-        {/* HEADER */}
-        <div className="p-5 border-b flex items-center justify-between">
-          <h2 className="text-lg font-semibold">
-            Detail Jadwal
-          </h2>
+      open={open}
 
-          <button
-            onClick={onClose}
-            className="text-sm text-gray-500"
-          >
-            Tutup
-          </button>
+      onClose={onClose}
+
+      maxWidth="max-w-4xl"
+    >
+
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
+
+      <div className="
+
+        px-8
+        py-7
+
+        border-b
+        border-slate-200
+
+        flex
+        items-start
+        justify-between
+
+      ">
+
+        <div>
+
+          <div className="
+
+            flex
+            items-center
+
+            gap-3
+            flex-wrap
+
+          ">
+
+            <h2 className="
+
+              text-[38px]
+              leading-none
+
+              font-bold
+
+              tracking-tight
+
+              text-[#0F172A]
+
+            ">
+
+              Detail{" "}
+
+              <span className="
+                text-[#64748B]
+              ">
+                jadwal
+              </span>
+
+            </h2>
+
+            <div className={`
+
+              h-10
+              px-4
+
+              rounded-2xl
+
+              inline-flex
+              items-center
+              justify-center
+
+              text-sm
+              font-semibold
+
+              border
+
+              ${currentStatus.className}
+
+            `}>
+
+              {
+                currentStatus.label
+              }
+
+            </div>
+
+          </div>
+
+          <p className="
+
+            text-slate-500
+            text-sm
+
+            mt-3
+
+          ">
+            Informasi lengkap jadwal acara dan penugasan
+          </p>
+
         </div>
 
-        {/* BODY */}
-        <div className="p-5 space-y-4">
+        <button
 
-          <Field
-            label="Title"
-            value={
-              data.title ||
-              data.ticketId?.layananId?.nama ||
-              "-"
-            }
-          />
+          onClick={onClose}
 
-          <Field
-            label="Tanggal"
-            value={
-              data.tanggal_acara
-                ? new Date(
-                    data.tanggal_acara
-                  ).toLocaleDateString()
-                : "-"
-            }
-          />
+          className="
 
-          <Field
-            label="Lokasi"
-            value={data.lokasi || "-"}
-          />
+            w-12
+            h-12
 
-          <Field
-            label="Status"
-            value={data.status || "-"}
-          />
+            rounded-2xl
 
-          <Field
-            label="Pegawai"
-            value={data.pegawaiId?.nama || "-"}
-          />
+            border
+            border-slate-200
 
-          <Field
-            label="Ticket"
-            value={data.ticketId?._id || "-"}
-          />
+            flex
+            items-center
+            justify-center
 
-        </div>
+            text-slate-500
+
+            hover:bg-slate-100
+
+            transition
+
+          "
+        >
+
+          <X size={20} />
+
+        </button>
+
       </div>
+
+      {/* =====================================================
+          BODY
+      ===================================================== */}
+
+      <div className="
+
+        px-8
+        py-8
+
+        space-y-7
+
+        overflow-y-auto
+
+      ">
+
+        {/* =====================================================
+            INFORMASI ACARA
+        ===================================================== */}
+
+        <Section title="Informasi Acara">
+
+          <div className="
+
+            grid
+            grid-cols-1
+            md:grid-cols-2
+
+            gap-5
+
+          ">
+
+            <FieldCard
+
+              icon={
+                <ClipboardList
+                  size={18}
+                />
+              }
+
+              label="Title"
+
+              value={
+                data.title ||
+
+                data.ticketId
+                  ?.layananId
+                  ?.nama ||
+
+                "-"
+              }
+            />
+
+            <FieldCard
+
+              icon={
+                <CalendarDays
+                  size={18}
+                />
+              }
+
+              label="Tanggal"
+
+              value={
+                formattedDate
+              }
+            />
+
+          </div>
+
+        </Section>
+
+        {/* =====================================================
+            LOKASI
+        ===================================================== */}
+
+        <Section title="Lokasi Acara">
+
+          <FieldCard
+
+            icon={
+              <MapPin
+                size={18}
+              />
+            }
+
+            label="Alamat / Lokasi"
+
+            value={
+              data.lokasi || "-"
+            }
+
+            multiline
+          />
+
+        </Section>
+
+        {/* =====================================================
+            PEGAWAI & TICKET
+        ===================================================== */}
+
+        <Section title="Penugasan">
+
+          <div className="
+
+            grid
+            grid-cols-1
+            md:grid-cols-2
+
+            gap-5
+
+          ">
+
+            <FieldCard
+
+              icon={
+                <User2
+                  size={18}
+                />
+              }
+
+              label="Pegawai"
+
+              value={
+                data.pegawaiId
+                  ?.nama || "-"
+              }
+            />
+
+            <FieldCard
+
+              icon={
+                <Ticket
+                  size={18}
+                />
+              }
+
+              label="Ticket"
+
+              value={
+                data.ticketId
+                  ?._id || "-"
+              }
+            />
+
+          </div>
+
+        </Section>
+
+        {/* =====================================================
+            CATATAN
+        ===================================================== */}
+
+        <Section title="Catatan Tambahan">
+
+          <FieldCard
+
+            icon={
+              <FileText
+                size={18}
+              />
+            }
+
+            label="Informasi Tambahan"
+
+            value={
+              data.catatan ||
+
+              "Belum ada catatan tambahan"
+            }
+
+            multiline
+          />
+
+        </Section>
+
+        {/* =====================================================
+            TIMESTAMP
+        ===================================================== */}
+
+        <div className="
+
+          rounded-[30px]
+
+          border
+          border-blue-200
+
+          bg-blue-50
+
+          p-5
+
+          flex
+          items-start
+
+          gap-4
+
+        ">
+
+          <div className="
+
+            w-11
+            h-11
+
+            rounded-2xl
+
+            bg-blue-100
+
+            flex
+            items-center
+            justify-center
+
+            text-blue-700
+
+            shrink-0
+
+          ">
+
+            <Clock3 size={20} />
+
+          </div>
+
+          <div>
+
+            <h4 className="
+
+              text-sm
+              font-semibold
+
+              text-blue-900
+
+            ">
+              Informasi Jadwal
+            </h4>
+
+            <p className="
+
+              text-sm
+
+              text-blue-700
+
+              mt-1
+
+              leading-relaxed
+
+            ">
+
+              Dibuat pada{" "}
+
+              {
+
+                data.createdAt
+
+                  ? new Date(
+                      data.createdAt
+                    )
+
+                    .toLocaleString(
+                      "id-ID"
+                    )
+
+                  : "-"
+              }
+
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </BaseModal>
+  );
+}
+
+/* =========================================================
+   SECTION
+========================================================= */
+
+function Section({
+
+  title,
+
+  children,
+
+}: any) {
+
+  return (
+
+    <div className="
+
+      border
+      border-slate-200
+
+      rounded-[30px]
+
+      p-6
+
+      bg-white
+
+      space-y-5
+
+    ">
+
+      <h3 className="
+
+        text-xl
+        font-bold
+
+        text-[#0F172A]
+
+      ">
+        {title}
+      </h3>
+
+      {children}
+
     </div>
   );
 }
 
-function Field({
+/* =========================================================
+   FIELD CARD
+========================================================= */
+
+function FieldCard({
+
   label,
-  value
+
+  value,
+
+  icon,
+
+  multiline = false,
+
 }: any) {
+
   return (
-    <div>
-      <div className="text-xs text-gray-500 mb-1">
-        {label}
+
+    <div className="
+
+      border
+      border-slate-200
+
+      rounded-2xl
+
+      p-5
+
+      bg-slate-50/70
+
+      space-y-3
+
+    ">
+
+      <div className="
+
+        flex
+        items-center
+
+        gap-2
+
+        text-slate-500
+
+      ">
+
+        {icon}
+
+        <span className="
+          text-sm
+          font-medium
+        ">
+          {label}
+        </span>
+
       </div>
 
-      <div className="text-sm font-medium">
+      <div className={`
+
+        text-[15px]
+        font-semibold
+
+        text-slate-900
+
+        ${
+          multiline
+            ? "leading-relaxed whitespace-pre-wrap"
+            : ""
+        }
+
+      `}>
+
         {value}
+
       </div>
+
     </div>
   );
 }

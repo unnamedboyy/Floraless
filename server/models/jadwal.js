@@ -1,39 +1,85 @@
 import mongoose from "mongoose";
 
-const jadwalSchema = new mongoose.Schema({
-  ticketId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Ticket",
-    default: null
-  },
+const jadwalSchema =
+  new mongoose.Schema({
 
-  pegawaiId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Pegawai",
-    default: null
-  },
+    ticketId: {
 
-  title: {
-    type: String,
-    default: ""
-  },
+      type:
+        mongoose.Schema.Types.ObjectId,
 
-  lokasi: String,
+      ref: "Ticket",
 
-  tanggal_acara: {
-    type: Date,
-    required: true
-  },
+      default: null
+    },
 
-  status: {
-    type: String,
-    enum: ["available", "booked", "ongoing", "done"],
-    default: "available"
-  }
+    pegawaiId: {
 
-}, { timestamps: true });
+      type:
+        mongoose.Schema.Types.ObjectId,
 
-jadwalSchema.index({ tanggal_acara: 1 });
-jadwalSchema.index({ pegawaiId: 1 });
+      ref: "Pegawai",
 
-export default mongoose.model("Jadwal", jadwalSchema);
+      default: null
+    },
+
+    title: {
+
+      type: String,
+
+      default: ""
+    },
+
+    lokasi: {
+      type: String,
+      default: ""
+    },
+
+    catatan: {
+      type: String,
+      default: ""
+    },
+
+    tanggal_acara: {
+
+      type: Date,
+
+      required: true
+    },
+
+    status: {
+
+      type: String,
+
+      enum: [
+
+        "available",
+
+        "booked",
+
+        "ongoing",
+
+        "done"
+
+      ],
+
+      default: "available"
+    }
+
+  }, {
+
+    timestamps: true
+  });
+
+jadwalSchema.index({
+  tanggal_acara: 1
+});
+
+jadwalSchema.index({
+  pegawaiId: 1
+});
+
+export default mongoose.model(
+  "Jadwal",
+  jadwalSchema
+);

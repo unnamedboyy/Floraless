@@ -9,6 +9,10 @@ export const uploadImage =
 
     try {
 
+      /* =========================
+         CHECK FILE
+      ========================= */
+
       if (!req.file) {
 
         return res.status(400).json({
@@ -17,26 +21,68 @@ export const uploadImage =
         });
       }
 
-      /* =================================================
+      /* =========================
+         BASE URL
+      ========================= */
+
+      const baseUrl =
+
+         "http://127.0.0.1:5000";
+        // `${req.protocol}://` +
+        // `${req.get("host")}`;
+
+      /* =========================
+         FOLDER
+      ========================= */
+
+      const folder =
+
+        req.params.folder ||
+
+        "misc";
+
+      /* =========================
          FILE URL
-      ================================================= */
+      ========================= */
 
       const fileUrl =
 
-        `${req.protocol}://` +
+        `${baseUrl}/uploads/${folder}/${req.file.filename}`;
 
-        `${req.get("host")}` +
-
-        `/uploads/${req.file.filename}`;
+      /* =========================
+         RESPONSE
+      ========================= */
 
       res.json({
+
+        message:
+          "Upload berhasil",
+
         url: fileUrl,
+
+        folder,
+
+        filename:
+          req.file.filename,
+
+        originalname:
+          req.file.originalname,
+
+        mimetype:
+          req.file.mimetype,
+
+        size:
+          req.file.size,
       });
 
     } catch (err) {
 
-      console.error(err);
+      console.error(
+        "UPLOAD ERROR:",
+        err
+      );
 
       next(err);
+
     }
   };

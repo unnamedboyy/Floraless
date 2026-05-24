@@ -3,25 +3,6 @@ import path from "path";
 import fs from "fs";
 
 /* =====================================================
-   CREATE FOLDER
-===================================================== */
-
-const uploadDir =
-  "public/uploads";
-
-if (
-  !fs.existsSync(
-    uploadDir
-  )
-) {
-
-  fs.mkdirSync(
-    uploadDir,
-    { recursive: true }
-  );
-}
-
-/* =====================================================
    STORAGE
 ===================================================== */
 
@@ -29,87 +10,108 @@ const storage =
   multer.diskStorage({
 
     destination:
-      (
-        req,
-        file,
-        cb
-      ) => {
+      (req, file, cb) => {
+
+        /* =========================
+           GET FOLDER
+        ========================= */
+
+        const folder =
+
+          req.params.folder ||
+
+          "misc";
+
+        /* =========================
+           CREATE PATH
+        ========================= */
+
+        const uploadPath =
+
+          `uploads/${folder}`;
+
+        /* =========================
+           CREATE DIRECTORY
+        ========================= */
+
+        if (
+          !fs.existsSync(uploadPath)
+        ) {
+
+          fs.mkdirSync(
+            uploadPath,
+            {
+              recursive: true,
+            }
+          );
+        }
 
         cb(
           null,
-          uploadDir
+          uploadPath
         );
       },
 
     filename:
-      (
-        req,
-        file,
-        cb
-      ) => {
+      (req, file, cb) => {
 
-        const unique =
+        const uniqueName =
+
           Date.now() +
+
           "-" +
+
           Math.round(
-            Math.random() *
-            1e9
+            Math.random() * 1e9
+          ) +
+
+          path.extname(
+            file.originalname
           );
 
         cb(
-
           null,
-
-          unique +
-          path.extname(
-            file.originalname
-          )
+          uniqueName
         );
       },
   });
 
 /* =====================================================
-   FILE FILTER
+   FILTER
 ===================================================== */
 
 const fileFilter =
-  (
-    req,
-    file,
-    cb
-  ) => {
+  (req, file, cb) => {
 
-    const allowed =
-      [
-        "image/png",
-        "image/jpg",
-        "image/jpeg",
-        "image/webp",
-      ];
+    const allowedTypes = [
+
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/jpg",
+    ];
 
     if (
-      allowed.includes(
+      allowedTypes.includes(
         file.mimetype
       )
     ) {
 
-      cb(
-        null,
-        true
-      );
+      cb(null, true);
 
     } else {
 
       cb(
         new Error(
           "Format file tidak didukung"
-        )
+        ),
+        false
       );
     }
   };
 
 /* =====================================================
-   EXPORT
+   MULTER
 ===================================================== */
 
 const upload =
@@ -121,7 +123,8 @@ const upload =
 
     limits: {
 
-      fileSize: 20 * 1024 * 1024,
+      fileSize:
+        20 * 1024 * 1024,
     },
   });
 

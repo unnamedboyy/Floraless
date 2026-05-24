@@ -9,7 +9,9 @@ export const getAllLayanan =
 
     const res =
       await api.get(
+
         "/layanans",
+
         {
           params,
         }
@@ -42,7 +44,9 @@ export const createLayanan =
 
     const res =
       await api.post(
+
         "/layanans",
+
         data
       );
 
@@ -61,7 +65,9 @@ export const updateLayanan =
 
     const res =
       await api.put(
+
         `/layanans/${id}`,
+
         data
       );
 
@@ -77,6 +83,7 @@ export const toggleLayanan =
 
     const res =
       await api.patch(
+
         `/layanans/${id}/toggle`
       );
 

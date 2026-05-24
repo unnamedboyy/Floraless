@@ -1,15 +1,20 @@
-const role = (...allowedRoles) => {
-  return (req, res, next) => {
-    const user = req.user;
+export default function role(...roles) {
 
-    if (!user || !allowedRoles.includes(user.role)) {
+  return (req, res, next) => {
+
+    if (
+      !roles.includes(
+        req.user.role
+      )
+    ) {
+
       return res.status(403).json({
-        message: "Akses ditolak"
+
+        message:
+          "Akses ditolak",
       });
     }
 
     next();
   };
-};
-
-export default role;
+}

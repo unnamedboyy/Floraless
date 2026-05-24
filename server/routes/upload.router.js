@@ -1,31 +1,28 @@
 import express from "express";
 
-import auth
-from "../middlewares/auth.js";
-
-import upload
-from "../middlewares/upload.js";
-
 import {
   uploadImage,
 } from "../controllers/upload.controller.js";
+
+import upload from "../middlewares/upload.js";
+
+import authMiddleware
+  from "../middlewares/auth.js";
 
 const router =
   express.Router();
 
 /* =====================================================
-   UPLOAD IMAGE
+   UPLOAD
 ===================================================== */
 
 router.post(
 
-  "/",
+  "/:folder",
 
-  auth,
+  authMiddleware,
 
-  upload.single(
-    "image"
-  ),
+  upload.single("image"),
 
   uploadImage
 );

@@ -1,5 +1,21 @@
 "use client";
 
+import {
+  User2,
+  Phone,
+  Mail,
+  Calendar,
+  MapPin,
+  FileText,
+  X,
+} from "lucide-react";
+
+import BaseModal from "@/components/form/BaseModal";
+
+/* =====================================================
+   TYPES
+===================================================== */
+
 type Props = {
   open: boolean;
   onClose: () => void;
@@ -7,131 +23,478 @@ type Props = {
   title?: string;
 };
 
+/* =====================================================
+   COMPONENT
+===================================================== */
+
 export default function DetailUserModal({
+
   open,
   onClose,
   data,
   title = "Detail User",
+
 }: Props) {
 
   if (!open || !data) return null;
 
-  const badgeClass = (active: boolean) =>
+  /* =====================================================
+     BADGE
+  ===================================================== */
+
+  const badgeClass = (
+    active: boolean
+  ) =>
     active
-      ? "bg-green-100 text-green-700 border-green-200"
-      : "bg-red-100 text-red-700 border-red-200";
+      ? `
+        bg-emerald-50
+        text-emerald-700
+        border-emerald-200
+      `
+      : `
+        bg-red-50
+        text-red-700
+        border-red-200
+      `;
+
+  /* =====================================================
+     RENDER
+  ===================================================== */
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
 
-      {/* CARD */}
-      <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <BaseModal
+      open={open}
+      onClose={onClose}
+      maxWidth="max-w-5xl"
+      className="
+        h-[90vh]
+      "
+    >
 
-        {/* HEADER */}
-        <div className="border-b px-6 py-5 flex items-start justify-between">
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
 
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">
-              {title}
-            </h2>
+      <div className="
+        px-10
+        py-7
+        border-b
+        border-gray-200
+        bg-[#FCFCFD]
+        shrink-0
+      ">
 
-            <p className="text-sm text-gray-500 mt-1">
-              Informasi lengkap pengguna
-            </p>
-          </div>
+        <div className="
+          flex
+          items-start
+          justify-between
+        ">
 
-          <button
-            onClick={onClose}
-            className="
-              w-10 h-10
-              rounded-2xl
-              hover:bg-gray-100
-              transition
-              text-gray-500
-            "
-          >
-            ✕
-          </button>
-
-        </div>
-
-        {/* BODY */}
-        <div className="p-6 space-y-6">
-
-          {/* PROFILE */}
-          <div className="flex items-center gap-4">
+          <div className="
+            space-y-3
+          ">
 
             <div className="
-              w-16 h-16
-              rounded-2xl
-              bg-black
-              text-white
-              flex items-center justify-center
-              text-2xl font-semibold
+              flex
+              items-center
+              gap-3
+              flex-wrap
             ">
-              {data.nama?.charAt(0)?.toUpperCase() || "U"}
-            </div>
 
-            <div className="space-y-1">
+              <h2 className="
+                text-[44px]
+                leading-none
+                tracking-tight
+                font-bold
+                text-[#0F172A]
+              ">
+                Detail
+              </h2>
 
-              <h3 className="text-lg font-semibold text-gray-900">
-                {data.nama || "-"}
-              </h3>
+              <div
+                className={`
+                  h-12
+                  px-5
+                  rounded-2xl
+                  flex
+                  items-center
+                  justify-center
+                  text-[15px]
+                  font-semibold
+                  capitalize
+                  border
+                  shadow-sm
 
-              <p className="text-sm text-gray-500">
-                {data.no_telp || "-"}
-              </p>
+                  ${
+                    data.userId?.role ===
+                    "pegawai"
 
-              <div className="flex gap-2 pt-1">
+                      ? `
+                        bg-slate-100
+                        border-slate-200
+                        text-slate-700
+                      `
 
-                <span
-                  className={`
-                    px-3 py-1 rounded-full text-xs border font-medium
-                    ${badgeClass(data.userId?.isActive)}
-                  `}
-                >
-                  {data.userId?.isActive
-                    ? "User Aktif"
-                    : "User Nonaktif"}
-                </span>
+                      : `
+                        bg-neutral-100
+                        border-neutral-200
+                        text-neutral-700
+                      `
+                  }
+                `}
+              >
 
-                <span
-                  className={`
-                    px-3 py-1 rounded-full text-xs border font-medium
-                    ${badgeClass(data.isActive)}
-                  `}
-                >
-                  {data.isActive
-                    ? "Data Aktif"
-                    : "Data Nonaktif"}
-                </span>
+                {
+                  data.userId?.role ||
+                  "user"
+                }
 
               </div>
 
             </div>
 
+            <p className="
+              text-[16px]
+              text-gray-500
+            ">
+              Informasi lengkap pengguna
+            </p>
+
           </div>
 
-          {/* INFO GRID */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <button
+            onClick={onClose}
+            className="
+              w-14 h-14
+              rounded-2xl
+              border
+              border-gray-300
+              bg-white
+              flex
+              items-center
+              justify-center
+              text-gray-500
+              hover:bg-gray-50
+              hover:text-gray-700
+              transition-all
+            "
+          >
+            <X size={24} />
+          </button>
+
+        </div>
+
+      </div>
+
+      {/* =====================================================
+          BODY
+      ===================================================== */}
+
+      <div className="
+        flex-1
+        overflow-y-auto
+        px-10
+        py-8
+        space-y-7
+        bg-[#FCFCFD]
+      ">
+
+        {/* PROFILE */}
+        <div className="
+          flex
+          flex-col
+          items-center
+          justify-center
+          gap-5
+        ">
+
+          <div className="
+            relative
+            w-32 h-32
+            rounded-full
+            overflow-hidden
+            border-[6px]
+            border-white
+            shadow-[0_8px_30px_rgba(15,23,42,0.08)]
+            bg-gray-100
+          ">
+
+            {data.profile ? (
+
+              <img
+                src={data.profile}
+                alt="profile"
+                className="
+                  w-full
+                  h-full
+                  object-cover
+                "
+              />
+
+            ) : (
+
+              <div className="
+                w-full h-full
+                flex items-center justify-center
+                text-gray-400
+              ">
+                <User2 size={48} />
+              </div>
+
+            )}
+
+          </div>
+
+          <div className="
+            text-center
+            space-y-3
+          ">
+
+            <div>
+
+              <h3 className="
+                text-[34px]
+                leading-tight
+                font-bold
+                text-[#0F172A]
+              ">
+                {data.nama || "-"}
+              </h3>
+
+              <p className="
+                mt-2
+                text-[16px]
+                text-gray-500
+              ">
+                {
+                  data.email ||
+                  data.no_telp ||
+                  "-"
+                }
+              </p>
+
+            </div>
+
+            <div className="
+              flex
+              items-center
+              justify-center
+              gap-2
+              flex-wrap
+            ">
+
+              <span
+                className={`
+                  px-4 py-2
+                  rounded-2xl
+                  text-sm
+                  border
+                  font-medium
+                  ${badgeClass(
+                    data.userId?.isActive
+                  )}
+                `}
+              >
+                {
+                  data.userId?.isActive
+                    ? "User Aktif"
+                    : "User Nonaktif"
+                }
+              </span>
+
+              <span
+                className={`
+                  px-4 py-2
+                  rounded-2xl
+                  text-sm
+                  border
+                  font-medium
+                  ${badgeClass(
+                    data.isActive
+                  )}
+                `}
+              >
+                {
+                  data.isActive
+                    ? "Data Aktif"
+                    : "Data Nonaktif"
+                }
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* BASIC INFO */}
+        <Section title="Informasi Dasar">
+
+          <div className="
+            grid
+            grid-cols-1
+            md:grid-cols-2
+            gap-5
+          ">
 
             <Field
+              icon={
+                <User2 size={18} />
+              }
               label="Username"
-              value={data.userId?.username}
+              value={
+                data.userId?.username
+              }
             />
 
             <Field
+              icon={
+                <Mail size={18} />
+              }
+              label="Email"
+              value={data.email}
+            />
+
+            <Field
+              icon={
+                <Phone size={18} />
+              }
+              label="No Telepon"
+              value={data.no_telp}
+            />
+
+            <Field
+              label="Jenis Kelamin"
+              value={
+                data.jenis_kelamin
+              }
+            />
+
+          </div>
+
+        </Section>
+
+        {/* PERSONAL */}
+        <Section title="Informasi Personal">
+
+          <div className="
+            grid
+            grid-cols-1
+            md:grid-cols-2
+            gap-5
+          ">
+
+            <Field
+              icon={
+                <Calendar size={18} />
+              }
+              label="Tanggal Lahir"
+              value={
+                data.tanggal_lahir
+                  ? new Date(
+                      data.tanggal_lahir
+                    ).toLocaleDateString(
+                      "id-ID"
+                    )
+                  : "-"
+              }
+            />
+
+            {
+              data.userId?.role ===
+                "pegawai" && (
+
+                <Field
+                  icon={
+                    <Calendar size={18} />
+                  }
+                  label="Tanggal Masuk"
+                  value={
+                    data.tanggal_masuk
+                      ? new Date(
+                          data.tanggal_masuk
+                        ).toLocaleDateString(
+                          "id-ID"
+                        )
+                      : "-"
+                  }
+                />
+
+              )
+            }
+
+            <div className="
+              md:col-span-2
+            ">
+
+              <Field
+                icon={
+                  <MapPin size={18} />
+                }
+                label="Alamat"
+                value={
+                  data.alamat
+                }
+                multiline
+              />
+
+            </div>
+
+            <div className="
+              md:col-span-2
+            ">
+
+              <Field
+                icon={
+                  <FileText size={18} />
+                }
+                label="Bio"
+                value={
+                  data.bio
+                }
+                multiline
+              />
+
+            </div>
+
+          </div>
+
+        </Section>
+
+        {/* SYSTEM */}
+        <Section title="Informasi Sistem">
+
+          <div className="
+            grid
+            grid-cols-1
+            md:grid-cols-2
+            gap-5
+          ">
+
+            <Field
               label="Role"
-              value={data.userId?.role}
+              value={
+                data.userId?.role
+              }
+            />
+
+            <Field
+              label="User ID"
+              value={
+                data.userId?._id
+              }
             />
 
             <Field
               label="Dibuat"
               value={
-                data.userId?.createdAt
+                data.createdAt
                   ? new Date(
-                      data.userId.createdAt
-                    ).toLocaleString()
+                      data.createdAt
+                    ).toLocaleString(
+                      "id-ID"
+                    )
                   : "-"
               }
             />
@@ -139,69 +502,165 @@ export default function DetailUserModal({
             <Field
               label="Terakhir Update"
               value={
-                data.userId?.updatedAt
+                data.updatedAt
                   ? new Date(
-                      data.userId.updatedAt
-                    ).toLocaleString()
+                      data.updatedAt
+                    ).toLocaleString(
+                      "id-ID"
+                    )
                   : "-"
               }
             />
 
           </div>
 
-        </div>
-
-        {/* FOOTER */}
-        <div className="border-t px-6 py-4 flex justify-end">
-
-          <button
-            onClick={onClose}
-            className="
-              px-5 py-2.5
-              rounded-2xl
-              bg-black
-              text-white
-              hover:opacity-90
-              transition
-              text-sm
-              font-medium
-            "
-          >
-            Tutup
-          </button>
-
-        </div>
+        </Section>
 
       </div>
+
+      {/* =====================================================
+          FOOTER
+      ===================================================== */}
+
+      <div className="
+        shrink-0
+        px-10
+        py-5
+        border-t
+        border-gray-200
+        bg-white/90
+        backdrop-blur-sm
+        flex
+        items-center
+        justify-between
+      ">
+
+        <p className="
+          text-sm
+          text-gray-500
+        ">
+          Detail informasi pengguna
+        </p>
+
+        <button
+          onClick={onClose}
+          className="
+            h-12
+            px-8
+            rounded-2xl
+            bg-[#111827]
+            text-white
+            font-medium
+            hover:bg-black
+            transition-all
+          "
+        >
+          Tutup
+        </button>
+
+      </div>
+
+    </BaseModal>
+  );
+}
+
+/* =====================================================
+   SECTION
+===================================================== */
+
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+
+  return (
+    <div className="
+      rounded-[24px]
+      border
+      border-gray-200
+      bg-white
+      p-7
+      space-y-6
+      shadow-sm
+    ">
+
+      <h3 className="
+        text-[28px]
+        font-semibold
+        text-[#111827]
+      ">
+        {title}
+      </h3>
+
+      {children}
 
     </div>
   );
 }
 
-/* =========================================================
+/* =====================================================
    FIELD
-========================================================= */
+===================================================== */
 
 function Field({
   label,
   value,
+  icon,
+  multiline,
 }: {
   label: string;
   value?: any;
+  icon?: React.ReactNode;
+  multiline?: boolean;
 }) {
 
   return (
     <div className="
-      border rounded-2xl p-4
-      bg-gray-50/70
-      space-y-1
+      rounded-2xl
+      border
+      border-gray-200
+      bg-[#FCFCFD]
+      p-5
+      space-y-3
     ">
 
-      <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-        {label}
+      <div className="
+        flex
+        items-center
+        gap-2
+        text-gray-500
+      ">
+
+        {icon}
+
+        <div className="
+          text-xs
+          font-semibold
+          uppercase
+          tracking-wider
+        ">
+          {label}
+        </div>
+
       </div>
 
-      <div className="text-sm font-semibold text-gray-900 break-words">
+      <div
+        className={`
+          text-[15px]
+          font-semibold
+          text-[#111827]
+          break-words
+
+          ${
+            multiline
+              ? "leading-7"
+              : ""
+          }
+        `}
+      >
         {value || "-"}
       </div>
 

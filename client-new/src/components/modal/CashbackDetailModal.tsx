@@ -14,10 +14,21 @@ import {
   Clock3,
   ExternalLink,
   UploadCloud,
+  Wallet,
+  Ticket,
+  Landmark,
+  User2,
+  Calendar,
+  FileText,
 } from "lucide-react";
 
-type Props = {
+import BaseModal from "@/components/form/BaseModal";
 
+/* =====================================================
+   TYPES
+===================================================== */
+
+type Props = {
   open: boolean;
 
   data: any;
@@ -34,6 +45,10 @@ type Props = {
     alasan: string
   ) => Promise<void>;
 };
+
+/* =====================================================
+   COMPONENT
+===================================================== */
 
 export default function CashbackDetailModal({
 
@@ -53,60 +68,35 @@ export default function CashbackDetailModal({
      STATE
   ===================================================== */
 
-  const [buktiTf,
-    setBuktiTf] =
-    useState("");
+  const [
+    buktiTf,
+    setBuktiTf,
+  ] = useState("");
 
-  const [alasan,
-    setAlasan] =
-    useState("");
+  const [
+    alasan,
+    setAlasan,
+  ] = useState("");
 
-  const [preview,
-    setPreview] =
-    useState("");
+  const [
+    preview,
+    setPreview,
+  ] = useState("");
 
-  const [uploading,
-    setUploading] =
-    useState(false);
+  const [
+    uploading,
+    setUploading,
+  ] = useState(false);
 
-  const [loadingApprove,
-    setLoadingApprove] =
-    useState(false);
+  const [
+    loadingApprove,
+    setLoadingApprove,
+  ] = useState(false);
 
-  const [loadingReject,
-    setLoadingReject] =
-    useState(false);
-
-  /* =====================================================
-     ESC CLOSE
-  ===================================================== */
-
-  useEffect(() => {
-
-    const handleEsc =
-      (e: KeyboardEvent) => {
-
-        if (
-          e.key === "Escape"
-        ) {
-          onClose();
-        }
-      };
-
-    window.addEventListener(
-      "keydown",
-      handleEsc
-    );
-
-    return () => {
-
-      window.removeEventListener(
-        "keydown",
-        handleEsc
-      );
-    };
-
-  }, [onClose]);
+  const [
+    loadingReject,
+    setLoadingReject,
+  ] = useState(false);
 
   /* =====================================================
      RESET
@@ -124,6 +114,67 @@ export default function CashbackDetailModal({
     }
 
   }, [open]);
+
+  /* =====================================================
+     CLOSE
+  ===================================================== */
+
+  if (!open || !data)
+    return null;
+
+  /* =====================================================
+     STATUS
+  ===================================================== */
+
+  const statusConfig = {
+
+    pending: {
+
+      label: "Pending",
+
+      icon:
+        <Clock3 size={16} />,
+
+      className: `
+        bg-amber-50
+        text-amber-700
+        border-amber-200
+      `,
+    },
+
+    approved: {
+
+      label: "Approved",
+
+      icon:
+        <CheckCircle2 size={16} />,
+
+      className: `
+        bg-emerald-50
+        text-emerald-700
+        border-emerald-200
+      `,
+    },
+
+    rejected: {
+
+      label: "Rejected",
+
+      icon:
+        <XCircle size={16} />,
+
+      className: `
+        bg-red-50
+        text-red-700
+        border-red-200
+      `,
+    },
+  };
+
+  const status =
+    statusConfig[
+      data.status as keyof typeof statusConfig
+    ];
 
   /* =====================================================
      APPROVE
@@ -192,7 +243,7 @@ export default function CashbackDetailModal({
     };
 
   /* =====================================================
-     UPLOAD IMAGE
+     UPLOAD
   ===================================================== */
 
   const handleUpload =
@@ -210,7 +261,6 @@ export default function CashbackDetailModal({
 
         setUploading(true);
 
-        /* PREVIEW */
         setPreview(
           URL.createObjectURL(
             file
@@ -227,11 +277,8 @@ export default function CashbackDetailModal({
 
         const res =
           await api.post(
-
             "/upload",
-
             formData,
-
             {
               headers: {
                 "Content-Type":
@@ -259,134 +306,86 @@ export default function CashbackDetailModal({
     };
 
   /* =====================================================
-     CLOSE
-  ===================================================== */
-
-  if (!open || !data)
-    return null;
-
-  /* =====================================================
-     STATUS
-  ===================================================== */
-
-  const statusConfig = {
-
-    pending: {
-
-      label: "Pending",
-
-      icon:
-        <Clock3 size={14} />,
-
-      className: `
-        bg-yellow-100
-        text-yellow-700
-        border-yellow-200
-      `,
-    },
-
-    approved: {
-
-      label: "Approved",
-
-      icon:
-        <CheckCircle2 size={14} />,
-
-      className: `
-        bg-green-100
-        text-green-700
-        border-green-200
-      `,
-    },
-
-    rejected: {
-
-      label: "Rejected",
-
-      icon:
-        <XCircle size={14} />,
-
-      className: `
-        bg-red-100
-        text-red-700
-        border-red-200
-      `,
-    },
-  };
-
-  const status =
-    statusConfig[
-      data.status as keyof typeof statusConfig
-    ];
-
-  /* =====================================================
-     UI
+     RENDER
   ===================================================== */
 
   return (
 
-    <div className="
-      fixed
-      inset-0
-      z-[999]
-      flex
-      items-center
-      justify-center
-      bg-black/50
-      backdrop-blur-sm
-      p-4
-    ">
+    <BaseModal
+      open={open}
+      onClose={onClose}
+      maxWidth="max-w-6xl"
+      className="
+        h-[92vh]
+      "
+    >
 
-      {/* BACKDROP */}
-      <div
-        onClick={onClose}
-        className="
-          absolute
-          inset-0
-        "
-      />
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
 
-      {/* MODAL */}
       <div className="
-        relative
-        z-10
-        w-full
-        max-w-5xl
-        overflow-hidden
-        rounded-[32px]
-        border
-        border-black/10
-        bg-white
-        shadow-2xl
+        shrink-0
+        px-10
+        py-7
+        border-b
+        border-gray-200
+        bg-[#FCFCFD]
       ">
 
-        {/* HEADER */}
         <div className="
-          sticky
-          top-0
-          z-20
           flex
-          items-center
+          items-start
           justify-between
-          border-b
-          bg-white
-          px-6
-          py-5
+          gap-5
         ">
 
-          <div>
+          <div className="
+            space-y-3
+          ">
 
-            <h2 className="
-              text-2xl
-              font-bold
-              text-black
+            <div className="
+              flex
+              items-center
+              gap-4
+              flex-wrap
             ">
-              Detail Cashback
-            </h2>
+
+              <h2 className="
+                text-[44px]
+                leading-none
+                tracking-tight
+                font-bold
+                text-[#0F172A]
+              ">
+                Cashback
+              </h2>
+
+              <div className={`
+                h-12
+                px-5
+                rounded-2xl
+                flex
+                items-center
+                gap-2
+                text-[15px]
+                font-semibold
+                border
+                shadow-sm
+
+                ${status.className}
+              `}>
+
+                {status.icon}
+
+                {status.label}
+
+              </div>
+
+            </div>
 
             <p className="
-              mt-1
-              text-sm
+              text-[16px]
               text-gray-500
             ">
               Informasi lengkap claim cashback pelanggan
@@ -397,134 +396,226 @@ export default function CashbackDetailModal({
           <button
             onClick={onClose}
             className="
+              w-14 h-14
+              rounded-2xl
+              border
+              border-gray-300
+              bg-white
               flex
-              h-11
-              w-11
               items-center
               justify-center
-              rounded-full
-              border
-              transition
-              hover:bg-gray-100
+              text-gray-500
+              hover:bg-gray-50
+              hover:text-gray-700
+              transition-all
             "
           >
-            <X size={20} />
+            <X size={24} />
           </button>
 
         </div>
 
-        {/* CONTENT */}
+      </div>
+
+      {/* =====================================================
+          BODY
+      ===================================================== */}
+
+      <div className="
+        flex-1
+        overflow-y-auto
+        px-10
+        py-8
+        space-y-7
+        bg-[#FCFCFD]
+      ">
+
+        {/* HERO */}
         <div className="
-          max-h-[85vh]
-          overflow-y-auto
-          px-6
-          py-6
+          rounded-[28px]
+          border
+          border-gray-200
+          bg-white
+          p-8
+          shadow-sm
         ">
 
-          {/* STATUS */}
           <div className="
-            mb-6
             flex
-            items-center
-            justify-between
-            gap-4
-            flex-wrap
+            flex-col
+            lg:flex-row
+            lg:items-center
+            lg:justify-between
+            gap-6
           ">
 
-            <div className={`
-              inline-flex
-              items-center
-              gap-2
-              rounded-full
-              border
-              px-4
-              py-2
-              text-sm
-              font-semibold
-
-              ${status.className}
-            `}>
-
-              {status.icon}
-
-              {status.label}
-
-            </div>
-
             <div className="
-              text-sm
-              text-gray-500
+              space-y-4
             ">
 
-              Claim dibuat pada:
-
-              {" "}
-
-              <span className="
-                font-medium
-                text-black
+              <div className="
+                flex
+                items-center
+                gap-3
               ">
 
-                {
-                  new Date(
-                    data.createdAt
-                  ).toLocaleString(
-                    "id-ID"
-                  )
-                }
+                <div className="
+                  w-16
+                  h-16
+                  rounded-3xl
+                  bg-emerald-50
+                  text-emerald-600
+                  flex
+                  items-center
+                  justify-center
+                ">
+                  <Wallet size={30} />
+                </div>
 
-              </span>
+                <div>
+
+                  <h3 className="
+                    text-[34px]
+                    leading-tight
+                    font-bold
+                    text-[#0F172A]
+                  ">
+                    Rp {(
+                      data.amount || 0
+                    ).toLocaleString(
+                      "id-ID"
+                    )}
+                  </h3>
+
+                  <p className="
+                    mt-1
+                    text-gray-500
+                  ">
+                    Nominal cashback pelanggan
+                  </p>
+
+                </div>
+
+              </div>
+
+              <div className="
+                flex
+                items-center
+                gap-2
+                flex-wrap
+              ">
+
+                <div className="
+                  px-4
+                  py-2
+                  rounded-2xl
+                  bg-slate-100
+                  border
+                  border-slate-200
+                  text-slate-700
+                  text-sm
+                  font-medium
+                ">
+                  Voucher:
+                  {" "}
+                  {
+                    data.kode_voucher ||
+                    "-"
+                  }
+                </div>
+
+                <div className="
+                  px-4
+                  py-2
+                  rounded-2xl
+                  bg-neutral-100
+                  border
+                  border-neutral-200
+                  text-neutral-700
+                  text-sm
+                  font-medium
+                ">
+                  {
+                    new Date(
+                      data.createdAt
+                    ).toLocaleString(
+                      "id-ID"
+                    )
+                  }
+                </div>
+
+              </div>
 
             </div>
 
           </div>
 
-          {/* GRID */}
+        </div>
+
+        {/* INFORMASI */}
+        <Section title="Informasi Cashback">
+
           <div className="
             grid
             grid-cols-1
-            gap-5
             md:grid-cols-2
+            gap-5
           ">
 
-            <InfoCard
-              title="Pelanggan"
+            <Field
+              icon={
+                <User2 size={18} />
+              }
+              label="Pelanggan"
               value={
                 data.pelangganId
-                  ?.nama || "-"
+                  ?.nama
               }
             />
 
-            <InfoCard
-              title="Kode Voucher"
+            <Field
+              icon={
+                <Ticket size={18} />
+              }
+              label="Kode Voucher"
               value={
-                data.kode_voucher || "-"
+                data.kode_voucher
               }
             />
 
-            <InfoCard
-              title="Bank"
+            <Field
+              icon={
+                <Landmark size={18} />
+              }
+              label="Bank"
+              value={data.bank}
+            />
+
+            <Field
+              icon={
+                <Wallet size={18} />
+              }
+              label="Nomor Rekening"
               value={
-                data.bank || "-"
+                data.nomor_rekening
               }
             />
 
-            <InfoCard
-              title="No Rekening"
+            <Field
+              icon={
+                <User2 size={18} />
+              }
+              label="Nama Rekening"
               value={
-                data.nomor_rekening || "-"
+                data.nama_rekening
               }
             />
 
-            <InfoCard
-              title="Nama Rekening"
-              value={
-                data.nama_rekening || "-"
+            <Field
+              icon={
+                <Wallet size={18} />
               }
-            />
-
-            <InfoCard
-              title="Nominal Cashback"
+              label="Nominal Cashback"
               value={`Rp ${(
                 data.amount || 0
               ).toLocaleString(
@@ -534,127 +625,124 @@ export default function CashbackDetailModal({
 
           </div>
 
-          {/* BUKTI TF */}
-          {
-            data.bukti_tf && (
+        </Section>
+
+        {/* BUKTI TF */}
+        {
+          data.bukti_tf && (
+
+            <Section title="Bukti Transfer">
 
               <div className="
-                mt-6
-                rounded-[28px]
-                border
-                p-6
+                flex
+                items-start
+                justify-between
+                gap-4
+                flex-wrap
               ">
 
-                <div className="
-                  flex
-                  items-center
-                  justify-between
-                  gap-4
-                  flex-wrap
-                ">
+                <div>
 
-                  <div>
-
-                    <h3 className="
-                      text-lg
-                      font-semibold
-                    ">
-                      Bukti Transfer
-                    </h3>
-
-                    <p className="
-                      mt-1
-                      text-sm
-                      text-gray-500
-                    ">
-                      Bukti transfer cashback
-                    </p>
-
-                  </div>
-
-                  <a
-                    href={data.bukti_tf}
-                    target="_blank"
-                    className="
-                      inline-flex
-                      items-center
-                      gap-2
-                      rounded-2xl
-                      border
-                      px-4
-                      py-2
-                      text-sm
-                      font-medium
-                      transition
-                      hover:bg-gray-100
-                    "
-                  >
-
-                    <ExternalLink size={16} />
-
-                    Open Image
-
-                  </a>
+                  <p className="
+                    text-[15px]
+                    text-gray-500
+                  ">
+                    Bukti transfer cashback yang telah diupload
+                  </p>
 
                 </div>
+
+                <a
+                  href={data.bukti_tf}
+                  target="_blank"
+                  className="
+                    h-12
+                    px-5
+                    rounded-2xl
+                    border
+                    border-gray-300
+                    bg-white
+                    flex
+                    items-center
+                    gap-2
+                    text-sm
+                    font-medium
+                    text-gray-700
+                    hover:bg-gray-50
+                    transition-all
+                  "
+                >
+
+                  <ExternalLink size={16} />
+
+                  Open Image
+
+                </a>
+
+              </div>
+
+              <div className="
+                rounded-[28px]
+                overflow-hidden
+                border
+                border-gray-200
+                bg-gray-50
+              ">
 
                 <img
                   src={data.bukti_tf}
                   alt="Bukti TF"
                   className="
-                    mt-5
                     w-full
-                    rounded-3xl
-                    border
                     object-cover
                   "
                 />
 
               </div>
-            )
-          }
 
-          {/* APPROVE */}
-          {
-            data.status ===
-            "pending" && (
+            </Section>
+          )
+        }
+
+        {/* APPROVE */}
+        {
+          data.status ===
+          "pending" && (
+
+            <Section title="Approve Cashback">
 
               <div className="
-                mt-6
-                rounded-[28px]
-                border
-                p-6
+                space-y-6
               ">
 
-                <h3 className="
-                  text-2xl
-                  font-bold
-                ">
-                  Approve Cashback
-                </h3>
+                <div>
 
-                <p className="
-                  mt-2
-                  text-gray-500
-                ">
-                  Upload bukti transfer cashback.
-                </p>
+                  <p className="
+                    text-[15px]
+                    text-gray-500
+                  ">
+                    Upload bukti transfer cashback untuk menyetujui claim pelanggan.
+                  </p>
 
-                {/* FILE */}
+                </div>
+
                 <label className="
-                  mt-5
+                  relative
                   flex
-                  h-44
+                  min-h-[260px]
                   cursor-pointer
                   flex-col
                   items-center
                   justify-center
-                  rounded-3xl
+                  rounded-[28px]
                   border-2
                   border-dashed
                   border-gray-300
-                  bg-gray-50
-                  transition
+                  bg-[#FCFCFD]
+                  px-6
+                  py-10
+                  text-center
+                  transition-all
                   hover:border-black
                 ">
 
@@ -669,14 +757,22 @@ export default function CashbackDetailModal({
                     uploading ? (
 
                       <div className="
-                        text-center
+                        space-y-3
                       ">
 
                         <p className="
-                          text-lg
+                          text-xl
                           font-semibold
+                          text-[#111827]
                         ">
                           Uploading...
+                        </p>
+
+                        <p className="
+                          text-sm
+                          text-gray-500
+                        ">
+                          Mohon tunggu sebentar
                         </p>
 
                       </div>
@@ -684,31 +780,45 @@ export default function CashbackDetailModal({
                     ) : (
 
                       <div className="
-                        text-center
+                        space-y-4
                       ">
 
                         <div className="
-                          mb-3
+                          w-20
+                          h-20
+                          rounded-3xl
+                          bg-white
+                          border
+                          border-gray-200
                           flex
+                          items-center
                           justify-center
+                          shadow-sm
+                          mx-auto
                         ">
-                          <UploadCloud size={40} />
+                          <UploadCloud
+                            size={38}
+                          />
                         </div>
 
-                        <p className="
-                          text-lg
-                          font-semibold
-                        ">
-                          Upload Bukti Transfer
-                        </p>
+                        <div>
 
-                        <p className="
-                          mt-2
-                          text-sm
-                          text-gray-500
-                        ">
-                          PNG, JPG, JPEG
-                        </p>
+                          <h3 className="
+                            text-[22px]
+                            font-bold
+                            text-[#111827]
+                          ">
+                            Upload Bukti Transfer
+                          </h3>
+
+                          <p className="
+                            mt-2
+                            text-gray-500
+                          ">
+                            PNG, JPG, JPEG
+                          </p>
+
+                        </div>
 
                       </div>
                     )
@@ -716,12 +826,14 @@ export default function CashbackDetailModal({
 
                 </label>
 
-                {/* PREVIEW */}
                 {
                   preview && (
 
                     <div className="
-                      mt-5
+                      rounded-[28px]
+                      overflow-hidden
+                      border
+                      border-gray-200
                     ">
 
                       <img
@@ -729,8 +841,6 @@ export default function CashbackDetailModal({
                         alt="Preview"
                         className="
                           w-full
-                          rounded-3xl
-                          border
                           object-cover
                         "
                       />
@@ -739,29 +849,25 @@ export default function CashbackDetailModal({
                   )
                 }
 
-                {/* BUTTON */}
                 <button
                   onClick={
                     handleApproveClick
                   }
-
                   disabled={
                     loadingApprove ||
                     uploading ||
                     !buktiTf
                   }
-
                   className="
-                    mt-5
                     h-14
                     w-full
                     rounded-2xl
-                    bg-green-600
-                    text-lg
-                    font-semibold
+                    bg-emerald-600
                     text-white
-                    transition
-                    hover:bg-green-700
+                    text-[15px]
+                    font-semibold
+                    hover:bg-emerald-700
+                    transition-all
                     disabled:opacity-50
                   "
                 >
@@ -777,37 +883,35 @@ export default function CashbackDetailModal({
                 </button>
 
               </div>
-            )
-          }
 
-          {/* REJECT */}
-          {
-            data.status ===
-            "pending" && (
+            </Section>
+          )
+        }
+
+        {/* REJECT */}
+        {
+          data.status ===
+          "pending" && (
+
+            <Section title="Reject Cashback">
 
               <div className="
-                mt-6
-                rounded-[28px]
-                border
-                p-6
+                space-y-6
               ">
 
-                <h3 className="
-                  text-2xl
-                  font-bold
-                ">
-                  Reject Cashback
-                </h3>
+                <div>
 
-                <p className="
-                  mt-2
-                  text-gray-500
-                ">
-                  Berikan alasan penolakan cashback.
-                </p>
+                  <p className="
+                    text-[15px]
+                    text-gray-500
+                  ">
+                    Berikan alasan penolakan cashback pelanggan.
+                  </p>
+
+                </div>
 
                 <textarea
-                  rows={5}
+                  rows={6}
                   value={alasan}
                   onChange={(e) =>
                     setAlasan(
@@ -818,16 +922,17 @@ export default function CashbackDetailModal({
                     Masukkan alasan reject...
                   "
                   className="
-                    mt-5
                     w-full
-                    rounded-2xl
+                    rounded-[28px]
                     border
+                    border-gray-200
+                    bg-[#FCFCFD]
                     px-5
-                    py-4
+                    py-5
+                    text-[15px]
                     outline-none
-                    transition
-                    focus:ring-2
-                    focus:ring-black
+                    transition-all
+                    focus:border-black
                   "
                 />
 
@@ -835,22 +940,19 @@ export default function CashbackDetailModal({
                   onClick={
                     handleRejectClick
                   }
-
                   disabled={
                     loadingReject
                   }
-
                   className="
-                    mt-5
                     h-14
                     w-full
                     rounded-2xl
                     bg-red-600
-                    text-lg
-                    font-semibold
                     text-white
-                    transition
+                    text-[15px]
+                    font-semibold
                     hover:bg-red-700
+                    transition-all
                     disabled:opacity-50
                   "
                 >
@@ -866,18 +968,21 @@ export default function CashbackDetailModal({
                 </button>
 
               </div>
-            )
-          }
 
-          {/* REJECT REASON */}
-          {
-            data.status ===
-            "rejected" &&
+            </Section>
+          )
+        }
 
-            data.alasan && (
+        {/* ALASAN */}
+        {
+          data.status ===
+          "rejected" &&
+
+          data.alasan && (
+
+            <Section title="Alasan Penolakan">
 
               <div className="
-                mt-6
                 rounded-[28px]
                 border
                 border-red-200
@@ -885,79 +990,253 @@ export default function CashbackDetailModal({
                 p-6
               ">
 
-                <h3 className="
-                  text-xl
-                  font-bold
-                  text-red-700
+                <div className="
+                  flex
+                  items-start
+                  gap-4
                 ">
-                  Alasan Penolakan
-                </h3>
 
-                <p className="
-                  mt-3
-                  leading-relaxed
-                  text-red-600
-                ">
-                  {
-                    data.alasan
-                  }
-                </p>
+                  <div className="
+                    w-14
+                    h-14
+                    rounded-2xl
+                    bg-white
+                    text-red-600
+                    flex
+                    items-center
+                    justify-center
+                    shrink-0
+                  ">
+                    <FileText size={24} />
+                  </div>
+
+                  <div>
+
+                    <h4 className="
+                      text-[22px]
+                      font-bold
+                      text-red-700
+                    ">
+                      Cashback Ditolak
+                    </h4>
+
+                    <p className="
+                      mt-3
+                      leading-7
+                      text-red-600
+                    ">
+                      {
+                        data.alasan
+                      }
+                    </p>
+
+                  </div>
+
+                </div>
 
               </div>
-            )
-          }
 
-        </div>
+            </Section>
+          )
+        }
+
+        {/* SYSTEM */}
+        <Section title="Informasi Sistem">
+
+          <div className="
+            grid
+            grid-cols-1
+            md:grid-cols-2
+            gap-5
+          ">
+
+            <Field
+              icon={
+                <Calendar size={18} />
+              }
+              label="Dibuat"
+              value={
+                data.createdAt
+                  ? new Date(
+                      data.createdAt
+                    ).toLocaleString(
+                      "id-ID"
+                    )
+                  : "-"
+              }
+            />
+
+            <Field
+              icon={
+                <Calendar size={18} />
+              }
+              label="Terakhir Update"
+              value={
+                data.updatedAt
+                  ? new Date(
+                      data.updatedAt
+                    ).toLocaleString(
+                      "id-ID"
+                    )
+                  : "-"
+              }
+            />
+
+            <Field
+              label="Status"
+              value={
+                status.label
+              }
+            />
+
+            <Field
+              label="Cashback ID"
+              value={data._id}
+            />
+
+          </div>
+
+        </Section>
 
       </div>
 
-    </div>
+      {/* =====================================================
+          FOOTER
+      ===================================================== */}
+
+      <div className="
+        shrink-0
+        px-10
+        py-5
+        border-t
+        border-gray-200
+        bg-white/90
+        backdrop-blur-sm
+        flex
+        items-center
+        justify-between
+      ">
+
+        <p className="
+          text-sm
+          text-gray-500
+        ">
+          Detail informasi cashback pelanggan
+        </p>
+
+        <button
+          onClick={onClose}
+          className="
+            h-12
+            px-8
+            rounded-2xl
+            bg-[#111827]
+            text-white
+            font-medium
+            hover:bg-black
+            transition-all
+          "
+        >
+          Tutup
+        </button>
+
+      </div>
+
+    </BaseModal>
   );
 }
 
-/* =========================================================
-   INFO CARD
-========================================================= */
+/* =====================================================
+   SECTION
+===================================================== */
 
-function InfoCard({
-
+function Section({
   title,
-
-  value,
-
+  children,
 }: {
-
   title: string;
-
-  value: string;
+  children: React.ReactNode;
 }) {
 
   return (
 
     <div className="
-      rounded-[28px]
+      rounded-[24px]
       border
-      p-6
+      border-gray-200
+      bg-white
+      p-7
+      space-y-6
+      shadow-sm
     ">
 
-      <p className="
-        text-sm
-        uppercase
-        tracking-widest
-        text-gray-400
+      <h3 className="
+        text-[28px]
+        font-semibold
+        text-[#111827]
       ">
         {title}
-      </p>
+      </h3>
 
-      <p className="
-        mt-3
-        text-2xl
-        font-bold
-        text-black
+      {children}
+
+    </div>
+  );
+}
+
+/* =====================================================
+   FIELD
+===================================================== */
+
+function Field({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value?: any;
+  icon?: React.ReactNode;
+}) {
+
+  return (
+
+    <div className="
+      rounded-2xl
+      border
+      border-gray-200
+      bg-[#FCFCFD]
+      p-5
+      space-y-3
+    ">
+
+      <div className="
+        flex
+        items-center
+        gap-2
+        text-gray-500
+      ">
+
+        {icon}
+
+        <div className="
+          text-xs
+          font-semibold
+          uppercase
+          tracking-wider
+        ">
+          {label}
+        </div>
+
+      </div>
+
+      <div className="
+        text-[15px]
+        font-semibold
+        text-[#111827]
         break-words
       ">
-        {value}
-      </p>
+        {value || "-"}
+      </div>
 
     </div>
   );

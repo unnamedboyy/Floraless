@@ -1,342 +1,888 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import toast from "react-hot-toast";
+
+import {
+
+  CalendarDays,
+
+  MapPin,
+
+  User2,
+
+  Clock3,
+
+  X,
+
+  FileText,
+
+} from "lucide-react";
+
+import BaseModal from "@/components/form/BaseModal";
+
+/* =========================================================
+   TYPES
+========================================================= */
 
 type Props = {
+
   open: boolean;
+
   onClose: () => void;
-  onSubmit: (data: any) => void;
+
+  onSubmit: (
+    form: any
+  ) => Promise<void>;
+
   initialData?: any;
+
+  pegawaiList?: any[];
+
+  loading?: boolean;
 };
 
+/* =========================================================
+   COMPONENT
+========================================================= */
+
 export default function JadwalFormModal({
+
   open,
+
   onClose,
+
   onSubmit,
+
   initialData,
+
+  pegawaiList = [],
+
+  loading = false,
+
 }: Props) {
 
-  const [loading, setLoading] =
-    useState(false);
+  /* =====================================================
+     STATE
+  ===================================================== */
 
-  const [form, setForm] = useState({
-    tanggal_acara: "",
-    lokasi: "",
-    pegawaiId: "",
-  });
+  const [form, setForm] =
+    useState({
+
+      tanggal_acara: "",
+
+      lokasi: "",
+
+      pegawaiId: "",
+
+      catatan: "",
+    });
+
+  /* =====================================================
+     EFFECT
+  ===================================================== */
 
   useEffect(() => {
 
     if (initialData) {
 
       setForm({
+
         tanggal_acara:
+
           initialData.tanggal_acara
-            ? initialData.tanggal_acara.slice(
-                0,
-                10
+
+            ? new Date(
+                initialData.tanggal_acara
               )
+
+              .toISOString()
+
+              .split("T")[0]
+
             : "",
 
         lokasi:
           initialData.lokasi || "",
 
         pegawaiId:
+
           initialData.pegawaiId?._id ||
+
+          initialData.pegawaiId ||
+
           "",
+
+        catatan:
+          initialData.catatan || "",
       });
 
     } else {
 
       setForm({
+
         tanggal_acara: "",
+
         lokasi: "",
+
         pegawaiId: "",
+
+        catatan: "",
       });
-
     }
 
-  }, [initialData, open]);
+  }, [initialData]);
 
-  const handleSubmit = async () => {
+  /* =====================================================
+     SUBMIT
+  ===================================================== */
 
-    try {
+  const handleSubmit =
+    async (
+      e: React.FormEvent
+    ) => {
 
-      setLoading(true);
+      e.preventDefault();
 
-      await onSubmit(form);
+      try {
 
-    } finally {
+        /* ================= VALIDATION ================= */
 
-      setLoading(false);
+        if (!form.tanggal_acara) {
 
-    }
-  };
+          toast.error(
+            "Tanggal acara wajib diisi"
+          );
 
-  if (!open) return null;
+          return;
+        }
+
+        if (!form.lokasi.trim()) {
+
+          toast.error(
+            "Lokasi acara wajib diisi"
+          );
+
+          return;
+        }
+
+        if (!form.pegawaiId) {
+
+          toast.error(
+            "Pegawai wajib dipilih"
+          );
+
+          return;
+        }
+
+        /* ================= SUBMIT ================= */
+
+        await onSubmit(form);
+
+      } catch (err: any) {
+
+        console.error(err);
+
+        toast.error(
+
+          err?.response?.data?.message ||
+
+          "Gagal menyimpan jadwal"
+        );
+      }
+    };
+
+  /* =====================================================
+     UI
+  ===================================================== */
 
   return (
-    <div className="
-      fixed inset-0 z-50
-      bg-black/40
-      backdrop-blur-sm
-      flex items-center justify-center
-      p-4
-    ">
 
-      {/* CARD */}
+    <BaseModal
+
+      open={open}
+
+      onClose={onClose}
+
+      maxWidth="max-w-4xl"
+    >
+
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
+
       <div className="
-        w-full
-        max-w-2xl
-        bg-white
-        rounded-3xl
-        shadow-2xl
-        overflow-hidden
-        animate-in fade-in zoom-in-95 duration-200
+
+        px-8
+        py-7
+
+        border-b
+        border-slate-200
+
+        flex
+        items-start
+        justify-between
+
       ">
 
-        {/* HEADER */}
+        <div>
+
+          <div className="
+            flex
+            items-center
+            gap-3
+            flex-wrap
+          ">
+
+            <h2 className="
+
+              text-[38px]
+              leading-none
+
+              font-bold
+
+              tracking-tight
+
+              text-[#0F172A]
+
+            ">
+
+              {
+
+                initialData
+
+                  ? (
+                    <>
+                      Edit{" "}
+
+                      <span className="
+                        text-[#64748B]
+                      ">
+                        jadwal
+                      </span>
+                    </>
+                  )
+
+                  : (
+                    <>
+                      Tambah{" "}
+
+                      <span className="
+                        text-[#64748B]
+                      ">
+                        jadwal
+                      </span>
+                    </>
+                  )
+              }
+
+            </h2>
+
+            <div className="
+
+              h-10
+              px-4
+
+              rounded-2xl
+
+              bg-blue-50
+
+              border
+              border-blue-200
+
+              text-blue-700
+
+              inline-flex
+              items-center
+              justify-center
+
+              text-sm
+              font-semibold
+
+            ">
+
+              Jadwal
+
+            </div>
+
+          </div>
+
+          <p className="
+
+            text-slate-500
+            text-sm
+
+            mt-3
+
+          ">
+            Kelola jadwal acara dan penugasan pegawai
+          </p>
+
+        </div>
+
+        <button
+
+          onClick={onClose}
+
+          className="
+
+            w-12
+            h-12
+
+            rounded-2xl
+
+            border
+            border-slate-200
+
+            flex
+            items-center
+            justify-center
+
+            text-slate-500
+
+            hover:bg-slate-100
+
+            transition
+
+          "
+        >
+
+          <X size={20} />
+
+        </button>
+
+      </div>
+
+      {/* =====================================================
+          BODY
+      ===================================================== */}
+
+      <form
+
+        id="jadwal-form"
+
+        onSubmit={handleSubmit}
+
+        className="
+
+          flex-1
+
+          overflow-y-auto
+
+          px-8
+          py-8
+
+          space-y-7
+
+        "
+      >
+
+        {/* =====================================================
+            INFORMASI ACARA
+        ===================================================== */}
+
+        <Section title="Informasi Acara">
+
+          <div className="
+
+            grid
+            grid-cols-1
+            md:grid-cols-2
+
+            gap-5
+
+          ">
+
+            {/* TANGGAL */}
+            <InputField
+
+              label="Tanggal Acara"
+
+              type="date"
+
+              icon={
+                <CalendarDays
+                  size={18}
+                />
+              }
+
+              value={
+                form.tanggal_acara
+              }
+
+              onChange={(
+                e: React.ChangeEvent<HTMLInputElement>
+              ) =>
+
+                setForm({
+
+                  ...form,
+
+                  tanggal_acara:
+                    e.target.value,
+                })
+              }
+            />
+
+            {/* PEGAWAI */}
+            <SelectField
+
+              label="Pegawai"
+
+              icon={
+                <User2
+                  size={18}
+                />
+              }
+
+              value={
+                form.pegawaiId
+              }
+
+              onChange={(
+                e: React.ChangeEvent<HTMLSelectElement>
+              ) =>
+
+                setForm({
+
+                  ...form,
+
+                  pegawaiId:
+                    e.target.value,
+                })
+              }
+
+            >
+
+              <option value="">
+                Pilih Pegawai
+              </option>
+
+              {
+
+                pegawaiList.map(
+                  (pegawai) => (
+
+                    <option
+
+                      key={
+                        pegawai._id
+                      }
+
+                      value={
+                        pegawai._id
+                      }
+                    >
+
+                      {
+                        pegawai.nama
+                      }
+
+                    </option>
+                  )
+                )
+              }
+
+            </SelectField>
+
+          </div>
+
+        </Section>
+
+        {/* =====================================================
+            LOKASI
+        ===================================================== */}
+
+        <Section title="Lokasi Acara">
+
+          <TextareaField
+
+            label="Alamat / Lokasi"
+
+            icon={
+              <MapPin
+                size={18}
+              />
+            }
+
+            value={
+              form.lokasi
+            }
+
+            onChange={(
+              e: React.ChangeEvent<HTMLTextAreaElement>
+            ) =>
+
+              setForm({
+
+                ...form,
+
+                lokasi:
+                  e.target.value,
+              })
+            }
+
+            placeholder="
+              Masukkan lokasi acara
+            "
+          />
+
+        </Section>
+
+        {/* =====================================================
+            CATATAN
+        ===================================================== */}
+
+        <Section title="Catatan Tambahan">
+
+          <TextareaField
+
+            label="Informasi Tambahan"
+
+            icon={
+              <FileText
+                size={18}
+              />
+            }
+
+            value={
+              form.catatan
+            }
+
+            onChange={(
+              e: React.ChangeEvent<HTMLTextAreaElement>
+            ) =>
+
+              setForm({
+
+                ...form,
+
+                catatan:
+                  e.target.value,
+              })
+            }
+
+            placeholder="
+              Tambahkan catatan, request client, detail venue, atau informasi lainnya
+            "
+          />
+
+        </Section>
+
+        {/* =====================================================
+            INFO
+        ===================================================== */}
+
         <div className="
-          px-6 py-5
-          border-b
-          flex items-start justify-between
+
+          rounded-[30px]
+
+          border
+          border-blue-200
+
+          bg-blue-50
+
+          p-5
+
+          flex
+          items-start
+
+          gap-4
+
         ">
+
+          <div className="
+
+            w-11
+            h-11
+
+            rounded-2xl
+
+            bg-blue-100
+
+            flex
+            items-center
+            justify-center
+
+            text-blue-700
+
+            shrink-0
+
+          ">
+
+            <Clock3 size={20} />
+
+          </div>
 
           <div>
 
-            <h2 className="
-              text-xl
+            <h4 className="
+
+              text-sm
               font-semibold
-              text-gray-900
+
+              text-blue-900
+
             ">
-              {initialData
-                ? "Edit Jadwal"
-                : "Tambah Jadwal"}
-            </h2>
+              Informasi Jadwal
+            </h4>
 
             <p className="
+
               text-sm
-              text-gray-500
+
+              text-blue-700
+
               mt-1
+
+              leading-relaxed
+
             ">
-              Atur jadwal dekorasi dan penugasan pegawai
+              Pastikan tanggal, lokasi, dan pegawai sudah benar sebelum menyimpan jadwal acara.
             </p>
 
           </div>
 
-          <button
-            onClick={onClose}
-            className="
-              w-10 h-10
-              rounded-2xl
-              hover:bg-gray-100
-              transition
-              text-gray-500
-            "
-          >
-            ✕
-          </button>
-
         </div>
 
-        {/* BODY */}
-        <div className="p-6 space-y-6">
+      </form>
 
-          {/* JADWAL */}
-          <div className="
+      {/* =====================================================
+          FOOTER
+      ===================================================== */}
+
+      <div className="
+
+        px-8
+        py-6
+
+        border-t
+        border-slate-200
+
+        bg-white
+
+        flex
+        items-center
+        justify-end
+
+        gap-3
+
+        sticky
+        bottom-0
+
+      ">
+
+        <button
+
+          onClick={onClose}
+
+          type="button"
+
+          className="
+
+            h-12
+            px-6
+
+            rounded-2xl
+
             border
-            rounded-3xl
-            p-5
-            bg-gray-50/70
-            space-y-5
-          ">
+            border-slate-200
 
-            <div>
+            text-sm
+            font-semibold
 
-              <h3 className="
-                font-semibold
-                text-gray-900
-              ">
-                Informasi Jadwal
-              </h3>
+            text-slate-700
 
-              <p className="
-                text-sm
-                text-gray-500
-                mt-1
-              ">
-                Tentukan tanggal dan lokasi acara
-              </p>
+            hover:bg-slate-100
 
-            </div>
+            transition
 
-            {/* TANGGAL */}
-            <FormField label="Tanggal Acara">
+          "
+        >
+          Batal
+        </button>
 
-              <input
-                type="date"
-                value={form.tanggal_acara}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    tanggal_acara:
-                      e.target.value,
-                  })
-                }
-                className="
-                  w-full
-                  rounded-2xl
-                  border
-                  bg-white
-                  px-4 py-3
-                  text-sm
-                  focus:outline-none
-                  focus:ring-2
-                  focus:ring-black
-                "
-              />
+        <button
 
-            </FormField>
+          type="submit"
 
-            {/* LOKASI */}
-            <FormField label="Lokasi Acara">
+          form="jadwal-form"
 
-              <textarea
-                rows={4}
-                placeholder="Masukkan lokasi acara"
-                value={form.lokasi}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    lokasi:
-                      e.target.value,
-                  })
-                }
-                className="
-                  w-full
-                  rounded-2xl
-                  border
-                  bg-white
-                  px-4 py-3
-                  text-sm
-                  resize-none
-                  focus:outline-none
-                  focus:ring-2
-                  focus:ring-black
-                "
-              />
+          disabled={loading}
 
-            </FormField>
+          className={`
 
-          </div>
+            h-12
+            px-7
 
-          {/* PEGAWAI */}
-          <div className="
-            border
-            rounded-3xl
-            p-5
-            bg-gray-50/70
-            space-y-5
-          ">
+            rounded-2xl
 
-            <div>
+            bg-[#0F172A]
 
-              <h3 className="
-                font-semibold
-                text-gray-900
-              ">
-                Penugasan Pegawai
-              </h3>
+            text-white
 
-              <p className="
-                text-sm
-                text-gray-500
-                mt-1
-              ">
-                Tentukan pegawai yang bertanggung jawab
-              </p>
+            text-sm
+            font-semibold
 
-            </div>
+            transition
 
-            <FormField label="Pegawai ID">
+            ${
+              loading
 
-              <input
-                type="text"
-                placeholder="Masukkan pegawaiId"
-                value={form.pegawaiId}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    pegawaiId:
-                      e.target.value,
-                  })
-                }
-                className="
-                  w-full
-                  rounded-2xl
-                  border
-                  bg-white
-                  px-4 py-3
-                  text-sm
-                  focus:outline-none
-                  focus:ring-2
-                  focus:ring-black
-                "
-              />
+                ? `
+                  opacity-50
+                  cursor-not-allowed
+                `
 
-            </FormField>
+                : `
+                  hover:opacity-90
+                `
+            }
 
-          </div>
+          `}
+        >
 
-        </div>
+          {
 
-        {/* FOOTER */}
-        <div className="
-          border-t
-          px-6 py-5
-          flex flex-col sm:flex-row gap-3
-        ">
+            loading
 
-          <button
-            onClick={onClose}
-            className="
-              flex-1
-              py-3
-              rounded-2xl
-              border
-              hover:bg-gray-50
-              transition
-              text-sm
-              font-medium
-            "
-          >
-            Batal
-          </button>
-
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="
-              flex-1
-              py-3
-              rounded-2xl
-              bg-black
-              text-white
-              hover:opacity-90
-              transition
-              text-sm
-              font-medium
-              disabled:opacity-50
-            "
-          >
-            {loading
               ? "Menyimpan..."
-              : initialData
-              ? "Simpan Perubahan"
-              : "Tambah Jadwal"}
-          </button>
 
+              : "Simpan"
+          }
+
+        </button>
+
+      </div>
+
+    </BaseModal>
+  );
+}
+
+/* =========================================================
+   SECTION
+========================================================= */
+
+function Section({
+
+  title,
+
+  children,
+
+}: any) {
+
+  return (
+
+    <div className="
+
+      border
+      border-slate-200
+
+      rounded-[30px]
+
+      p-6
+
+      bg-white
+
+      space-y-5
+
+    ">
+
+      <h3 className="
+
+        text-xl
+        font-bold
+
+        text-[#0F172A]
+
+      ">
+        {title}
+      </h3>
+
+      {children}
+
+    </div>
+  );
+}
+
+/* =========================================================
+   INPUT FIELD
+========================================================= */
+
+function InputField({
+
+  label,
+
+  icon,
+
+  ...props
+
+}: any) {
+
+  return (
+
+    <div className="space-y-2">
+
+      <label className="
+
+        text-sm
+        font-medium
+
+        text-slate-700
+
+      ">
+        {label}
+      </label>
+
+      <div className="relative">
+
+        <div className="
+
+          absolute
+          left-4
+          top-1/2
+          -translate-y-1/2
+
+          text-slate-400
+
+        ">
+          {icon}
         </div>
+
+        <input
+
+          {...props}
+
+          className="
+
+            w-full
+
+            h-[58px]
+
+            pl-12
+            pr-4
+
+            rounded-2xl
+
+            border
+            border-slate-200
+
+            bg-white
+
+            text-sm
+
+            outline-none
+
+            transition
+
+            focus:border-slate-400
+
+          "
+        />
 
       </div>
 
@@ -345,29 +891,174 @@ export default function JadwalFormModal({
 }
 
 /* =========================================================
-   FIELD
+   SELECT FIELD
 ========================================================= */
 
-function FormField({
+function SelectField({
+
   label,
+
+  icon,
+
   children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+
+  ...props
+
+}: any) {
 
   return (
+
     <div className="space-y-2">
 
       <label className="
+
         text-sm
         font-medium
-        text-gray-700
+
+        text-slate-700
+
       ">
         {label}
       </label>
 
-      {children}
+      <div className="relative">
+
+        <div className="
+
+          absolute
+          left-4
+          top-1/2
+          -translate-y-1/2
+
+          text-slate-400
+
+          pointer-events-none
+
+          z-10
+
+        ">
+          {icon}
+        </div>
+
+        <select
+
+          {...props}
+
+          className="
+
+            w-full
+
+            h-[58px]
+
+            pl-12
+            pr-4
+
+            rounded-2xl
+
+            border
+            border-slate-200
+
+            bg-white
+
+            text-sm
+
+            outline-none
+
+            transition
+
+            focus:border-slate-400
+
+          "
+        >
+
+          {children}
+
+        </select>
+
+      </div>
+
+    </div>
+  );
+}
+
+/* =========================================================
+   TEXTAREA FIELD
+========================================================= */
+
+function TextareaField({
+
+  label,
+
+  icon,
+
+  ...props
+
+}: any) {
+
+  return (
+
+    <div className="space-y-2">
+
+      <label className="
+
+        text-sm
+        font-medium
+
+        text-slate-700
+
+      ">
+        {label}
+      </label>
+
+      <div className="relative">
+
+        <div className="
+
+          absolute
+          left-4
+          top-5
+
+          text-slate-400
+
+        ">
+          {icon}
+        </div>
+
+        <textarea
+
+          {...props}
+
+          rows={6}
+
+          className="
+
+            w-full
+
+            pl-12
+            pr-4
+            py-4
+
+            rounded-2xl
+
+            border
+            border-slate-200
+
+            bg-white
+
+            text-sm
+
+            outline-none
+
+            resize-none
+
+            transition
+
+            focus:border-slate-400
+
+          "
+        />
+
+      </div>
 
     </div>
   );

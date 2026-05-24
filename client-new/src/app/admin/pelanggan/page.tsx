@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from "react";
-
 import { useUsers } from "@/hooks/useUsers";
-
 import TableWrapper from "@/components/table/TableWrapper";
-
 import UserFormModal from "@/components/form/UserFormModal";
-
 import DetailUserModal from "@/components/modal/DetailUserModal";
+
+import toast from "react-hot-toast";
 
 import {
   createUser,
@@ -84,9 +82,7 @@ export default function PelangganPage() {
 
         console.error(err);
 
-        alert(
-          "Gagal menyimpan data"
-        );
+        toast.error("Gagal menyimpan data");
       }
     };
 
@@ -112,9 +108,7 @@ export default function PelangganPage() {
 
         console.error(err);
 
-        alert(
-          "Gagal menghapus"
-        );
+        toast.error("Gagal menghapus");
       }
     };
 

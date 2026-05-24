@@ -18,6 +18,8 @@ import {
 
   approvePayment,
 
+  rejectPayment,
+
   getPaymentsByTicket,
 
   getPaymentById,
@@ -51,7 +53,7 @@ router.post(
 );
 
 /* =========================================================
-   APPROVE / REJECT
+   APPROVE PAYMENT
 ========================================================= */
 
 router.patch(
@@ -60,13 +62,28 @@ router.patch(
 
   auth,
 
-  role("pegawai"),
+  role("admin"),
 
   approvePayment
 );
 
 /* =========================================================
-   GET BY TICKET
+   REJECT PAYMENT
+========================================================= */
+
+router.patch(
+
+  "/:id/reject",
+
+  auth,
+
+  role("admin"),
+
+  rejectPayment
+);
+
+/* =========================================================
+   GET PAYMENTS BY TICKET
 ========================================================= */
 
 router.get(
@@ -79,7 +96,7 @@ router.get(
 );
 
 /* =========================================================
-   GET DETAIL
+   GET PAYMENT DETAIL
 ========================================================= */
 
 router.get(
@@ -92,7 +109,7 @@ router.get(
 );
 
 /* =========================================================
-   LIST
+   GET ALL PAYMENTS
 ========================================================= */
 
 router.get(
@@ -100,6 +117,8 @@ router.get(
   "/",
 
   auth,
+
+  role("admin"),
 
   getPayments
 );

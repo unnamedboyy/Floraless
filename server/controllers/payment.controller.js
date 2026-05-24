@@ -333,7 +333,119 @@ export const createPayment =
   };
 
 /* =========================================================
-   APPROVE / REJECT
+   REJECT PAYMENT
+========================================================= */
+
+export const rejectPayment =
+  async (
+    req,
+    res,
+    next
+  ) => {
+
+    try {
+
+      const {
+        catatan,
+      } = req.body;
+
+      const payment =
+        await Payment.findById(
+          req.params.id
+        );
+
+      if (!payment) {
+
+        throw {
+
+          status: 404,
+
+          message:
+            "Payment tidak ditemukan",
+        };
+      }
+
+      if (
+        payment.status !==
+        "pending"
+      ) {
+
+        throw {
+
+          status: 400,
+
+          message:
+            "Payment sudah diproses",
+        };
+      }
+
+      const ticket =
+        await Ticket.findById(
+          payment.ticketId
+        );
+
+      if (!ticket) {
+
+        throw {
+
+          status: 404,
+
+          message:
+            "Ticket tidak ditemukan",
+        };
+      }
+
+      /* ===================================================
+         UPDATE PAYMENT
+      =================================================== */
+
+      payment.status =
+        "rejected";
+
+      payment.catatan =
+        catatan || "";
+
+      payment.approvedAt =
+        new Date();
+
+      await payment.save();
+
+      /* ===================================================
+         LOG
+      =================================================== */
+
+      await logActivity({
+
+        userId:
+          req.user.id,
+
+        ticketId:
+          ticket._id,
+
+        action:
+          "REJECT_PAYMENT",
+
+        description:
+          `Payment ${payment.tipe} rejected`,
+      });
+
+      res.json({
+
+        message:
+          "Payment rejected",
+
+        payment,
+      });
+
+    } catch (err) {
+
+      next(err);
+    }
+  };
+
+
+/* =========================================================
+   APPROVE PAYMENT
 ========================================================= */
 
 export const approvePayment =
@@ -401,49 +513,15 @@ export const approvePayment =
           payment.ticketId
         );
 
-      const pegawai =
-        await Pegawai.findOne({
-          userId:
-            req.user.id,
-        });
-
-      if (!pegawai) {
-
-        throw {
-
-          status: 404,
-
-          message:
-            "Pegawai tidak ditemukan",
-        };
-      }
-
-      if (
-
-        ticket.pegawaiId
-          ?.toString() !==
-        pegawai._id.toString()
-
-      ) {
-
-        throw {
-
-          status: 403,
-
-          message:
-            "Hanya PIC yang bisa approve",
-        };
-      }
-
       /* ===================================================
-         UPDATE
+        UPDATE
       =================================================== */
 
       payment.status =
         status;
 
       payment.approvedBy =
-        pegawai._id;
+        req.user.id;
 
       payment.approvedAt =
         new Date();
@@ -538,6 +616,7 @@ export const approvePayment =
       next(err);
     }
   };
+
 
 /* =========================================================
    GET PAYMENT BY TICKET

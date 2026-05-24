@@ -7,12 +7,30 @@ import {
   useState,
 } from "react";
 
+import toast from "react-hot-toast";
+
 import {
+
   X,
+
   Trash2,
+
   ImagePlus,
+
   Star,
+
   GripVertical,
+
+  Type,
+
+  AlignLeft,
+
+  Layers3,
+
+  Images,
+
+  UploadCloud,
+
 } from "lucide-react";
 
 import {
@@ -38,19 +56,31 @@ import {
   useLayanan,
 } from "@/hooks/useLayanan";
 
-/* ================= TYPES ================= */
+import BaseModal from "@/components/form/BaseModal";
+
+/* =========================================================
+   TYPES
+========================================================= */
 
 type ExistingImage = {
+
   _id?: string;
+
   url?: string;
+
   imageUrl?: string;
+
   path?: string;
+
   caption?: string;
+
   isCover?: boolean;
+
   order?: number;
 };
 
 type Props = {
+
   open: boolean;
 
   onClose: () => void;
@@ -64,35 +94,54 @@ type Props = {
   initialData?: any;
 };
 
-/* ================= HELPERS ================= */
+/* =========================================================
+   HELPERS
+========================================================= */
 
 const getImageUrl = (
   img: ExistingImage
 ) => {
 
   return (
+
     img.url ||
+
     img.imageUrl ||
+
     img.path ||
+
     ""
   );
 };
 
-/* ================= SORTABLE CARD ================= */
+/* =========================================================
+   SORTABLE IMAGE CARD
+========================================================= */
 
 function SortableImageCard({
+
   img,
+
   index,
+
   setAsCover,
+
   removeExistingImage,
+
 }: any) {
 
   const {
+
     attributes,
+
     listeners,
+
     setNodeRef,
+
     transform,
+
     transition,
+
   } = useSortable({
 
     id:
@@ -113,148 +162,362 @@ function SortableImageCard({
   return (
 
     <div
+
       ref={setNodeRef}
+
       style={style}
+
       className="
+
         group
+
         relative
+
         aspect-square
+
         overflow-hidden
+
         rounded-[28px]
+
         border
-        bg-neutral-100
+        border-slate-200
+
+        bg-slate-100
+
+        shadow-sm
+
       "
     >
 
       <Image
+
         src={`${process.env.NEXT_PUBLIC_API_URL}${getImageUrl(img)}`}
+
         alt=""
+
         fill
+
         unoptimized
+
         className="
           object-cover
         "
       />
 
-      {/* THUMBNAIL */}
+      {/* COVER */}
 
       {
+
         img.isCover && (
 
           <div className="
+
             absolute
             left-3
             top-3
             z-20
-            rounded-full
-            bg-[#D4B36A]
-            px-3
-            py-1.5
+
+            h-9
+
+            px-4
+
+            rounded-2xl
+
+            bg-amber-100
+
+            border
+            border-amber-200
+
+            text-amber-700
+
+            inline-flex
+            items-center
+            justify-center
+
             text-xs
             font-semibold
-            text-black
-            shadow-lg
+
+            shadow-sm
+
           ">
+
             Thumbnail
+
           </div>
         )
       }
 
-      {/* DRAG HANDLE */}
+      {/* DRAG */}
 
       <button
+
         type="button"
+
         {...attributes}
+
         {...listeners}
+
         className="
+
           absolute
           right-3
           top-3
           z-20
-          flex
-          h-10
+
           w-10
+          h-10
+
+          rounded-2xl
+
+          bg-white/90
+
+          border
+          border-slate-200
+
+          backdrop-blur-sm
+
+          flex
           items-center
           justify-center
-          rounded-full
-          bg-black/70
-          text-white
-          backdrop-blur-md
+
+          text-slate-600
+
+          shadow-sm
+
         "
       >
+
         <GripVertical
           size={18}
         />
+
       </button>
 
       {/* OVERLAY */}
 
       <div className="
+
         absolute
-        inset-x-0
-        bottom-0
-        flex
-        items-center
-        justify-between
-        gap-2
+        inset-0
+
         bg-gradient-to-t
-        from-black/80
-        via-black/30
+        from-black/70
+        via-black/20
         to-transparent
-        p-4
+
         opacity-0
+
         transition
+
         group-hover:opacity-100
+
+      ">
+
+        <div className="
+
+          absolute
+
+          inset-x-0
+          bottom-0
+
+          p-4
+
+          flex
+          items-center
+          justify-between
+
+          gap-3
+
+        ">
+
+          <button
+
+            type="button"
+
+            onClick={() =>
+              setAsCover(index)
+            }
+
+            className={`
+
+              h-10
+
+              px-4
+
+              rounded-2xl
+
+              text-xs
+              font-semibold
+
+              transition-all
+
+              ${
+                img.isCover
+
+                  ? `
+                    bg-amber-100
+                    text-amber-700
+                  `
+
+                  : `
+                    bg-white
+                    text-slate-700
+                  `
+              }
+
+            `}
+          >
+
+            {
+
+              img.isCover
+
+                ? "Thumbnail"
+
+                : "Jadikan Thumbnail"
+            }
+
+          </button>
+
+          <button
+
+            type="button"
+
+            onClick={() =>
+              removeExistingImage(
+                index
+              )
+            }
+
+            className="
+
+              w-10
+              h-10
+
+              rounded-2xl
+
+              bg-red-500
+
+              flex
+              items-center
+              justify-center
+
+              text-white
+
+            "
+          >
+
+            <Trash2
+              size={18}
+            />
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
+
+/* =========================================================
+   NEW IMAGE CARD
+========================================================= */
+
+function NewImageCard({
+
+  img,
+
+  index,
+
+  removeNewImage,
+
+}: any) {
+
+  return (
+
+    <div className="
+
+      relative
+
+      aspect-square
+
+      overflow-hidden
+
+      rounded-[28px]
+
+      border
+      border-slate-200
+
+      bg-slate-100
+
+      group
+
+    ">
+
+      <Image
+
+        src={img}
+
+        alt="preview"
+
+        fill
+
+        className="
+          object-cover
+        "
+      />
+
+      <div className="
+
+        absolute
+        inset-0
+
+        bg-black/40
+
+        opacity-0
+
+        transition
+
+        group-hover:opacity-100
+
       ">
 
         <button
+
           type="button"
+
           onClick={() =>
-            setAsCover(index)
+            removeNewImage(index)
           }
-          className={`
-            rounded-xl
-            px-3
-            py-2
-            text-xs
-            font-semibold
-            transition
 
-            ${
-              img.isCover
-
-                ? "bg-[#D4B36A] text-black"
-
-                : "bg-white text-black"
-            }
-          `}
-        >
-          {
-            img.isCover
-              ? "Thumbnail"
-              : "Jadikan Thumbnail"
-          }
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            removeExistingImage(
-              index
-            )
-          }
           className="
-            flex
-            h-10
+
+            absolute
+            top-3
+            right-3
+
             w-10
+            h-10
+
+            rounded-2xl
+
+            bg-red-500
+
+            flex
             items-center
             justify-center
-            rounded-full
-            bg-red-500
+
             text-white
+
           "
         >
-          <Trash2 size={18} />
+
+          <Trash2
+            size={18}
+          />
+
         </button>
 
       </div>
@@ -263,21 +526,27 @@ function SortableImageCard({
   );
 }
 
-/* ================= COMPONENT ================= */
+/* =========================================================
+   COMPONENT
+========================================================= */
 
 export default function PortfolioFormModal({
+
   open,
   onClose,
   onSubmit,
-  loading,
+  loading = false,
   initialData,
+
 }: Props) {
 
   const {
     data: layananList = [],
   } = useLayanan();
 
-  /* ================= STATE ================= */
+  /* =====================================================
+     STATE
+  ===================================================== */
 
   const [title, setTitle] =
     useState("");
@@ -308,7 +577,9 @@ export default function PortfolioFormModal({
     setExistingImages] =
     useState<ExistingImage[]>([]);
 
-  /* ================= DND ================= */
+  /* =====================================================
+     DND
+  ===================================================== */
 
   const sensors = useSensors(
     useSensor(
@@ -316,12 +587,16 @@ export default function PortfolioFormModal({
     )
   );
 
-  /* ================= RESET ================= */
+  /* =====================================================
+     RESET
+  ===================================================== */
 
   const resetForm = () => {
 
     setTitle("");
+
     setExcerpt("");
+
     setContent("");
 
     setIsFeatured(false);
@@ -329,12 +604,15 @@ export default function PortfolioFormModal({
     setSelectedLayanan([]);
 
     setGallery([]);
+
     setGalleryPreview([]);
 
     setExistingImages([]);
   };
 
-  /* ================= EFFECT ================= */
+  /* =====================================================
+     EFFECT
+  ===================================================== */
 
   useEffect(() => {
 
@@ -411,6 +689,7 @@ export default function PortfolioFormModal({
     );
 
     setGallery([]);
+
     setGalleryPreview([]);
 
   }, [
@@ -418,7 +697,9 @@ export default function PortfolioFormModal({
     initialData,
   ]);
 
-  /* ================= HANDLERS ================= */
+  /* =====================================================
+     GALLERY
+  ===================================================== */
 
   const handleGalleryChange = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -428,6 +709,27 @@ export default function PortfolioFormModal({
       Array.from(
         e.target.files || []
       );
+
+    if (files.length === 0)
+      return;
+
+    const invalid =
+      files.find(
+        (file) =>
+
+          !file.type.startsWith(
+            "image/"
+          )
+      );
+
+    if (invalid) {
+
+      toast.error(
+        "Semua file harus gambar"
+      );
+
+      return;
+    }
 
     setGallery((prev) => [
       ...prev,
@@ -443,6 +745,10 @@ export default function PortfolioFormModal({
       ...prev,
       ...previews
     ]);
+
+    toast.success(
+      `${files.length} gambar ditambahkan`
+    );
   };
 
   const removeNewImage = (
@@ -542,6 +848,10 @@ export default function PortfolioFormModal({
     );
   };
 
+  /* =====================================================
+     DND
+  ===================================================== */
+
   const handleDragEnd = (
     event: any
   ) => {
@@ -597,6 +907,10 @@ export default function PortfolioFormModal({
     );
   };
 
+  /* =====================================================
+     SUBMIT
+  ===================================================== */
+
   const handleSubmit =
     async () => {
 
@@ -605,8 +919,8 @@ export default function PortfolioFormModal({
         existingImages.length === 0
       ) {
 
-        alert(
-          "Minimal upload 1 foto gallery"
+        toast.error(
+          "Minimal upload 1 gallery"
         );
 
         return;
@@ -675,554 +989,855 @@ export default function PortfolioFormModal({
       await onSubmit(formData);
     };
 
-  if (!open) return null;
+  /* =====================================================
+     RENDER
+  ===================================================== */
 
   return (
 
-    <div className="
-      fixed
-      inset-0
-      z-[999]
-      flex
-      items-center
-      justify-center
-      bg-black/50
-      p-5
-      backdrop-blur-sm
-    ">
+    <BaseModal
+      open={open}
+      onClose={onClose}
+      maxWidth="max-w-7xl"
+      className="
+        h-[92vh]
+      "
+    >
+
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
 
       <div className="
-        relative
-        max-h-[95vh]
-        w-full
-        max-w-6xl
-        overflow-y-auto
-        rounded-[32px]
-        bg-white
-        p-10
+
+        px-10
+        py-7
+
+        border-b
+        border-slate-200
+
+        bg-[#FCFCFD]
+
+        shrink-0
+
       ">
 
-        {/* CLOSE */}
-
-        <button
-          onClick={onClose}
-          className="
-            absolute
-            right-5
-            top-5
-            flex
-            h-12
-            w-12
-            items-center
-            justify-center
-            rounded-full
-            border
-          "
-        >
-          <X />
-        </button>
-
-        {/* HEADER */}
-
         <div className="
-          mb-10
+
+          flex
+          items-start
+          justify-between
+
         ">
 
-          <p className="
-            text-sm
-            font-medium
-            tracking-[0.25em]
-            text-neutral-400
-          ">
-            FLORALESS CMS
-          </p>
+          <div>
 
-          <h2 className="
-            mt-3
-            text-5xl
-            font-bold
-            tracking-tight
-            text-[#111]
-          ">
-            {
-              initialData
+            <div className="
 
-                ? "Edit Portfolio"
+              flex
+              items-center
+              gap-3
 
-                : "Create Portfolio"
-            }
-          </h2>
+              flex-wrap
+
+            ">
+
+              <h2 className="
+
+                text-[42px]
+
+                leading-none
+
+                tracking-tight
+
+                font-bold
+
+                text-[#0F172A]
+
+              ">
+
+                {
+
+                  initialData
+
+                    ? "Edit"
+
+                    : "Tambah"
+                }
+
+              </h2>
+
+              <h2 className="
+
+                text-[42px]
+
+                leading-none
+
+                tracking-tight
+
+                font-bold
+
+                text-violet-600
+
+              ">
+
+                portfolio
+
+              </h2>
+
+            </div>
+
+            <p className="
+
+              mt-3
+
+              text-[16px]
+
+              text-slate-500
+
+            ">
+
+              Kelola gallery portfolio FLORALESS
+
+            </p>
+
+          </div>
+
+          <button
+
+            onClick={onClose}
+
+            className="
+
+              w-14
+              h-14
+
+              rounded-2xl
+
+              border
+              border-slate-200
+
+              bg-white
+
+              flex
+              items-center
+              justify-center
+
+              text-slate-500
+
+              hover:bg-slate-100
+
+              transition-all
+
+            "
+          >
+
+            <X size={22} />
+
+          </button>
 
         </div>
 
-        <div className="
-          space-y-8
-        ">
+      </div>
 
-          {/* TITLE */}
+      {/* =====================================================
+          BODY
+      ===================================================== */}
 
-          <div>
+      <div className="
 
-            <label className="
-              mb-3
-              block
-              text-sm
-              font-semibold
-            ">
-              Portfolio Title
-            </label>
+        flex-1
 
-            <input
-              value={title}
-              onChange={(e) =>
-                setTitle(
-                  e.target.value
-                )
-              }
-              placeholder="Masukkan judul portfolio"
-              className="
-                w-full
-                rounded-[24px]
-                border
-                px-6
-                py-5
-                text-lg
-                outline-none
-              "
-            />
+        overflow-y-auto
 
-          </div>
+        px-10
+        py-8
 
-          {/* EXCERPT */}
+        space-y-7
 
-          <div>
+      ">
 
-            <label className="
-              mb-3
-              block
-              text-sm
-              font-semibold
-            ">
-              Short Description
-            </label>
+        {/* =====================================================
+            INFORMASI
+        ===================================================== */}
 
-            <textarea
-              value={excerpt}
-              onChange={(e) =>
-                setExcerpt(
-                  e.target.value
-                )
-              }
-              placeholder="Deskripsi singkat portfolio"
-              rows={4}
-              className="
-                w-full
-                rounded-[24px]
-                border
-                px-6
-                py-5
-                text-lg
-                outline-none
-              "
-            />
-
-          </div>
-
-          {/* CONTENT */}
-
-          <div>
-
-            <label className="
-              mb-3
-              block
-              text-sm
-              font-semibold
-            ">
-              Portfolio Content
-            </label>
-
-            <textarea
-              value={content}
-              onChange={(e) =>
-                setContent(
-                  e.target.value
-                )
-              }
-              placeholder="Isi lengkap portfolio"
-              rows={8}
-              className="
-                w-full
-                rounded-[24px]
-                border
-                px-6
-                py-5
-                text-lg
-                outline-none
-              "
-            />
-
-          </div>
-
-          {/* FEATURED */}
+        <Section title="Informasi Portfolio">
 
           <div className="
-            rounded-[28px]
-            border
-            p-6
+
+            grid
+            grid-cols-1
+            md:grid-cols-2
+
+            gap-5
+
           ">
 
-            <div className="
-              flex
-              items-center
-              justify-between
-            ">
+            <InputField
 
-              <div>
+              label="Judul Portfolio"
 
-                <h3 className="
-                  flex
-                  items-center
-                  gap-2
-                  text-xl
-                  font-semibold
-                ">
-                  <Star size={20} />
-                  Featured Portfolio
-                </h3>
+              icon={<Type size={18} />}
 
-                <p className="
-                  mt-1
-                  text-sm
-                  text-neutral-500
-                ">
-                  Tampilkan portfolio di section unggulan
-                </p>
+            >
 
-              </div>
+              <input
+
+                value={title}
+
+                onChange={(e) =>
+                  setTitle(
+                    e.target.value
+                  )
+                }
+
+                placeholder="Wedding Premium Decoration"
+
+                className={inputClass}
+
+              />
+
+            </InputField>
+
+            <div className="space-y-2">
+
+              <label className="
+
+                text-sm
+                font-medium
+
+                text-slate-700
+
+              ">
+                Featured Portfolio
+              </label>
 
               <button
+
                 type="button"
+
                 onClick={() =>
                   setIsFeatured(
                     !isFeatured
                   )
                 }
+
                 className={`
-                  h-8
-                  w-16
-                  rounded-full
-                  transition
+
+                  h-[58px]
+
+                  px-5
+
+                  rounded-2xl
+
+                  border
+
+                  flex
+                  items-center
+                  gap-3
+
+                  transition-all
+
                   ${
                     isFeatured
-                      ? "bg-black"
-                      : "bg-neutral-300"
+
+                      ? `
+                        bg-amber-50
+                        border-amber-200
+                        text-amber-700
+                      `
+
+                      : `
+                        bg-white
+                        border-slate-200
+                        text-slate-600
+                      `
                   }
+
                 `}
               >
-                <div
-                  className={`
-                    h-8
-                    w-8
-                    rounded-full
-                    bg-white
-                    shadow-md
-                    transition
-                    ${
-                      isFeatured
-                        ? "translate-x-8"
-                        : "translate-x-0"
-                    }
-                  `}
-                />
+
+                <Star size={18} />
+
+                {
+
+                  isFeatured
+
+                    ? "Featured"
+
+                    : "Tidak Featured"
+                }
+
               </button>
 
             </div>
 
-          </div>
-
-          {/* LAYANAN */}
-
-          <div className="
-            rounded-[28px]
-            border
-            p-6
-          ">
-
-            <h3 className="
-              text-xl
-              font-semibold
+            <div className="
+              md:col-span-2
             ">
-              Kategori Layanan
-            </h3>
+
+              <TextareaField
+
+                label="Deskripsi Singkat"
+
+                icon={<AlignLeft size={18} />}
+
+              >
+
+                <textarea
+
+                  rows={4}
+
+                  value={excerpt}
+
+                  onChange={(e) =>
+                    setExcerpt(
+                      e.target.value
+                    )
+                  }
+
+                  placeholder="Deskripsi singkat portfolio"
+
+                  className={textareaClass}
+
+                />
+
+              </TextareaField>
+
+            </div>
 
             <div className="
-              mt-6
-              flex
-              flex-wrap
-              gap-3
+              md:col-span-2
             ">
 
-              {
-                layananList?.map(
-                  (item: any) => {
+              <TextareaField
 
-                    const active =
-                      selectedLayanan.includes(
-                        item._id
-                      );
+                label="Isi Portfolio"
 
-                    return (
+                icon={<AlignLeft size={18} />}
 
-                      <button
-                        key={item._id}
-                        type="button"
-                        onClick={() =>
-                          toggleLayanan(
-                            item._id
-                          )
-                        }
-                        className={`
-                          rounded-full
-                          border
-                          px-5
-                          py-3
-                          text-sm
-                          font-medium
-                          transition
-                          ${
-                            active
+              >
 
-                              ? `
-                                border-black
-                                bg-black
-                                text-white
-                              `
+                <textarea
 
-                              : `
-                                border-neutral-300
-                                bg-white
-                                text-black
-                              `
-                          }
-                        `}
-                      >
-                        {item.nama}
-                      </button>
-                    );
+                  rows={8}
+
+                  value={content}
+
+                  onChange={(e) =>
+                    setContent(
+                      e.target.value
+                    )
                   }
-                )
-              }
+
+                  placeholder="Isi lengkap portfolio"
+
+                  className={textareaClass}
+
+                />
+
+              </TextareaField>
 
             </div>
 
           </div>
 
-          {/* GALLERY */}
+        </Section>
 
-          <div>
+        {/* =====================================================
+            LAYANAN
+        ===================================================== */}
+
+        <Section title="Kategori Layanan">
+
+          {
+
+            layananList.length === 0
+
+              ? (
+
+                <div className="
+
+                  rounded-2xl
+
+                  border
+                  border-dashed
+                  border-slate-200
+
+                  bg-slate-50
+
+                  py-10
+
+                  text-center
+
+                  text-sm
+
+                  text-slate-500
+
+                ">
+
+                  Belum ada layanan tersedia
+
+                </div>
+              )
+
+              : (
+
+                <div className="
+
+                  flex
+                  flex-wrap
+
+                  gap-3
+
+                ">
+
+                  {
+
+                    layananList.map(
+                      (item: any) => {
+
+                        const active =
+                          selectedLayanan.includes(
+                            item._id
+                          );
+
+                        return (
+
+                          <button
+
+                            key={item._id}
+
+                            type="button"
+
+                            onClick={() =>
+                              toggleLayanan(
+                                item._id
+                              )
+                            }
+
+                            className={`
+
+                              h-12
+
+                              px-5
+
+                              rounded-2xl
+
+                              border
+
+                              text-sm
+                              font-medium
+
+                              transition-all
+
+                              ${
+                                active
+
+                                  ? `
+                                    bg-[#0F172A]
+                                    border-[#0F172A]
+                                    text-white
+                                  `
+
+                                  : `
+                                    bg-white
+                                    border-slate-200
+                                    text-slate-700
+                                  `
+                              }
+
+                            `}
+                          >
+
+                            {item.nama}
+
+                          </button>
+                        );
+                      }
+                    )
+                  }
+
+                </div>
+              )
+          }
+
+        </Section>
+
+        {/* =====================================================
+            GALLERY
+        ===================================================== */}
+
+        <Section title="Gallery Portfolio">
+
+          <div className="space-y-7">
+
+            {/* TOP */}
 
             <div className="
-              mb-5
+
               flex
               items-center
               justify-between
+
+              gap-4
+
+              flex-wrap
+
             ">
 
               <div>
 
-                <p className="
-                  text-xl
+                <h4 className="
+
+                  text-lg
                   font-semibold
+
+                  text-[#0F172A]
+
                 ">
-                  Gallery Images
-                </p>
+
+                  Upload Gallery
+
+                </h4>
 
                 <p className="
+
                   mt-1
+
                   text-sm
-                  text-neutral-500
+
+                  text-slate-500
+
                 ">
+
                   Drag untuk mengatur urutan gallery
+
                 </p>
 
               </div>
 
-              <label
-                className="
-                  flex
-                  cursor-pointer
-                  items-center
-                  gap-2
-                  rounded-full
-                  border
-                  px-5
-                  py-3
-                  text-sm
-                  font-medium
-                "
-              >
+              <label className="
 
-                <ImagePlus
+                h-12
+
+                px-5
+
+                rounded-2xl
+
+                border
+                border-slate-200
+
+                bg-white
+
+                flex
+                items-center
+                gap-2
+
+                text-sm
+                font-medium
+
+                text-slate-700
+
+                hover:bg-slate-100
+
+                transition-all
+
+                cursor-pointer
+
+              ">
+
+                <UploadCloud
                   size={18}
                 />
 
-                Add Images
+                Tambah Gambar
 
                 <input
+
                   type="file"
+
                   multiple
+
                   accept="image/*"
+
                   hidden
+
                   onChange={
                     handleGalleryChange
                   }
+
                 />
 
               </label>
 
             </div>
 
+            {/* EMPTY */}
+
+            {
+
+              existingImages.length === 0 &&
+
+              galleryPreview.length === 0 && (
+
+                <div className="
+
+                  rounded-[30px]
+
+                  border-2
+                  border-dashed
+                  border-slate-200
+
+                  bg-slate-50
+
+                  py-20
+
+                  text-center
+
+                ">
+
+                  <div className="
+
+                    mx-auto
+
+                    w-20
+                    h-20
+
+                    rounded-3xl
+
+                    bg-white
+
+                    border
+                    border-slate-200
+
+                    flex
+                    items-center
+                    justify-center
+
+                    text-slate-400
+
+                    shadow-sm
+
+                  ">
+
+                    <Images
+                      size={36}
+                    />
+
+                  </div>
+
+                  <h4 className="
+
+                    mt-6
+
+                    text-lg
+                    font-semibold
+
+                    text-[#0F172A]
+
+                  ">
+
+                    Belum ada gallery
+
+                  </h4>
+
+                  <p className="
+
+                    mt-2
+
+                    text-sm
+
+                    text-slate-500
+
+                  ">
+
+                    Upload gambar portfolio untuk memulai
+
+                  </p>
+
+                </div>
+              )
+            }
+
             {/* EXISTING */}
 
             {
+
               existingImages.length > 0 && (
 
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={
-                    closestCenter
-                  }
-                  onDragEnd={
-                    handleDragEnd
-                  }
-                >
+                <div className="space-y-5">
 
-                  <SortableContext
-                    items={
-                      existingImages.map(
-                        (
-                          img,
-                          index
-                        ) =>
+                  <div className="
 
-                          img._id ||
-                          `${index}`
-                      )
+                    flex
+                    items-center
+                    gap-2
+
+                    text-sm
+                    font-semibold
+
+                    text-slate-600
+
+                  ">
+
+                    <Layers3 size={16} />
+
+                    Gallery Existing
+
+                  </div>
+
+                  <DndContext
+
+                    sensors={sensors}
+
+                    collisionDetection={
+                      closestCenter
                     }
-                    strategy={
-                      rectSortingStrategy
+
+                    onDragEnd={
+                      handleDragEnd
                     }
+
                   >
 
-                    <div className="
-                      mb-6
-                      grid
-                      grid-cols-2
-                      gap-5
-                      md:grid-cols-4
-                    ">
+                    <SortableContext
 
-                      {
+                      items={
                         existingImages.map(
                           (
                             img,
                             index
-                          ) => (
+                          ) =>
 
-                            <SortableImageCard
-                              key={
-                                img._id ||
-                                index
-                              }
-                              img={img}
-                              index={index}
-                              setAsCover={
-                                setAsCover
-                              }
-                              removeExistingImage={
-                                removeExistingImage
-                              }
-                            />
-                          )
+                            img._id ||
+                            `${index}`
                         )
                       }
 
-                    </div>
+                      strategy={
+                        rectSortingStrategy
+                      }
 
-                  </SortableContext>
+                    >
 
-                </DndContext>
+                      <div className="
+
+                        grid
+                        grid-cols-2
+                        md:grid-cols-4
+                        lg:grid-cols-5
+
+                        gap-5
+
+                      ">
+
+                        {
+
+                          existingImages.map(
+                            (
+                              img,
+                              index
+                            ) => (
+
+                              <SortableImageCard
+
+                                key={
+                                  img._id ||
+                                  index
+                                }
+
+                                img={img}
+
+                                index={index}
+
+                                setAsCover={
+                                  setAsCover
+                                }
+
+                                removeExistingImage={
+                                  removeExistingImage
+                                }
+
+                              />
+                            )
+                          )
+                        }
+
+                      </div>
+
+                    </SortableContext>
+
+                  </DndContext>
+
+                </div>
               )
             }
 
-            {/* NEW IMAGES */}
+            {/* NEW */}
 
             {
+
               galleryPreview.length > 0 && (
 
-                <div className="
-                  grid
-                  grid-cols-2
-                  gap-5
-                  md:grid-cols-4
-                ">
+                <div className="space-y-5">
 
-                  {
-                    galleryPreview.map(
-                      (
-                        img,
-                        index
-                      ) => (
+                  <div className="
 
-                        <div
-                          key={index}
-                          className="
-                            relative
-                            aspect-square
-                            overflow-hidden
-                            rounded-[28px]
-                          "
-                        >
+                    flex
+                    items-center
+                    gap-2
 
-                          <Image
-                            src={img}
-                            alt="preview"
-                            fill
-                            className="
-                              object-cover
-                            "
-                          />
+                    text-sm
+                    font-semibold
 
-                          <button
-                            type="button"
-                            onClick={() =>
-                              removeNewImage(
-                                index
-                              )
+                    text-slate-600
+
+                  ">
+
+                    <ImagePlus size={16} />
+
+                    Gambar Baru
+
+                  </div>
+
+                  <div className="
+
+                    grid
+                    grid-cols-2
+                    md:grid-cols-4
+                    lg:grid-cols-5
+
+                    gap-5
+
+                  ">
+
+                    {
+
+                      galleryPreview.map(
+                        (
+                          img,
+                          index
+                        ) => (
+
+                          <NewImageCard
+
+                            key={index}
+
+                            img={img}
+
+                            index={index}
+
+                            removeNewImage={
+                              removeNewImage
                             }
-                            className="
-                              absolute
-                              right-3
-                              top-3
-                              flex
-                              h-10
-                              w-10
-                              items-center
-                              justify-center
-                              rounded-full
-                              bg-red-500
-                              text-white
-                            "
-                          >
-                            <Trash2
-                              size={18}
-                            />
-                          </button>
 
-                        </div>
+                          />
+                        )
                       )
-                    )
-                  }
+                    }
+
+                  </div>
 
                 </div>
               )
@@ -1230,60 +1845,257 @@ export default function PortfolioFormModal({
 
           </div>
 
-          {/* ACTION */}
+        </Section>
 
-          <div className="
-            flex
-            items-center
-            justify-end
-            gap-4
-            pt-5
-          ">
+      </div>
 
-            <button
-              type="button"
-              onClick={onClose}
-              className="
-                rounded-full
-                border
-                px-7
-                py-4
-                text-sm
-                font-semibold
-              "
-            >
-              Cancel
-            </button>
+      {/* =====================================================
+          FOOTER
+      ===================================================== */}
 
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className="
-                rounded-full
-                bg-black
-                px-8
-                py-4
-                text-lg
-                font-semibold
-                text-white
-                transition
-                hover:scale-[1.02]
-              "
-            >
-              {
-                loading
+      <div className="
 
-                  ? "Saving..."
+        shrink-0
 
-                  : initialData
+        px-10
+        py-5
 
-                    ? "Update Portfolio"
+        border-t
+        border-slate-200
 
-                    : "Create Portfolio"
-              }
-            </button>
+        bg-white/90
 
-          </div>
+        backdrop-blur-sm
+
+        flex
+        items-center
+        justify-between
+
+      ">
+
+        <p className="
+
+          text-sm
+
+          text-slate-500
+
+        ">
+
+          {
+
+            initialData
+
+              ? "Perubahan siap disimpan"
+
+              : "Portfolio baru akan dibuat"
+          }
+
+        </p>
+
+        <div className="
+
+          flex
+          items-center
+
+          gap-3
+
+        ">
+
+          <button
+
+            onClick={onClose}
+
+            className="
+
+              h-12
+
+              px-6
+
+              rounded-2xl
+
+              border
+              border-slate-200
+
+              bg-white
+
+              text-slate-700
+
+              text-sm
+              font-medium
+
+              hover:bg-slate-100
+
+              transition-all
+
+            "
+          >
+
+            Batal
+
+          </button>
+
+          <button
+
+            onClick={handleSubmit}
+
+            disabled={loading}
+
+            className="
+
+              h-12
+
+              px-7
+
+              rounded-2xl
+
+              bg-[#0F172A]
+
+              text-white
+
+              text-sm
+              font-semibold
+
+              hover:opacity-90
+
+              transition-all
+
+              disabled:opacity-50
+
+            "
+          >
+
+            {
+
+              loading
+
+                ? "Menyimpan..."
+
+                : initialData
+
+                  ? "Update Portfolio"
+
+                  : "Simpan Portfolio"
+            }
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </BaseModal>
+  );
+}
+
+/* =========================================================
+   SECTION
+========================================================= */
+
+function Section({
+
+  title,
+
+  children,
+
+}: any) {
+
+  return (
+
+    <div className="
+
+      rounded-[30px]
+
+      border
+      border-slate-200
+
+      bg-white
+
+      p-7
+
+      space-y-6
+
+      shadow-sm
+
+    ">
+
+      <h3 className="
+
+        text-[28px]
+        font-semibold
+
+        text-[#0F172A]
+
+      ">
+
+        {title}
+
+      </h3>
+
+      {children}
+
+    </div>
+  );
+}
+
+/* =========================================================
+   INPUT FIELD
+========================================================= */
+
+function InputField({
+
+  label,
+
+  icon,
+
+  children,
+
+}: any) {
+
+  return (
+
+    <div className="space-y-2">
+
+      <label className="
+
+        text-sm
+        font-medium
+
+        text-slate-700
+
+      ">
+
+        {label}
+
+      </label>
+
+      <div className="relative">
+
+        {
+
+          icon && (
+
+            <div className="
+
+              absolute
+              left-4
+              top-1/2
+              -translate-y-1/2
+
+              text-slate-400
+
+            ">
+
+              {icon}
+
+            </div>
+          )
+        }
+
+        <div className="
+          [&_input]:pl-11
+        ">
+
+          {children}
 
         </div>
 
@@ -1292,3 +2104,143 @@ export default function PortfolioFormModal({
     </div>
   );
 }
+
+/* =========================================================
+   TEXTAREA FIELD
+========================================================= */
+
+function TextareaField({
+
+  label,
+
+  icon,
+
+  children,
+
+}: any) {
+
+  return (
+
+    <div className="space-y-2">
+
+      <label className="
+
+        text-sm
+        font-medium
+
+        text-slate-700
+
+      ">
+
+        {label}
+
+      </label>
+
+      <div className="relative">
+
+        {
+
+          icon && (
+
+            <div className="
+
+              absolute
+              left-4
+              top-5
+
+              text-slate-400
+
+            ">
+
+              {icon}
+
+            </div>
+          )
+        }
+
+        <div className="
+          [&_textarea]:pl-11
+        ">
+
+          {children}
+
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
+
+/* =========================================================
+   STYLES
+========================================================= */
+
+const inputClass = `
+
+  w-full
+
+  h-[58px]
+
+  rounded-2xl
+
+  border
+  border-slate-200
+
+  bg-white
+
+  px-4
+
+  text-[15px]
+
+  text-slate-800
+
+  outline-none
+
+  transition-all
+
+  shadow-sm
+
+  placeholder:text-slate-400
+
+  focus:border-slate-400
+
+  focus:ring-4
+  focus:ring-slate-100
+
+`;
+
+const textareaClass = `
+
+  w-full
+
+  rounded-2xl
+
+  border
+  border-slate-200
+
+  bg-white
+
+  px-4
+  py-4
+
+  text-[15px]
+
+  text-slate-800
+
+  outline-none
+
+  resize-none
+
+  transition-all
+
+  shadow-sm
+
+  placeholder:text-slate-400
+
+  focus:border-slate-400
+
+  focus:ring-4
+  focus:ring-slate-100
+
+`;

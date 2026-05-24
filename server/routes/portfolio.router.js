@@ -23,9 +23,14 @@ import {
 
 const router = express.Router();
 
-/* ================= PUBLIC ================= */
+/* =====================================================
+   PUBLIC
+===================================================== */
 
-router.get("/", getPortfolios);
+router.get(
+  "/",
+  getPortfolios
+);
 
 router.get(
   "/featured",
@@ -52,9 +57,14 @@ router.get(
   getPortfolioById
 );
 
-/* ================= ADMIN ================= */
+/* =====================================================
+   ADMIN
+===================================================== */
+
+/* ================= CREATE ================= */
 
 router.post(
+
   "/",
 
   auth,
@@ -71,7 +81,10 @@ router.post(
   createPortfolio
 );
 
+/* ================= UPDATE ================= */
+
 router.put(
+
   "/:id",
 
   auth,
@@ -88,8 +101,39 @@ router.put(
   updatePortfolio
 );
 
-router.patch("/:id/delete", auth, role("admin"), deletePortfolio);
-router.patch("/image/:imageId/cover", auth, setCoverPortfolioImage);
-router.patch("/reorder-images", auth, reorderPortfolioImages);
+/* ================= DELETE ================= */
+
+router.patch(
+
+  "/:id/delete",
+
+  auth,
+
+  role("admin"),
+
+  deletePortfolio
+);
+
+/* ================= IMAGE COVER ================= */
+
+router.patch(
+
+  "/image/:imageId/cover",
+
+  auth,
+
+  setCoverPortfolioImage
+);
+
+/* ================= REORDER ================= */
+
+router.patch(
+
+  "/reorder-images",
+
+  auth,
+
+  reorderPortfolioImages
+);
 
 export default router;

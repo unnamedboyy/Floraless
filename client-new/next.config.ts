@@ -7,12 +7,12 @@ const nextConfig = {
 
       {
         protocol: "http",
-        hostname: "localhost",
+        hostname: "127.0.0.1",
         port: "5000",
         pathname: "/uploads/**",
-      },
+      }
     ],
   },
 };
 
-export default nextConfig;
+module.exports = nextConfig;
