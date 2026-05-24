@@ -195,6 +195,7 @@ export default function BaseModal({
           w-full
           ${maxWidth}
 
+          h-full
           max-h-[95vh]
 
           overflow-hidden

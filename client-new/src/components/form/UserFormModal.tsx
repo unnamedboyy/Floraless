@@ -215,7 +215,7 @@ export default function UserFormModal({
 
         if (
           file.size >
-          5 * 1024 * 1024
+          25 * 1024 * 1024
         ) {
 
           toast.error(
@@ -235,7 +235,7 @@ export default function UserFormModal({
            UPLOAD
         ========================= */
 
-        const res =
+        const url =
           await uploadImage(
             file,
             "profile"
@@ -249,7 +249,7 @@ export default function UserFormModal({
 
           ...prev,
 
-          profile: res.url,
+          profile: url,
         }));
 
         toast.success(
