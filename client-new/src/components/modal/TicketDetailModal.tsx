@@ -1,9 +1,8 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState,} from "react";
+import api from "@/lib/axios";
+import { saveAs } from "file-saver";
 
 import {
   Calendar,
@@ -1162,21 +1161,106 @@ export default function TicketDetailModal({
           Detail informasi ticket pelanggan
         </p>
 
-        <button
-          onClick={onClose}
-          className="
-            h-12
-            px-8
-            rounded-2xl
-            bg-[#111827]
-            text-white
-            font-medium
-            hover:bg-black
-            transition-all
-          "
-        >
-          Tutup
-        </button>
+        <div className="
+          flex
+          items-center
+          gap-3
+        ">
+
+          {/* EXPORT PDF */}
+
+          <button
+
+            onClick={async () => {
+
+              try {
+
+                const res =
+                  await api.get(
+
+                    `/reports/invoice/${ticket._id}`,
+
+                    {
+                      responseType:
+                        "blob",
+                    }
+                  );
+
+                const file =
+                  new Blob(
+                    [res.data],
+                    {
+                      type:
+                        "application/pdf",
+                    }
+                  );
+
+                saveAs(
+                  file,
+                  `invoice-${ticket._id}.pdf`
+                );
+
+              } catch (err) {
+
+                console.error(err);
+
+                alert(
+                  "Gagal export invoice"
+                );
+              }
+            }}
+
+            className="
+              h-12
+              px-6
+
+              rounded-2xl
+
+              border
+              border-gray-200
+
+              bg-white
+
+              flex
+              items-center
+              gap-2
+
+              text-sm
+              font-semibold
+              text-[#111827]
+
+              shadow-sm
+
+              hover:bg-gray-50
+              transition-all
+            "
+          >
+
+            <FileText size={16} />
+
+            Export Invoice
+
+          </button>
+
+          {/* CLOSE */}
+
+          <button
+            onClick={onClose}
+            className="
+              h-12
+              px-8
+              rounded-2xl
+              bg-[#111827]
+              text-white
+              font-medium
+              hover:bg-black
+              transition-all
+            "
+          >
+            Tutup
+          </button>
+
+        </div>
 
       </div>
 

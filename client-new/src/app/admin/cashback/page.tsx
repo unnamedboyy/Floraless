@@ -62,13 +62,10 @@ export default function CashbackPage() {
         );
 
         reload();
-
         setSelected(null);
 
       } catch (err) {
-
         console.error(err);
-
         alert(
           "Gagal approve cashback"
         );
