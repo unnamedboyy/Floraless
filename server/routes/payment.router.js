@@ -118,7 +118,7 @@ router.get(
 
   auth,
 
-  role("admin"),
+  role("admin", "pegawai"),
 
   getPayments
 );

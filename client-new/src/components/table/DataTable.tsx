@@ -32,7 +32,16 @@ export default function DataTable({
   actions = [],
 }: Props) {
   return (
-    <div className="bg-white border rounded-xl overflow-hidden">
+    <div
+      className="
+        bg-white
+        border
+        border-gray-200
+        rounded-[10px]
+        overflow-hidden
+        shadow-sm
+      "
+    >
 
       {/* HEADER */}
           <div
@@ -46,7 +55,7 @@ export default function DataTable({
               font-medium
               bg-zinc-900
               text-white
-              rounded-t-xl
+              rounded-t-[10px]
             ">
 
             {columns.map((col, i) => (
@@ -66,8 +75,18 @@ export default function DataTable({
       {data.map((row, i) => (
         <div
           key={i}
-          className="grid grid-cols-12 border-b px-4 py-3 text-sm items-center"
-        >
+          className="
+            grid
+            grid-cols-12
+            border-b
+            border-gray-100
+            px-5
+            py-4
+            text-sm
+            items-center
+            hover:bg-gray-50/60
+            transition-colors
+          "        >
           {columns.map((col, j) => {
 
             const value =

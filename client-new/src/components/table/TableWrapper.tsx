@@ -112,7 +112,7 @@ export default function TableWrapper({
           className="
             bg-white
             border
-            rounded-2xl
+            rounded-[10px]
             p-6
             text-sm
             text-gray-500

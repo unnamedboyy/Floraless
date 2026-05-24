@@ -73,6 +73,8 @@ export default function Pagination({
           w-11 h-11
           rounded-2xl
           border
+          border-gray-200
+          shadow-sm
           bg-white
           hover:bg-gray-100
           disabled:opacity-40
@@ -115,8 +117,8 @@ export default function Pagination({
               duration-200
               ${
                 p === page
-                  ? "bg-black text-white shadow-md"
-                  : "border bg-white hover:bg-gray-100"
+                  ? "bg-[#111827] text-white shadow-sm"
+                  : "border border-gray-200 bg-white hover:bg-gray-50 shadow-sm"
               }
             `}
           >

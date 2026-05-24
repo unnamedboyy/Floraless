@@ -48,10 +48,12 @@ export default function TableToolbar({
             gap-2
             bg-white
             border
-            rounded-xl
+            border-gray-200
+            rounded-2xl
+            shadow-sm
             px-3
             py-2
-            w-[250px]
+            w-[800px]
           "
         >
 
@@ -95,8 +97,11 @@ export default function TableToolbar({
                 px-3
                 py-2
                 border
-                rounded-xl
+                border-gray-200
+                rounded-2xl
+                shadow-sm
                 text-sm
+                bg-white
                 hover:bg-gray-50
               "
             >
@@ -116,6 +121,7 @@ export default function TableToolbar({
                   w-[280px]
                   bg-white
                   border
+                  border-gray-200
                   rounded-2xl
                   shadow-xl
                   p-4
@@ -139,8 +145,11 @@ export default function TableToolbar({
               px-3
               py-2
               border
-              rounded-xl
+              border-gray-200
+              rounded-2xl
+              shadow-sm
               text-sm
+              bg-white
               hover:bg-gray-50
             "
           >
@@ -149,7 +158,17 @@ export default function TableToolbar({
           </button>
 
           {/* TOGGLE */}
-          <div className="flex border rounded-xl overflow-hidden">
+          <div
+            className="
+              flex
+              border
+              border-gray-200
+              rounded-2xl
+              overflow-hidden
+              shadow-sm
+              bg-white
+            "
+          >
 
             <button
               onClick={() =>
@@ -159,7 +178,7 @@ export default function TableToolbar({
                 px-3 py-2 text-sm
                 ${
                   view === "list"
-                    ? "bg-black text-white"
+                    ? "bg-[#111827] text-white"
                     : ""
                 }
               `}

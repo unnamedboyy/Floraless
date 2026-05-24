@@ -711,6 +711,10 @@ export const getPayments =
 
       } = req.query;
 
+      /* ===================================================
+         FILTER
+      =================================================== */
+
       let filter = {};
 
       if (status) {
@@ -745,17 +749,25 @@ export const getPayments =
             });
         }
 
+        /* ===================================================
+           AMBIL TICKET PIC
+        =================================================== */
+
         const tickets =
           await Ticket.find({
 
             pegawaiId:
               pegawai._id,
-          });
+          }).select("_id");
 
         const ticketIds =
           tickets.map(
             (t) => t._id
           );
+
+        /* ===================================================
+           FILTER PAYMENT
+        =================================================== */
 
         filter.ticketId = {
           $in: ticketIds,
@@ -763,7 +775,7 @@ export const getPayments =
       }
 
       /* ===================================================
-         QUERY
+         QUERY PAYMENT
       =================================================== */
 
       const data =
@@ -775,14 +787,35 @@ export const getPayments =
 
           path: "ticketId",
 
-          populate: {
+          populate: [
 
-            path:
-              "pelangganId",
+            {
 
-            select:
-              "nama",
-          },
+              path:
+                "pelangganId",
+
+              select:
+                "nama no_telp",
+            },
+
+            {
+
+              path:
+                "layananId",
+
+              select:
+                "nama harga",
+            },
+
+            {
+
+              path:
+                "pegawaiId",
+
+              select:
+                "nama",
+            },
+          ],
         })
 
         .sort({
@@ -790,19 +823,28 @@ export const getPayments =
         })
 
         .skip(
-          (page - 1) * limit
+          (Number(page) - 1) *
+          Number(limit)
         )
 
         .limit(
           Number(limit)
         );
 
+      /* ===================================================
+         TOTAL
+      =================================================== */
+
       const total =
         await Payment.countDocuments(
           filter
         );
 
-      res.json({
+      /* ===================================================
+         RESPONSE
+      =================================================== */
+
+      return res.json({
 
         data,
 
@@ -813,7 +855,8 @@ export const getPayments =
 
         totalPages:
           Math.ceil(
-            total / limit
+            total /
+            Number(limit)
           ),
       });
 

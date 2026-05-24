@@ -118,9 +118,7 @@ export default function TicketPage() {
         );
 
         setOpenAssign(false);
-
         setSelected(null);
-
         reload();
 
       } catch {
@@ -570,6 +568,7 @@ export default function TicketPage() {
           setOpenAssign(false)
         }
         onSubmit={handleApprove}
+        ticket={selected}
       />
 
       <TicketDetailModal
