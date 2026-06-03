@@ -42,6 +42,9 @@ import {
 
 } from "@/hooks/useLayanan";
 
+import api from "@/lib/axios";
+import Image from "next/image";
+
 /* =========================================================
    COMPONENT
 ========================================================= */
@@ -80,6 +83,8 @@ export default function BookingForm() {
       nama_acara: "",
 
       catatan: "",
+
+      referensi: "",
     });
 
   /* =====================================================
@@ -107,6 +112,49 @@ export default function BookingForm() {
       [e.target.name]:
         e.target.value,
     });
+    };
+
+  const handleUploadReferensi = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    try {
+
+      const fd = new FormData();
+
+      fd.append("image", file);
+
+      const res = await api.post(
+        "/upload/referensi",
+        fd,
+        {
+          headers: {
+            "Content-Type":
+              "multipart/form-data",
+          },
+        }
+      );
+
+      setForm((prev) => ({
+        ...prev,
+        referensi: res.data.url,
+      }));
+
+      toast.success(
+        "Referensi berhasil diupload"
+      );
+
+    } catch (err) {
+
+      toast.error(
+        "Upload referensi gagal"
+      );
+
+    }
   };
 
   /* =====================================================
@@ -532,6 +580,36 @@ export default function BookingForm() {
               Tuliskan tema, konsep acara, warna dekorasi, atau request tambahan lainnya
             "
           />
+
+        </Section>
+
+        <Section title="Referensi Dekorasi">
+
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleUploadReferensi}
+            className="w-full"
+          />
+
+          {form.referensi && (
+
+            <div className="mt-4">
+
+              <img
+                src={form.referensi}
+                alt="Referensi"
+                className="
+                  w-full
+                  max-w-md
+                  rounded-2xl
+                  border
+                "
+              />
+
+            </div>
+
+          )}
 
         </Section>
 

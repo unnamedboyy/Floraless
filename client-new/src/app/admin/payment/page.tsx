@@ -51,79 +51,206 @@ export default function PaymentPage() {
   const [selected, setSelected] =
     useState<any>(null);
 
+  const [rejectNote, setRejectNote] =
+  useState("");
+
   /* =====================================================
      DATA
   ===================================================== */
 
   const {
-
     data = [],
-
     total = 0,
-
     reload,
-
   } = usePayment(query);
 
   /* =====================================================
      APPROVE
   ===================================================== */
 
-  const handleApprove =
-    async (id: string) => {
+  const handleApprove = async (id: string) => {
 
-      try {
+    toast((t) => (
 
-        await approvePayment(id);
+      <div className="w-[300px]">
 
-        toast.success(
-          "Pembayaran berhasil disetujui"
-        );
+        <p className="font-semibold text-sm">
+          Setujui Pembayaran?
+        </p>
 
-        reload();
+        <p className="text-sm text-gray-500 mt-1">
+          Pembayaran akan ditandai sebagai approved.
+        </p>
 
-      } catch (err: any) {
+        <div className="flex justify-end gap-2 mt-4">
 
-        console.error(err);
+          <button
+            onClick={() =>
+              toast.dismiss(t.id)
+            }
+            className="
+              px-3
+              py-2
+              rounded-xl
+              border
+              text-sm
+              hover:bg-gray-50
+            "
+          >
+            Batal
+          </button>
 
-        toast.error(
+          <button
+            onClick={async () => {
 
-          err?.response?.data?.message ||
+              toast.dismiss(t.id);
 
-          "Gagal approve payment"
-        );
-      }
-    };
+              try {
+
+                await approvePayment(id);
+
+                toast.success(
+                  "Pembayaran berhasil disetujui"
+                );
+
+                reload();
+
+              } catch (err: any) {
+
+                toast.error(
+                  err?.response?.data?.message ||
+                  "Gagal approve payment"
+                );
+              }
+            }}
+            className="
+              px-3
+              py-2
+              rounded-xl
+              bg-green-500
+              text-white
+              text-sm
+              hover:bg-green-600
+            "
+          >
+            Setujui
+          </button>
+
+        </div>
+
+      </div>
+
+    ), {
+      duration: 10000,
+    });
+  };
 
   /* =====================================================
      REJECT
   ===================================================== */
 
-  const handleReject =
-    async (id: string) => {
+  const handleReject = async (
+    id: string
+  ) => {
 
-      try {
+    let note = "";
 
-        await rejectPayment(id);
+    toast((t) => (
 
-        toast.success(
-          "Pembayaran berhasil ditolak"
-        );
+      <div className="w-[300px]">
 
-        reload();
+        <p className="font-semibold text-sm">
+          Tolak Pembayaran?
+        </p>
 
-      } catch (err: any) {
+        <p className="text-sm text-gray-500 mt-1">
+          Catatan penolakan wajib diisi.
+        </p>
 
-        console.error(err);
+        <textarea
+          rows={4}
+          className="
+            w-full
+            mt-3
+            p-3
+            border
+            rounded-xl
+            text-sm
+          "
+          onChange={(e) => {
+            note = e.target.value;
+          }}
+        />
 
-        toast.error(
+        <div className="flex justify-end gap-2 mt-4">
 
-          err?.response?.data?.message ||
+          <button
+            onClick={() =>
+              toast.dismiss(t.id)
+            }
+            className="
+              px-3 py-2
+              rounded-xl
+              border
+            "
+          >
+            Batal
+          </button>
 
-          "Gagal reject payment"
-        );
-      }
-    };
+          <button
+            onClick={async () => {
+
+              if (!note.trim()) {
+
+                toast.error(
+                  "Catatan wajib diisi"
+                );
+
+                return;
+              }
+
+              toast.dismiss(t.id);
+
+              try {
+
+                await rejectPayment(
+                  id,
+                  note
+                );
+
+                toast.success(
+                  "Pembayaran berhasil ditolak"
+                );
+
+                reload();
+
+              } catch (err: any) {
+
+                toast.error(
+                  err?.response?.data
+                    ?.message ||
+                  "Gagal reject payment"
+                );
+              }
+            }}
+            className="
+              px-3 py-2
+              rounded-xl
+              bg-red-500
+              text-white
+            "
+          >
+            Tolak
+          </button>
+
+        </div>
+
+      </div>
+
+    ), {
+      duration: 20000,
+    });
+  };
 
   /* =====================================================
      BADGE

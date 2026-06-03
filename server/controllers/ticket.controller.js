@@ -23,6 +23,7 @@ export const createTicket = async (req, res, next) => {
       lokasi,
       nama_acara,
       catatan,
+      referensi,
     } = req.body;
 
     /* ================= USER ================= */
@@ -79,17 +80,23 @@ export const createTicket = async (req, res, next) => {
 
     /* ================= CEK BENTROK ================= */
 
+    const startDate = new Date(tanggal);
+    startDate.setHours(0, 0, 0, 0);
+
+    const endDate = new Date(tanggal);
+    endDate.setHours(23, 59, 59, 999);
+
     const bentrok = await Jadwal.findOne({
-      tanggal_acara: new Date(tanggal),
-      status: {
-        $ne: "cancelled",
+      tanggal_acara: {
+        $gte: startDate,
+        $lte: endDate,
       },
     });
 
     if (bentrok) {
       throw {
         status: 400,
-        message: "Tanggal sudah dibooking",
+        message: "Tanggal tersebut sudah dibooking pelanggan lain",
       };
     }
 
@@ -109,15 +116,32 @@ export const createTicket = async (req, res, next) => {
       lokasi,
       nama_acara,
       catatan: catatan || "",
+      referensi: referensi || "",
     });
 
     /* ================= JADWAL ================= */
 
-    await Jadwal.create({
-      ticketId: ticket._id,
-      tanggal_acara: tanggal,
-      status: "booked",
-    });
+    try {
+
+      await Jadwal.create({
+        ticketId: ticket._id,
+        tanggal_acara: tanggal,
+        status: "booked",
+      });
+
+    } catch (err) {
+
+      if (err.code === 11000) {
+
+        throw {
+          status: 400,
+          message: "Tanggal tersebut baru saja dibooking pelanggan lain",
+        };
+
+      }
+
+      throw err;
+    }
 
     /* ================= LOG ================= */
 
@@ -147,6 +171,7 @@ export const createTicket = async (req, res, next) => {
 
 export const getTickets = async (req, res, next) => {
   try {
+
     const {
       page = 1,
       limit = 10,
@@ -159,78 +184,167 @@ export const getTickets = async (req, res, next) => {
     /* ================= PELANGGAN ================= */
 
     if (req.user.role === "pelanggan") {
-      const pelanggan = await Pelanggan.findOne({
-        userId: req.user.id,
-      });
+
+      const pelanggan =
+        await Pelanggan.findOne({
+          userId: req.user.id,
+        });
 
       if (!pelanggan) {
+
         return res.status(404).json({
-          message: "Pelanggan tidak ditemukan",
+          message:
+            "Pelanggan tidak ditemukan",
         });
+
       }
 
-      filter.pelangganId = pelanggan._id;
+      filter.pelangganId =
+        pelanggan._id;
     }
 
     /* ================= PEGAWAI ================= */
 
     if (req.user.role === "pegawai") {
-      const pegawai = await Pegawai.findOne({
-        userId: req.user.id,
-      });
+
+      const pegawai =
+        await Pegawai.findOne({
+          userId: req.user.id,
+        });
 
       if (!pegawai) {
+
         return res.status(404).json({
-          message: "Pegawai tidak ditemukan",
+          message:
+            "Pegawai tidak ditemukan",
         });
+
       }
 
-      filter.pegawaiId = pegawai._id;
+      filter.pegawaiId =
+        pegawai._id;
     }
 
     /* ================= FILTER STATUS ================= */
 
     if (status) {
+
       filter.status = status;
+
     }
 
-    const skip = (page - 1) * limit;
+    const skip =
+      (page - 1) * limit;
 
-    let tickets = await Ticket.find(filter)
-      .populate("pelangganId", "nama no_telp")
-      .populate("layananId", "nama harga")
-      .populate("pegawaiId", "nama")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(Number(limit));
+    let tickets =
+      await Ticket.find(filter)
+        .populate(
+          "pelangganId",
+          "nama no_telp"
+        )
+        .populate(
+          "layananId",
+          "nama harga"
+        )
+        .populate(
+          "pegawaiId",
+          "nama"
+        )
+        .sort({
+          createdAt: -1,
+        })
+        .skip(skip)
+        .limit(Number(limit));
 
     /* ================= FILTER TANGGAL ================= */
 
     if (tanggal) {
-      const jadwals = await Jadwal.find({
-        tanggal_acara: new Date(tanggal),
-      });
 
-      const ticketIds = jadwals.map(
-        (j) => j.ticketId.toString()
-      );
+      const jadwals =
+        await Jadwal.find({
+          tanggal_acara:
+            new Date(tanggal),
+        });
 
-      tickets = tickets.filter((t) =>
-        ticketIds.includes(t._id.toString())
-      );
+      const ticketIds =
+        jadwals.map(
+          (j) =>
+            j.ticketId.toString()
+        );
+
+      tickets =
+        tickets.filter((t) =>
+          ticketIds.includes(
+            t._id.toString()
+          )
+        );
     }
 
-    const total = await Ticket.countDocuments(filter);
+    /* ================= DETAIL TICKET ================= */
+
+    const ticketIds =
+      tickets.map(
+        (ticket) =>
+          ticket._id
+      );
+
+    const details =
+      await DetailTicket.find({
+        ticketId: {
+          $in: ticketIds,
+        },
+      });
+
+    const detailMap =
+      new Map(
+        details.map(
+          (detail) => [
+            detail.ticketId.toString(),
+            detail,
+          ]
+        )
+      );
+
+    const ticketsWithDetail =
+      tickets.map((ticket) => ({
+
+        ...ticket.toObject(),
+
+        detail:
+          detailMap.get(
+            ticket._id.toString()
+          ) || null,
+
+      }));
+
+    /* ================= TOTAL ================= */
+
+    const total =
+      await Ticket.countDocuments(
+        filter
+      );
 
     res.json({
-      data: tickets,
+
+      data:
+        ticketsWithDetail,
+
       total,
-      page: Number(page),
-      totalPages: Math.ceil(total / limit),
+
+      page:
+        Number(page),
+
+      totalPages:
+        Math.ceil(
+          total / limit
+        ),
+
     });
 
   } catch (err) {
+
     next(err);
+
   }
 };
 

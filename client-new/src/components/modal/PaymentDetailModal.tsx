@@ -908,6 +908,65 @@ export default function PaymentDetailModal({
                             )
                           }
 
+                          {/* BUKTI BAYAR */}
+                          {
+                            p.bukti_bayar && (
+
+                              <div className="
+                                rounded-[24px]
+                                border
+                                border-gray-200
+                                bg-[#FCFCFD]
+                                p-5
+                                space-y-3
+                              ">
+
+                                <div className="
+                                  flex
+                                  items-center
+                                  gap-2
+                                  text-gray-500
+                                ">
+
+                                  <CreditCard size={16} />
+
+                                  <div className="
+                                    text-xs
+                                    font-semibold
+                                    uppercase
+                                    tracking-wider
+                                  ">
+                                    Bukti Pembayaran
+                                  </div>
+
+                                </div>
+
+                                <img
+                                  src={`${process.env.NEXT_PUBLIC_API_URL}${p.bukti_bayar}`}
+                                  alt="Bukti Pembayaran"
+                                  className="
+                                    w-full
+                                    max-w-md
+                                    rounded-2xl
+                                    border
+                                    border-gray-200
+                                    object-cover
+                                    cursor-pointer
+                                    hover:opacity-90
+                                    transition
+                                  "
+                                  onClick={() =>
+                                    window.open(
+                                      `${process.env.NEXT_PUBLIC_API_URL}${p.bukti_bayar}`,
+                                      "_blank"
+                                    )
+                                  }
+                                />
+
+                              </div>
+                            )
+                          }                          
+
                         </div>
 
                       </div>

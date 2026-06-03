@@ -19,14 +19,13 @@ import {
   User,
   Wallet,
   Upload,
+  Star
 } from "lucide-react";
 
-import {
-  getTicketFull,
-} from "@/services/ticket.service";
-
-import PaymentUploadForm
-from "@/components/form/PaymentUploadForm";
+import { getTicketFull } from "@/services/ticket.service";
+import toast from "react-hot-toast";
+import { reviewService } from "@/services/review.service";
+import PaymentUploadForm from "@/components/form/PaymentUploadForm";
 
 const formatRupiah = (
   num: number
@@ -94,6 +93,12 @@ export default function OrderDetailPage() {
 
   }, [id]);
 
+  const [rating, setRating] =
+    useState(5);
+
+  const [komentar, setKomentar] =
+    useState("");
+
   const fetchDetail =
     async () => {
 
@@ -115,6 +120,47 @@ export default function OrderDetailPage() {
       } finally {
 
         setLoading(false);
+      }
+    };
+
+  const handleReview =
+    async () => {
+
+      try {
+
+        if (!komentar.trim()) {
+
+          toast.error(
+            "Komentar wajib diisi"
+          );
+
+          return;
+        }
+
+        await reviewService.create({
+
+          ticketId: ticket._id,
+
+          rating,
+
+          komentar,
+
+        });
+
+        toast.success(
+          "Review berhasil dikirim"
+        );
+
+        fetchDetail();
+
+      } catch (err: any) {
+
+        toast.error(
+
+          err?.response?.data?.message ||
+
+          "Gagal mengirim review"
+        );
       }
     };
 
@@ -168,6 +214,9 @@ export default function OrderDetailPage() {
 
   const pegawai =
     ticket?.pegawaiId;
+
+  const review =
+    data?.review;
 
   return (
 
@@ -479,6 +528,43 @@ export default function OrderDetailPage() {
                     text-sm
                     text-gray-500
                   ">
+                    Referensi
+                  </p>
+
+                  {detail?.referensi && (
+
+                    <div className="mt-8">
+
+                      <p className="
+                        text-sm
+                        text-gray-500
+                      ">
+                        Referensi Dekorasi
+                      </p>
+
+                      <img
+                        src={detail.referensi}
+                        alt="Referensi Dekorasi"
+                        className="
+                          mt-3
+                          w-full
+                          max-w-md
+                          rounded-2xl
+                          border
+                        "
+                      />
+
+                    </div>
+
+                  )}
+                </div>
+
+                <div>
+
+                  <p className="
+                    text-sm
+                    text-gray-500
+                  ">
                     Layanan
                   </p>
 
@@ -530,7 +616,6 @@ export default function OrderDetailPage() {
             {/* =================================================
                PAYMENT HISTORY
             ================================================= */}
-
             <div className="
               rounded-[32px]
               border
@@ -783,6 +868,312 @@ export default function OrderDetailPage() {
                 }
 
               </div>
+
+            </div>
+
+            {/* =================================================
+              REVIEW
+            ================================================= */}
+            <div className="
+              rounded-[32px]
+              border
+              border-gray-200
+              bg-white
+              p-8
+            ">
+
+              <h2 className="
+                text-2xl
+                font-bold
+              ">
+                Ulasan Pelanggan
+              </h2>
+
+              {
+                review ? (
+
+                  <div className="
+                    mt-6
+                    space-y-5
+                  ">
+
+                    <div className="
+                      flex
+                      items-center
+                      gap-1
+                    ">
+
+                      {
+                        [...Array(5)].map(
+                          (_, i) => (
+
+                            <Star
+                              key={i}
+                              size={18}
+                              fill={
+                                i < review.rating
+
+                                  ? "currentColor"
+
+                                  : "none"
+                              }
+                              className={
+                                i < review.rating
+
+                                  ? "text-yellow-500"
+
+                                  : "text-gray-300"
+                              }
+                            />
+
+                          )
+                        )
+                      }
+
+                    </div>
+
+                    <div className="
+                      rounded-2xl
+                      bg-gray-50
+                      p-4
+                      text-gray-700
+                    ">
+                      {review.komentar}
+                    </div>
+
+                    <div className="
+                      text-sm
+                      text-green-600
+                      font-medium
+                    ">
+                      ✓ Ulasan sudah dikirim
+                    </div>
+
+                  </div>
+
+                ) : (
+
+                  <div className="
+                    mt-6
+                    space-y-5
+                  ">
+
+                    <p className="
+                      text-sm
+                      text-gray-500
+                    ">
+                      Bagikan pengalaman Anda menggunakan layanan FLORALESS.
+                    </p>
+
+                    <div className="
+                      flex
+                      items-center
+                      gap-2
+                    ">
+
+                      {
+                        [...Array(5)].map(
+                          (_, i) => (
+
+                            <button
+                              key={i}
+                              disabled={
+                                ticket?.status !==
+                                "done"
+                              }
+                              onClick={() =>
+                                setRating(
+                                  i + 1
+                                )
+                              }
+                            >
+
+                              <Star
+                                size={24}
+                                fill={
+                                  i < rating
+
+                                    ? "currentColor"
+
+                                    : "none"
+                                }
+                                className={
+                                  i < rating
+
+                                    ? "text-yellow-500"
+
+                                    : "text-gray-300"
+                                }
+                              />
+
+                            </button>
+
+                          )
+                        )
+                      }
+
+                    </div>
+
+                    <textarea
+                      value={komentar}
+                      disabled={
+                        ticket?.status !==
+                        "done"
+                      }
+                      onChange={(e) =>
+                        setKomentar(
+                          e.target.value
+                        )
+                      }
+                      rows={4}
+                      placeholder="Tuliskan pengalaman Anda..."
+                      className="
+                        w-full
+                        rounded-2xl
+                        border
+                        border-gray-200
+                        p-4
+                        resize-none
+
+                        disabled:bg-gray-100
+                        disabled:cursor-not-allowed
+                        disabled:opacity-50
+                      "
+                    />
+
+                    {
+                      ticket?.status !==
+                      "done" && (
+
+                        <div className="
+                          rounded-2xl
+                          bg-amber-50
+                          border
+                          border-amber-200
+                          p-4
+                          text-sm
+                          text-amber-700
+                        ">
+                          Review hanya dapat diberikan setelah acara selesai.
+                        </div>
+
+                      )
+                    }
+
+                    <button
+
+                      disabled={
+                        ticket?.status !==
+                        "done"
+                      }
+
+                      onClick={() => {
+
+                        toast((t) => (
+
+                          <div className="w-[300px]">
+
+                            <p className="font-semibold text-sm">
+                              Kirim Ulasan?
+                            </p>
+
+                            <p className="
+                              text-sm
+                              text-gray-500
+                              mt-1
+                            ">
+                              Ulasan hanya dapat dikirim satu kali dan tidak dapat diubah kembali.
+                            </p>
+
+                            <div className="
+                              flex
+                              justify-end
+                              gap-2
+                              mt-4
+                            ">
+
+                              {/* BATAL */}
+                              <button
+
+                                onClick={() =>
+                                  toast.dismiss(
+                                    t.id
+                                  )
+                                }
+
+                                className="
+                                  px-3
+                                  py-2
+                                  rounded-xl
+                                  border
+                                  text-sm
+                                  hover:bg-gray-50
+                                "
+                              >
+
+                                Batal
+
+                              </button>
+
+                              {/* YA */}
+                              <button
+
+                                onClick={async () => {
+
+                                  toast.dismiss(
+                                    t.id
+                                  );
+
+                                  await handleReview();
+
+                                }}
+
+                                className="
+                                  px-3
+                                  py-2
+                                  rounded-xl
+                                  bg-green-500
+                                  text-white
+                                  text-sm
+                                  hover:bg-green-600
+                                "
+                              >
+
+                                Ya, Kirim
+
+                              </button>
+
+                            </div>
+
+                          </div>
+
+                        ), {
+                          duration: 10000,
+                        });
+
+                      }}
+
+                      className="
+                        h-12
+                        px-6
+                        rounded-2xl
+                        bg-[#111827]
+                        text-white
+                        font-medium
+
+                        disabled:bg-gray-300
+                        disabled:cursor-not-allowed
+                      "
+                    >
+
+                      Kirim Ulasan
+
+                    </button>
+
+                  </div>
+
+                )
+              }
 
             </div>
 

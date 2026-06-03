@@ -25,7 +25,12 @@ const detailTicketSchema = new mongoose.Schema({
   catatan: {
     type: String,
     default: ""
-  }
+  },
+
+  referensi: {
+    type: String,
+    default: ""
+  },
 
 }, { timestamps: true });
 

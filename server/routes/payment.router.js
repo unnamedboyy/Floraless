@@ -15,15 +15,10 @@ from "../middlewares/uploadPayment.js";
 import {
 
   createPayment,
-
   approvePayment,
-
   rejectPayment,
-
   getPaymentsByTicket,
-
   getPaymentById,
-
   getPayments,
 
 } from "../controllers/payment.controller.js";
@@ -38,17 +33,12 @@ const router =
 router.post(
 
   "/",
-
   auth,
-
   role("pelanggan"),
-
   uploadPayment.single(
     "bukti_bayar"
   ),
-
   processPaymentImage,
-
   createPayment
 );
 
@@ -57,13 +47,9 @@ router.post(
 ========================================================= */
 
 router.patch(
-
   "/:id/approve",
-
   auth,
-
-  role("admin"),
-
+  role("admin", "pegawai"),
   approvePayment
 );
 
@@ -72,13 +58,9 @@ router.patch(
 ========================================================= */
 
 router.patch(
-
   "/:id/reject",
-
   auth,
-
-  role("admin"),
-
+  role("admin", "pegawai"),
   rejectPayment
 );
 
@@ -87,11 +69,8 @@ router.patch(
 ========================================================= */
 
 router.get(
-
   "/ticket/:ticketId",
-
   auth,
-
   getPaymentsByTicket
 );
 
@@ -100,11 +79,8 @@ router.get(
 ========================================================= */
 
 router.get(
-
   "/:id",
-
   auth,
-
   getPaymentById
 );
 
@@ -113,13 +89,9 @@ router.get(
 ========================================================= */
 
 router.get(
-
   "/",
-
   auth,
-
   role("admin", "pegawai"),
-
   getPayments
 );
 

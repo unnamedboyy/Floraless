@@ -695,24 +695,18 @@ export default function TicketPage() {
       ===================================================== */}
 
       <AssignPICModal
-
         open={openAssign}
-
         onClose={() =>
           setOpenAssign(false)
         }
 
         onSubmit={handleApprove}
-
         ticket={selected}
       />
 
       <TicketDetailModal
-
         open={!!detailId}
-
         ticketId={detailId}
-
         onClose={() =>
           setDetailId(null)
         }

@@ -71,9 +71,10 @@ const jadwalSchema =
     timestamps: true
   });
 
-jadwalSchema.index({
-  tanggal_acara: 1
-});
+jadwalSchema.index(
+  { tanggal_acara: 1 },
+  { unique: true }
+);
 
 jadwalSchema.index({
   pegawaiId: 1

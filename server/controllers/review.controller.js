@@ -166,8 +166,21 @@ export const getPublicReviews = async (
     const data = await Review.find({
       isActive: true
     })
-    .sort({ createdAt: -1 })
-    .limit(6);
+      .populate(
+        "pelangganId",
+        "nama profile"
+      )
+      .populate({
+        path: "ticketId",
+        populate: {
+          path: "layananId",
+          select: "nama_layanan"
+        }
+      })
+      .sort({
+        createdAt: -1
+      })
+      .limit(6);
 
     res.json(data);
 

@@ -127,6 +127,7 @@ export default function ProfileSidebar() {
               src={avatar}
               alt="Profile"
               fill
+              unoptimized
               className="object-cover"
             />
 

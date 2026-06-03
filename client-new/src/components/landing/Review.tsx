@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import api from "@/lib/axios";
 import {
   Quote,
@@ -9,15 +10,12 @@ import {
 
 type Review = {
   _id: string;
-
   rating: number;
-
   komentar: string;
-
   pelangganId: {
     nama: string;
+    profile?: string;
   };
-
   ticketId: {
     layananId?: {
       nama_layanan?: string;
@@ -28,13 +26,11 @@ type Review = {
 export default function Testimonials() {
 
   const [reviews, setReviews] = useState<Review[]>([]);
-
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
 
     const loadReviews = async () => {
-
       try {
 
         const res = await api.get(
@@ -85,7 +81,7 @@ export default function Testimonials() {
               text-[#c7ab63]
             "
           >
-            Client Testimonials
+            Testimoni Client
           </p>
 
           <h2
@@ -98,7 +94,7 @@ export default function Testimonials() {
               md:text-5xl
             "
           >
-            What Our Clients Are Saying
+            Kata Mereka Tentang Layanan Kami
           </h2>
 
           <p
@@ -177,28 +173,27 @@ export default function Testimonials() {
                   <div className="flex items-center gap-4">
 
                     {/* AVATAR */}
-
                     <div
                       className="
-                        flex
                         h-16
                         w-16
-                        items-center
-                        justify-center
+                        overflow-hidden
                         rounded-full
-                        bg-gradient-to-br
-                        from-[#f0e2b8]
-                        to-[#c7ab63]
-                        text-xl
-                        font-bold
-                        text-white
+                        border
+                        border-neutral-200
+                        flex-shrink-0
                       "
                     >
-                      {
-                        review.pelangganId?.nama?.charAt(
-                          0
-                        )
-                      }
+                      <Image
+                        src={
+                          review.pelangganId?.profile || "/images/default-avatar.png"
+                        }
+                        alt={review.pelangganId?.nama || "Pelanggan"}
+                        width={64}
+                        height={64}
+                        unoptimized
+                        className="h-full w-full object-cover"
+                      />
                     </div>
 
                     {/* INFO */}

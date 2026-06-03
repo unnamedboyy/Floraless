@@ -89,7 +89,7 @@ export default function ProfilePage() {
 
         const res =
           await api.post(
-            "/upload",
+            "/upload/profile",
             fd,
             {
               headers: {
@@ -219,6 +219,7 @@ export default function ProfilePage() {
             alt="Profile"
             fill
             sizes="144px"
+            unoptimized
             className="object-cover"
           />
 

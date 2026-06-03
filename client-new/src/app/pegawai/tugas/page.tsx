@@ -1,39 +1,74 @@
 "use client";
 
-import { useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
-import TableWrapper
-from "@/components/table/TableWrapper";
+import toast from "react-hot-toast";
 
-import { useTickets }
-from "@/hooks/useTickets";
+import {
+  Eye,
+  Play,
+  CheckCircle2,
+} from "lucide-react";
+
+import TableWrapper from "@/components/table/TableWrapper";
+import TicketDetailModal from "@/components/modal/TicketDetailModal";
+import { useTickets } from "@/hooks/useTickets";
 
 import {
   updateStatusTicket,
 } from "@/services/ticket.service";
 
-export default function PegawaiTugasPage() {
+/* =====================================================
+   BADGE
+===================================================== */
 
+const getStatusBadge = (
+  status: string
+) => {
+  const map: any = {
+    approved:
+      "bg-yellow-100 text-yellow-700 border border-yellow-200",
+
+    in_progress:
+      "bg-blue-100 text-blue-700 border border-blue-200",
+
+    done:
+      "bg-green-100 text-green-700 border border-green-200",
+  };
+
+  return (
+    map[status] ||
+    "bg-gray-100 text-gray-700 border"
+  );
+};
+
+export default function PegawaiTugasPage() {
   /* =====================================================
      STATE
   ===================================================== */
 
   const [query, setQuery] =
     useState({
-
       page: 1,
-
-      limit: 5,
-
+      limit: 10,
       status: "",
-
       search: "",
     });
 
-  /* 🔥 VIEW */
   const [view, setView] =
     useState<"list" | "grid">(
       "list"
+    );
+
+  const [searchInput, setSearchInput] =
+    useState("");
+
+  const [detailId, setDetailId] =
+    useState<string | null>(
+      null
     );
 
   /* =====================================================
@@ -47,491 +82,527 @@ export default function PegawaiTugasPage() {
   } = useTickets(query);
 
   /* =====================================================
-     ACTION
+     DEBOUNCE SEARCH
   ===================================================== */
 
-  const handleStatus =
-    async (row: any) => {
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setQuery((q) => ({
+        ...q,
+        search: searchInput,
+        page: 1,
+      }));
+    }, 400);
 
-      let nextStatus = "";
-
-      if (
-        row.status ===
-        "approved"
-      ) {
-        nextStatus =
-          "in_progress";
-      }
-
-      if (
-        row.status ===
-        "in_progress"
-      ) {
-        nextStatus = "done";
-      }
-
-      if (!nextStatus)
-        return;
-
-      try {
-
-        await updateStatusTicket(
-          row._id,
-          nextStatus
-        );
-
-        reload();
-
-      } catch (err) {
-
-        console.error(err);
-
-        alert(
-          "Gagal update status"
-        );
-      }
-    };
+    return () =>
+      clearTimeout(t);
+  }, [searchInput]);
 
   /* =====================================================
-     BADGE
+     UPDATE STATUS
   ===================================================== */
 
-  const getStatusBadge =
-    (status: string) => {
+  const handleStatus = async (row: any) => {
+    let nextStatus = "";
+    let title = "";
+    let description = "";
+    let buttonText = "";
 
-      const map: any = {
+    if (row.status === "approved") {
+      nextStatus = "in_progress";
+      title = "Mulai Pengerjaan?";
+      description =
+        "Ticket akan dipindahkan ke status In Progress.";
+      buttonText = "Mulai";
+    }
 
-        approved:
-          "bg-yellow-100 text-yellow-700 border border-yellow-200",
+    if (row.status === "in_progress") {
+      nextStatus = "done";
+      title = "Selesaikan Tugas?";
+      description =
+        "Ticket akan ditandai sebagai selesai.";
+      buttonText = "Selesaikan";
+    }
 
-        in_progress:
-          "bg-blue-100 text-blue-700 border border-blue-200",
+    if (!nextStatus) return;
 
-        done:
-          "bg-green-100 text-green-700 border border-green-200",
-      };
+    toast(
+      (t) => (
+        <div className="w-[300px]">
+          <p className="font-semibold text-sm">
+            {title}
+          </p>
 
-      return (
-        map[status] ||
-        "bg-gray-100 text-gray-700 border"
-      );
-    };
+          <p className="text-sm text-gray-500 mt-1">
+            {description}
+          </p>
+
+          <div className="flex justify-end gap-2 mt-4">
+            <button
+              onClick={() =>
+                toast.dismiss(t.id)
+              }
+              className="
+                px-3
+                py-2
+                rounded-xl
+                border
+                text-sm
+                hover:bg-gray-50
+              "
+            >
+              Batal
+            </button>
+
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+
+                try {
+                  await updateStatusTicket(
+                    row._id,
+                    nextStatus
+                  );
+
+                  toast.success(
+                    "Status ticket berhasil diperbarui"
+                  );
+
+                  reload();
+                } catch (err: any) {
+                  console.error(err);
+
+                  toast.error(
+                    err?.response?.data
+                      ?.message ||
+                      "Gagal update status"
+                  );
+                }
+              }}
+              className="
+                px-3
+                py-2
+                rounded-xl
+                bg-green-500
+                text-white
+                text-sm
+                hover:bg-green-600
+              "
+            >
+              {buttonText}
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: 10000,
+      }
+    );
+  };
+
+  /* =====================================================
+     ACTIONS
+  ===================================================== */
+
+  const actions = [
+    {
+      icon: (
+        <Eye size={17} />
+      ),
+
+      className: `
+        bg-gray-100
+        text-gray-700
+        hover:bg-gray-200
+      `,
+
+      onClick: (row: any) =>
+        setDetailId(row._id),
+    },
+
+    {
+      icon: (
+        <Play size={17} />
+      ),
+
+      className: `
+        bg-yellow-100
+        text-yellow-700
+        hover:bg-yellow-200
+      `,
+
+      show: (row: any) =>
+        row.status ===
+        "approved",
+
+      onClick: handleStatus,
+    },
+
+    {
+      icon: (
+        <CheckCircle2 size={17} />
+      ),
+
+      className: `
+        bg-green-100
+        text-green-700
+        hover:bg-green-200
+      `,
+
+      show: (row: any) =>
+        row.status ===
+        "in_progress",
+
+      onClick: handleStatus,
+    },
+  ];
 
   /* =====================================================
      UI
   ===================================================== */
 
   return (
+    <div className="p-6 space-y-5">
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
 
-    <div className="
-      p-6
-      space-y-6
-    ">
-
-      {/* =================================================
-         HEADER
-      ================================================= */}
-
-      <div className="
-        rounded-3xl
-        border
-        bg-white
-        p-6
-        shadow-sm
-      ">
-
-        <p className="
-          text-sm
-          uppercase
-          tracking-[0.3em]
-          text-[#C9AE63]
-        ">
-          Tugas
-        </p>
-
+      <div>
         <h1 className="
-          mt-3
-          text-3xl
+          text-2xl
           font-bold
         ">
           Tugas Saya
         </h1>
 
         <p className="
-          mt-3
-          max-w-2xl
+          text-sm
           text-gray-500
+          mt-1
         ">
-          Monitoring progress tugas
-          dan status pekerjaan pegawai.
+          Monitoring progress
+          pekerjaan yang
+          ditugaskan kepada
+          Anda
         </p>
-
       </div>
 
-      {/* =================================================
-         TABLE
-      ================================================= */}
+      {/* =====================================================
+          TABLE
+      ===================================================== */}
 
-      <div className="
-        rounded-3xl
-        border
-        bg-white
-        p-4
-        shadow-sm
-      ">
+      <TableWrapper
+        view={view}
+        setView={setView}
+        filterContent={
+          <div className="space-y-3">
+            {/* STATUS */}
 
-        <TableWrapper
+            <div>
+              <p className="
+                text-xs
+                text-gray-500
+                mb-1
+              ">
+                Status Tugas
+              </p>
 
-          /* 🔥 VIEW */
-          view={view}
-          setView={setView}
-
-          /* 🔥 FILTER */
-          filterContent={
-
-            <div className="space-y-3">
-
-              {/* STATUS */}
-              <div>
-
-                <p className="
-                  text-xs
-                  text-gray-500
-                  mb-1
-                ">
-                  Status Tugas
-                </p>
-
-                <select
-                  value={query.status}
-                  onChange={(e) =>
-                    setQuery((prev) => ({
+              <select
+                value={
+                  query.status
+                }
+                onChange={(e) =>
+                  setQuery(
+                    (prev) => ({
                       ...prev,
                       status:
-                        e.target.value,
+                        e.target
+                          .value,
                       page: 1,
-                    }))
-                  }
-                  className="
-                    w-full
-                    border
-                    rounded-xl
-                    px-3
-                    py-2
-                    text-sm
-                  "
-                >
-
-                  <option value="">
-                    Semua
-                  </option>
-
-                  <option value="approved">
-                    Approved
-                  </option>
-
-                  <option value="in_progress">
-                    In Progress
-                  </option>
-
-                  <option value="done">
-                    Done
-                  </option>
-
-                </select>
-
-              </div>
-
-              {/* LIMIT */}
-              <div>
-
-                <p className="
-                  text-xs
-                  text-gray-500
-                  mb-1
-                ">
-                  Data per halaman
-                </p>
-
-                <select
-                  value={query.limit}
-                  onChange={(e) =>
-                    setQuery((prev) => ({
-                      ...prev,
-                      limit: Number(
-                        e.target.value
-                      ),
-                      page: 1,
-                    }))
-                  }
-                  className="
-                    w-full
-                    border
-                    rounded-xl
-                    px-3
-                    py-2
-                    text-sm
-                  "
-                >
-
-                  <option value={5}>
-                    5
-                  </option>
-
-                  <option value={10}>
-                    10
-                  </option>
-
-                  <option value={20}>
-                    20
-                  </option>
-
-                  <option value={50}>
-                    50
-                  </option>
-
-                </select>
-
-              </div>
-
-              {/* RESET */}
-              <button
-                onClick={() =>
-                  setQuery({
-                    page: 1,
-                    limit: 5,
-                    status: "",
-                    search: "",
-                  })
+                    })
+                  )
                 }
                 className="
                   w-full
-                  bg-black
-                  text-white
+                  border
                   rounded-xl
+                  px-3
                   py-2
                   text-sm
                 "
               >
-                Reset Filter
-              </button>
+                <option value="">
+                  Semua
+                </option>
 
+                <option value="approved">
+                  Approved
+                </option>
+
+                <option value="in_progress">
+                  In Progress
+                </option>
+
+                <option value="done">
+                  Done
+                </option>
+              </select>
             </div>
-          }
 
-          data={data}
-          total={total}
+            {/* LIMIT */}
 
-          query={query}
-          setQuery={setQuery}
+            <div>
+              <p className="
+                text-xs
+                text-gray-500
+                mb-1
+              ">
+                Data per
+                halaman
+              </p>
 
-          columns={[
+              <select
+                value={
+                  query.limit
+                }
+                onChange={(e) =>
+                  setQuery(
+                    (prev) => ({
+                      ...prev,
+                      limit:
+                        Number(
+                          e.target
+                            .value
+                        ),
+                      page: 1,
+                    })
+                  )
+                }
+                className="
+                  w-full
+                  border
+                  rounded-xl
+                  px-3
+                  py-2
+                  text-sm
+                "
+              >
+                <option value={5}>
+                  5
+                </option>
 
-            {
-              label: "Pelanggan",
-              key: "pelangganId.nama",
-            },
+                <option value={10}>
+                  10
+                </option>
 
-            {
-              label: "Layanan",
-              key: "layananId.nama",
-            },
+                <option value={20}>
+                  20
+                </option>
 
-            {
-              label: "Tanggal",
-              key: "tanggal_acara",
-            },
+                <option value={50}>
+                  50
+                </option>
+              </select>
+            </div>
 
-            {
-              label: "Status",
-              key: "status",
-            },
+            {/* RESET */}
 
-          ]}
+            <button
+              onClick={() => {
+                setSearchInput(
+                  ""
+                );
 
-          actions={[
-
-            {
-              label: "Start",
-
-              show: (row) =>
-                row.status ===
-                "approved",
-
-              onClick: handleStatus,
-            },
-
-            {
-              label: "Done",
-
-              show: (row) =>
-                row.status ===
-                "in_progress",
-
-              onClick: handleStatus,
-            },
-
-          ]}
-
-          /* ================= GRID ================= */
-
-          renderItem={(row) => (
-
-            <div
+                setQuery({
+                  page: 1,
+                  limit: 10,
+                  status: "",
+                  search: "",
+                });
+              }}
               className="
-                bg-white
-                border
-                rounded-3xl
-                p-5
-                space-y-4
-                shadow-sm
+                w-full
+                bg-black
+                text-white
+                rounded-xl
+                py-2
+                text-sm
               "
             >
+              Reset Filter
+            </button>
+          </div>
+        }
+        data={data}
+        total={total}
+        query={query}
+        setQuery={setQuery}
+        columns={[
+          {
+            label:
+              "Pelanggan",
+            key:
+              "pelangganId.nama",
+          },
 
-              {/* TOP */}
-              <div className="
-                flex
-                items-start
-                justify-between
-                gap-3
-              ">
+          {
+            label:
+              "Layanan",
+            key:
+              "layananId.nama",
+          },
 
-                <div>
+          {
+            label:
+              "Tanggal Acara",
 
-                  <p className="
-                    font-semibold
-                    text-base
-                  ">
-                    {
-                      row.pelangganId
-                        ?.nama || "-"
-                    }
-                  </p>
+            key:
+              "tanggal_acara",
 
-                  <p className="
-                    text-sm
-                    text-gray-500
-                    mt-1
-                  ">
-                    {
-                      row.layananId
-                        ?.nama || "-"
-                    }
-                  </p>
+            render:
+              (
+                value: string
+              ) =>
+                value
+                  ? new Date(
+                      value
+                    ).toLocaleDateString(
+                      "id-ID"
+                    )
+                  : "-",
+          },
 
-                </div>
+          {
+            label:
+              "Status",
 
-                <span
-                  className={`
-                    inline-flex
-                    items-center
-                    px-3
-                    py-1
-                    rounded-full
-                    text-xs
-                    font-medium
-                    ${getStatusBadge(
-                      row.status
-                    )}
-                  `}
-                >
-                  {row.status}
-                </span>
+            key:
+              "status",
 
-              </div>
-
-              {/* DATE */}
-              <div>
-
-                <p className="
+            render: (
+              value: string
+            ) => (
+              <span
+                className={`
+                  inline-flex
+                  items-center
+                  px-3
+                  py-1
+                  rounded-full
                   text-xs
-                  text-gray-400
+                  font-medium
+                  ${getStatusBadge(
+                    value
+                  )}
+                `}
+              >
+                {value}
+              </span>
+            ),
+          },
+        ]}
+        actions={actions}
+        renderItem={(
+          row
+        ) => (
+          <div
+            className="
+              bg-white
+              border
+              rounded-3xl
+              p-5
+              space-y-4
+              shadow-sm
+            "
+          >
+            {/* TOP */}
+
+            <div className="
+              flex
+              items-start
+              justify-between
+              gap-3
+            ">
+              <div>
+                <p className="
+                  font-semibold
+                  text-base
                 ">
-                  Tanggal Acara
+                  {row
+                    .pelangganId
+                    ?.nama ||
+                    "-"}
                 </p>
 
                 <p className="
                   text-sm
-                  font-medium
+                  text-gray-500
                   mt-1
                 ">
-                  {row.tanggal_acara
-
-                    ? new Date(
-                        row.tanggal_acara
-                      ).toLocaleDateString(
-                        "id-ID"
-                      )
-
-                    : "-"}
+                  {row
+                    .layananId
+                    ?.nama ||
+                    "-"}
                 </p>
-
               </div>
 
-              {/* ACTION */}
-              <div
-                className="
-                  pt-3
-                  border-t
-                  flex
-                  flex-wrap
-                  gap-2
-                "
+              <span
+                className={`
+                  inline-flex
+                  items-center
+                  px-3
+                  py-1
+                  rounded-full
+                  text-xs
+                  font-medium
+                  ${getStatusBadge(
+                    row.status
+                  )}
+                `}
               >
-
-                {row.status ===
-                  "approved" && (
-
-                  <button
-                    onClick={() =>
-                      handleStatus(
-                        row
-                      )
-                    }
-                    className="
-                      px-3
-                      py-1.5
-                      rounded-xl
-                      bg-yellow-100
-                      text-yellow-700
-                      text-sm
-                    "
-                  >
-                    Start
-                  </button>
-                )}
-
-                {row.status ===
-                  "in_progress" && (
-
-                  <button
-                    onClick={() =>
-                      handleStatus(
-                        row
-                      )
-                    }
-                    className="
-                      px-3
-                      py-1.5
-                      rounded-xl
-                      bg-green-100
-                      text-green-700
-                      text-sm
-                    "
-                  >
-                    Done
-                  </button>
-                )}
-
-              </div>
-
+                {row.status}
+              </span>
             </div>
-          )}
 
-        />
+            {/* TANGGAL */}
 
-      </div>
+            <div>
+              <p className="
+                text-xs
+                text-gray-400
+              ">
+                Tanggal Acara
+              </p>
 
+              <p className="
+                text-sm
+                font-medium
+                mt-1
+              ">
+                {row.tanggal_acara
+                  ? new Date(
+                      row.tanggal_acara
+                    ).toLocaleDateString(
+                      "id-ID"
+                    )
+                  : "-"}
+              </p>
+            </div>
+          </div>
+        )}
+      />
+
+      {/* =====================================================
+          MODAL
+      ===================================================== */}
+
+      <TicketDetailModal
+        open={!!detailId}
+        ticketId={detailId}
+        onClose={() =>
+          setDetailId(null)
+        }
+      />
     </div>
   );
 }

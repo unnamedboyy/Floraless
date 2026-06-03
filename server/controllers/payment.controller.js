@@ -13,6 +13,9 @@ from "../models/pegawai.js";
 import { logActivity }
 from "../utils/logger.js";
 
+import LogActivity from "../models/logAktivitas.js";
+
+
 /* =========================================================
    CREATE PAYMENT (CUSTOMER)
 ========================================================= */
@@ -337,17 +340,12 @@ export const createPayment =
 ========================================================= */
 
 export const rejectPayment =
-  async (
-    req,
-    res,
-    next
-  ) => {
+  async (req, res, next) => {
 
     try {
 
-      const {
-        catatan,
-      } = req.body;
+      const { catatan } =
+        req.body;
 
       const payment =
         await Payment.findById(
@@ -355,93 +353,40 @@ export const rejectPayment =
         );
 
       if (!payment) {
-
         throw {
-
           status: 404,
-
-          message:
-            "Payment tidak ditemukan",
+          message: "Payment tidak ditemukan",
         };
       }
-
-      if (
-        payment.status !==
-        "pending"
-      ) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Payment sudah diproses",
-        };
-      }
-
-      const ticket =
-        await Ticket.findById(
-          payment.ticketId
-        );
-
-      if (!ticket) {
-
-        throw {
-
-          status: 404,
-
-          message:
-            "Ticket tidak ditemukan",
-        };
-      }
-
-      /* ===================================================
-         UPDATE PAYMENT
-      =================================================== */
 
       payment.status =
         "rejected";
 
       payment.catatan =
-        catatan || "";
-
-      payment.approvedAt =
-        new Date();
+        catatan.trim();
 
       await payment.save();
 
-      /* ===================================================
-         LOG
-      =================================================== */
+      /* ================= LOG ================= */
 
-      await logActivity({
-
-        userId:
-          req.user.id,
-
-        ticketId:
-          ticket._id,
-
-        action:
-          "REJECT_PAYMENT",
-
-        description:
-          `Payment ${payment.tipe} rejected`,
+      await LogActivity.create({
+        ticketId: payment.ticketId,
+        action: "PAYMENT_REJECTED",
+        status: "rejected",
+        description: catatan,
       });
 
+      /* ================= RESPONSE ================= */
+
       res.json({
-
         message:
-          "Payment rejected",
-
-        payment,
+          "Pembayaran berhasil ditolak",
       });
 
     } catch (err) {
-
       next(err);
     }
-  };
+};
 
 
 /* =========================================================

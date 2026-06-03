@@ -9,7 +9,7 @@ type Layanan = {
   nama?: string;
   nama_layanan?: string;
   deskripsi?: string;
-  gambar?: string;
+  thumbnail?: string;
   harga?: number;
 };
 
@@ -189,7 +189,7 @@ export default function Packages() {
 
                     <Image
                       src={
-                        layanan.gambar ||
+                        layanan.thumbnail ||
                         "/package-1.jpg"
                       }
                       alt={
@@ -198,6 +198,7 @@ export default function Packages() {
                         "package"
                       }
                       fill
+                      unoptimized
                       className="
                         object-cover
                         transition-transform
