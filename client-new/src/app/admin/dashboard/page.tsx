@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+
 import { useDashboard } from "@/hooks/useDashboard";
 
 import {
@@ -10,8 +11,6 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  AreaChart,
-  Area,
   PieChart,
   Pie,
   Cell,
@@ -33,69 +32,93 @@ import {
 
 export default function AdminDashboardPage() {
 
-  const [useFilter, setUseFilter] =
-    useState(false);
+  /* =========================================
+     FETCH DASHBOARD
+  ========================================= */
 
-  const [query, setQuery] = useState({
-    month: new Date().getMonth() + 1,
-    year: new Date().getFullYear(),
-  });
+  const { data } =
+    useDashboard("admin");
 
-  const { data } = useDashboard(
-    "admin",
-    useFilter ? query : {}
-  );
+  /* =========================================
+     SUMMARY
+  ========================================= */
 
-  if (!data) {
-    return (
-      <div className="p-10">
-        Loading dashboard...
-      </div>
-    );
-  }
+const summary = [
+  {
+    title: "Total Revenue",
 
-  const summary = [
-    {
-      title: "Total Revenue",
-      value: `Rp ${data.totalRevenue.toLocaleString()}`,
-      icon: CircleDollarSign,
-      color: "from-emerald-500 to-green-400",
-    },
+    value: `Rp ${(
+      data?.totalRevenue || 0
+    ).toLocaleString()}`,
 
-    {
-      title: "Total Ticket",
-      value: data.totalTicket,
-      icon: Ticket,
-      color: "from-sky-500 to-cyan-400",
-    },
+    icon: CircleDollarSign,
 
-    {
-      title: "Pending Ticket",
-      value: data.pendingTicket,
-      icon: Clock3,
-      color: "from-amber-500 to-yellow-400",
-    },
+    color:
+      "from-emerald-500 to-green-400",
+  },
 
-    {
-      title: "Payment Pending",
-      value: data.paymentPending,
-      icon: CreditCard,
-      color: "from-rose-500 to-pink-400",
-    },
+  {
+    title: "Total Ticket",
 
-    {
-      title: "Cashback Pending",
-      value: data.pendingCashback,
-      icon: Wallet,
-      color: "from-violet-500 to-purple-400",
-    },
-  ];
+    value:
+      data?.totalTicket || 0,
+
+    icon: Ticket,
+
+    color:
+      "from-sky-500 to-cyan-400",
+  },
+
+  {
+    title: "Pending Ticket",
+
+    value:
+      data?.pendingTicket || 0,
+
+    icon: Clock3,
+
+    color:
+      "from-amber-500 to-yellow-400",
+  },
+
+  {
+    title: "Payment Pending",
+
+    value:
+      data?.paymentPending || 0,
+
+    icon: CreditCard,
+
+    color:
+      "from-rose-500 to-pink-400",
+  },
+
+  {
+    title: "Cashback Pending",
+
+    value:
+      data?.pendingCashback || 0,
+
+    icon: Wallet,
+
+    color:
+      "from-violet-500 to-purple-400",
+  },
+];
+
+  /* =========================================
+     PIE DATA
+  ========================================= */
 
   const pieData = Object.keys(
-    data.ticketStatus
+    data?.ticketStatus || {}
   ).map((key) => ({
     name: key,
-    value: data.ticketStatus[key],
+
+    value:
+      data?.ticketStatus?.[
+        key
+      ] || 0,
   }));
 
   const pieColors = [
@@ -106,27 +129,147 @@ export default function AdminDashboardPage() {
     "#94a3b8",
   ];
 
+  /* =========================================
+     MONTHLY COMPLETED TICKET GRAPH
+  ========================================= */
+
+const monthlyTicketChart =
+  useMemo(() => {
+
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "Mei",
+      "Jun",
+      "Jul",
+      "Agu",
+      "Sep",
+      "Okt",
+      "Nov",
+      "Des",
+    ];
+
+    type MonthlyChartType = {
+      month: string;
+      total: number;
+    };
+
+    const result: MonthlyChartType[] =
+      [];
+
+    const now = new Date();
+
+    /* =====================================
+       CREATE 12 MONTHS
+    ===================================== */
+
+    for (let i = 11; i >= 0; i--) {
+
+      const date = new Date(
+        now.getFullYear(),
+        now.getMonth() - i,
+        1
+      );
+
+      result.push({
+        month:
+          monthNames[
+            date.getMonth()
+          ],
+
+        total: 0,
+      });
+    }
+
+    /* =====================================
+       NO DATA
+    ===================================== */
+
+    if (
+      !data?.revenueChart ||
+      !Array.isArray(
+        data.revenueChart
+      )
+    ) {
+      return result;
+    }
+
+    /* =====================================
+       TEMPORARY FRONTEND MAPPING
+       (ADJUST WITH CURRENT API)
+    ===================================== */
+
+    data.revenueChart.forEach(
+      (
+        item: any,
+        index: number
+      ) => {
+
+        if (
+          result[index]
+        ) {
+
+          result[index].total =
+            item?.completed ||
+            item?.totalTicket ||
+            item?.ticket ||
+            item?.total ||
+            0;
+        }
+      }
+    );
+
+    return result;
+
+  }, [data]);
+
+  /* =========================================
+    LOADING
+  ========================================= */
+
+  if (!data) {
+    return (
+      <div className="p-10">
+        Loading dashboard...
+      </div>
+    );
+  }
+
+  /* =========================================
+     DATE
+  ========================================= */
+
   const today = new Date();
 
-  const currentMonth = today.toLocaleString(
-    "id-ID",
-    {
-      month: "long",
-      year: "numeric",
-    }
-  );
+  const currentMonth =
+    today.toLocaleString(
+      "id-ID",
+      {
+        month: "long",
+        year: "numeric",
+      }
+    );
+
+  /* =========================================
+     MOCK DATA
+  ========================================= */
 
   const mockTickets = [
     {
-      name: "Wedding Adelia & Reza",
+      name:
+        "Wedding Adelia & Reza",
       status: "On Progress",
       date: "12 Mei 2026",
     },
+
     {
       name: "Birthday Event",
       status: "Pending",
       date: "15 Mei 2026",
     },
+
     {
       name: "Holy Matrimony",
       status: "Approved",
@@ -136,16 +279,22 @@ export default function AdminDashboardPage() {
 
   const roadmap = [
     "Konfirmasi booking pelanggan",
+
     "Verifikasi pembayaran DP",
+
     "Persiapan dekorasi venue",
+
     "Pelaksanaan acara",
+
     "Finalisasi dokumentasi",
   ];
 
   return (
     <div className="min-h-screen bg-[#f5f7fb] p-6">
 
-      {/* HEADER */}
+      {/* =========================================
+         HEADER
+      ========================================= */}
 
       <div
         className="
@@ -174,118 +323,23 @@ export default function AdminDashboardPage() {
               text-neutral-900
             "
           >
-            Monitoring Operasional Floraless
+            Monitoring Operasional
+            Floraless
           </h1>
 
           <p className="mt-3 text-neutral-500">
             Ringkasan performa bisnis,
-            ticket, pembayaran, dan aktivitas
-            terbaru.
+            ticket, pembayaran,
+            dan aktivitas terbaru.
           </p>
-
-        </div>
-
-        {/* FILTER */}
-
-        <div
-          className="
-            flex
-            flex-wrap
-            items-center
-            gap-3
-            rounded-3xl
-            border
-            border-neutral-200
-            bg-white
-            p-4
-            shadow-sm
-          "
-        >
-
-          <label className="flex items-center gap-2 text-sm font-medium text-neutral-700">
-
-            <input
-              type="checkbox"
-              checked={useFilter}
-              onChange={(e) =>
-                setUseFilter(
-                  e.target.checked
-                )
-              }
-            />
-
-            Filter Bulan
-
-          </label>
-
-          {useFilter && (
-            <>
-
-              <select
-                value={query.month}
-                onChange={(e) =>
-                  setQuery({
-                    ...query,
-                    month: Number(
-                      e.target.value
-                    ),
-                  })
-                }
-                className="
-                  rounded-xl
-                  border
-                  border-neutral-200
-                  bg-white
-                  px-4
-                  py-2
-                  text-sm
-                  outline-none
-                "
-              >
-                {[...Array(12)].map(
-                  (_, i) => (
-                    <option
-                      key={i}
-                      value={i + 1}
-                    >
-                      Bulan {i + 1}
-                    </option>
-                  )
-                )}
-              </select>
-
-              <input
-                type="number"
-                value={query.year}
-                onChange={(e) =>
-                  setQuery({
-                    ...query,
-                    year: Number(
-                      e.target.value
-                    ),
-                  })
-                }
-                className="
-                  w-[120px]
-                  rounded-xl
-                  border
-                  border-neutral-200
-                  bg-white
-                  px-4
-                  py-2
-                  text-sm
-                  outline-none
-                "
-              />
-
-            </>
-          )}
 
         </div>
 
       </div>
 
-      {/* SUMMARY */}
+      {/* =========================================
+         SUMMARY
+      ========================================= */}
 
       <div
         className="
@@ -298,7 +352,8 @@ export default function AdminDashboardPage() {
 
         {summary.map((item, i) => {
 
-          const Icon = item.icon;
+          const Icon =
+            item.icon;
 
           return (
             <div
@@ -383,7 +438,9 @@ export default function AdminDashboardPage() {
                   text-emerald-600
                 "
               >
-                <TrendingUp size={16} />
+                <TrendingUp
+                  size={16}
+                />
                 +12% dari bulan lalu
               </div>
 
@@ -393,7 +450,9 @@ export default function AdminDashboardPage() {
 
       </div>
 
-      {/* MAIN GRID */}
+      {/* =========================================
+         MAIN GRID
+      ========================================= */}
 
       <div
         className="
@@ -404,7 +463,9 @@ export default function AdminDashboardPage() {
         "
       >
 
-        {/* LEFT */}
+        {/* =========================================
+           LEFT
+        ========================================= */}
 
         <div
           className="
@@ -413,7 +474,9 @@ export default function AdminDashboardPage() {
           "
         >
 
-          {/* REVENUE */}
+          {/* =========================================
+             GRAPH
+          ========================================= */}
 
           <div
             className="
@@ -442,11 +505,12 @@ export default function AdminDashboardPage() {
                     text-neutral-900
                   "
                 >
-                  Revenue Analytics
+                  Ticket Completion Analytics
                 </h2>
 
                 <p className="mt-1 text-sm text-neutral-500">
-                  Pendapatan harian bisnis
+                  Total ticket selesai
+                  dari bulan ke bulan
                 </p>
 
               </div>
@@ -465,7 +529,9 @@ export default function AdminDashboardPage() {
                   text-emerald-600
                 "
               >
-                <ArrowUpRight size={16} />
+                <ArrowUpRight
+                  size={16}
+                />
                 Growth
               </div>
 
@@ -475,55 +541,41 @@ export default function AdminDashboardPage() {
               width="100%"
               height={320}
             >
-              <AreaChart
-                data={data.revenueChart}
+
+              <BarChart
+                data={
+                  monthlyTicketChart
+                }
               >
 
-                <defs>
-
-                  <linearGradient
-                    id="colorRevenue"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop
-                      offset="5%"
-                      stopColor="#111827"
-                      stopOpacity={0.3}
-                    />
-
-                    <stop
-                      offset="95%"
-                      stopColor="#111827"
-                      stopOpacity={0}
-                    />
-
-                  </linearGradient>
-
-                </defs>
-
-                <XAxis dataKey="day" />
+                <XAxis
+                  dataKey="month"
+                />
 
                 <YAxis />
 
                 <Tooltip />
 
-                <Area
-                  type="monotone"
+                <Bar
                   dataKey="total"
-                  stroke="#111827"
-                  fillOpacity={1}
-                  fill="url(#colorRevenue)"
+                  radius={[
+                    10,
+                    10,
+                    0,
+                    0,
+                  ]}
+                  fill="#111827"
                 />
 
-              </AreaChart>
+              </BarChart>
+
             </ResponsiveContainer>
 
           </div>
 
-          {/* ACTIVITY */}
+          {/* =========================================
+             ACTIVITY
+          ========================================= */}
 
           <div
             className="
@@ -533,7 +585,9 @@ export default function AdminDashboardPage() {
             "
           >
 
-            {/* TICKET LIST */}
+            {/* =========================================
+               TICKET LIST
+            ========================================= */}
 
             <div
               className="
@@ -559,7 +613,7 @@ export default function AdminDashboardPage() {
                     font-semibold
                   "
                 >
-                  Ticket Berjalan
+                  On going Ticket
                 </h2>
 
                 <Sparkles
@@ -572,7 +626,10 @@ export default function AdminDashboardPage() {
               <div className="space-y-4">
 
                 {mockTickets.map(
-                  (ticket, i) => (
+                  (
+                    ticket,
+                    i
+                  ) => (
                     <div
                       key={i}
                       className="
@@ -589,11 +646,15 @@ export default function AdminDashboardPage() {
                       <div>
 
                         <h3 className="font-medium text-neutral-900">
-                          {ticket.name}
+                          {
+                            ticket.name
+                          }
                         </h3>
 
                         <p className="mt-1 text-sm text-neutral-500">
-                          {ticket.date}
+                          {
+                            ticket.date
+                          }
                         </p>
 
                       </div>
@@ -609,7 +670,9 @@ export default function AdminDashboardPage() {
                           text-neutral-700
                         "
                       >
-                        {ticket.status}
+                        {
+                          ticket.status
+                        }
                       </span>
 
                     </div>
@@ -620,7 +683,9 @@ export default function AdminDashboardPage() {
 
             </div>
 
-            {/* ROADMAP */}
+            {/* =========================================
+               ROADMAP
+            ========================================= */}
 
             <div
               className="
@@ -644,7 +709,10 @@ export default function AdminDashboardPage() {
               <div className="space-y-5">
 
                 {roadmap.map(
-                  (item, i) => (
+                  (
+                    item,
+                    i
+                  ) => (
                     <div
                       key={i}
                       className="flex gap-4"
@@ -696,8 +764,10 @@ export default function AdminDashboardPage() {
                         </h3>
 
                         <p className="mt-1 text-sm text-neutral-500">
-                          Progress operasional
-                          dan workflow event.
+                          Progress
+                          operasional
+                          dan workflow
+                          event.
                         </p>
 
                       </div>
@@ -714,7 +784,9 @@ export default function AdminDashboardPage() {
 
         </div>
 
-        {/* RIGHT */}
+        {/* =========================================
+           RIGHT
+        ========================================= */}
 
         <div
           className="
@@ -723,7 +795,9 @@ export default function AdminDashboardPage() {
           "
         >
 
-          {/* CALENDAR */}
+          {/* =========================================
+             CALENDAR
+          ========================================= */}
 
           <div
             className="
@@ -752,7 +826,9 @@ export default function AdminDashboardPage() {
                 </p>
 
                 <h2 className="mt-2 text-2xl font-semibold">
-                  {currentMonth}
+                  {
+                    currentMonth
+                  }
                 </h2>
 
               </div>
@@ -824,7 +900,9 @@ export default function AdminDashboardPage() {
 
           </div>
 
-          {/* PIE */}
+          {/* =========================================
+             PIE
+          ========================================= */}
 
           <div
             className="
@@ -864,6 +942,7 @@ export default function AdminDashboardPage() {
               width="100%"
               height={260}
             >
+
               <PieChart>
 
                 <Pie
@@ -875,7 +954,10 @@ export default function AdminDashboardPage() {
                 >
 
                   {pieData.map(
-                    (_, i) => (
+                    (
+                      _,
+                      i
+                    ) => (
                       <Cell
                         key={i}
                         fill={
@@ -893,12 +975,16 @@ export default function AdminDashboardPage() {
                 <Tooltip />
 
               </PieChart>
+
             </ResponsiveContainer>
 
             <div className="mt-6 space-y-3">
 
               {pieData.map(
-                (item, i) => (
+                (
+                  item,
+                  i
+                ) => (
                   <div
                     key={i}
                     className="
@@ -922,13 +1008,17 @@ export default function AdminDashboardPage() {
                       />
 
                       <span className="text-sm text-neutral-600">
-                        {item.name}
+                        {
+                          item.name
+                        }
                       </span>
 
                     </div>
 
                     <span className="font-medium">
-                      {item.value}
+                      {
+                        item.value
+                      }
                     </span>
 
                   </div>
@@ -939,7 +1029,9 @@ export default function AdminDashboardPage() {
 
           </div>
 
-          {/* MINI STATS */}
+          {/* =========================================
+             MINI STATS
+          ========================================= */}
 
           <div
             className="
@@ -973,12 +1065,20 @@ export default function AdminDashboardPage() {
                     text-sm
                   "
                 >
-                  <span>Ticket Approved</span>
-                  <span>78%</span>
+                  <span>
+                    Ticket Approved
+                  </span>
+
+                  <span>
+                    78%
+                  </span>
+
                 </div>
 
                 <div className="h-3 rounded-full bg-neutral-100">
+
                   <div className="h-3 w-[78%] rounded-full bg-neutral-900" />
+
                 </div>
 
               </div>
@@ -994,12 +1094,20 @@ export default function AdminDashboardPage() {
                     text-sm
                   "
                 >
-                  <span>Payment Success</span>
-                  <span>64%</span>
+                  <span>
+                    Payment Success
+                  </span>
+
+                  <span>
+                    64%
+                  </span>
+
                 </div>
 
                 <div className="h-3 rounded-full bg-neutral-100">
+
                   <div className="h-3 w-[64%] rounded-full bg-emerald-500" />
+
                 </div>
 
               </div>
@@ -1015,12 +1123,20 @@ export default function AdminDashboardPage() {
                     text-sm
                   "
                 >
-                  <span>Cashback Process</span>
-                  <span>32%</span>
+                  <span>
+                    Cashback Process
+                  </span>
+
+                  <span>
+                    32%
+                  </span>
+
                 </div>
 
                 <div className="h-3 rounded-full bg-neutral-100">
+
                   <div className="h-3 w-[32%] rounded-full bg-amber-500" />
+
                 </div>
 
               </div>

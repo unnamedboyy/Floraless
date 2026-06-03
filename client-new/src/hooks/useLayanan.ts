@@ -29,11 +29,13 @@ export const useLayanan = (
         const res =
           await getAllLayanan(query);
 
-        console.log("LAYANAN:", res);
+        console.log(
+          "LAYANAN:",
+          res
+        );
 
         setData(
           res?.data ||
-          res ||
           []
         );
 
@@ -54,7 +56,9 @@ export const useLayanan = (
 
     fetchData();
 
-  }, [query]);
+  }, [
+    JSON.stringify(query)
+  ]);
 
   return {
 

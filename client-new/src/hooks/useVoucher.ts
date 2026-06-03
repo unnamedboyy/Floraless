@@ -18,7 +18,7 @@ export function useVoucher(query: any) {
       setLoading(true);
 
       const res = await axios.get(
-        "/voucher",
+        "/vouchers",
         {
           params: query,
         }

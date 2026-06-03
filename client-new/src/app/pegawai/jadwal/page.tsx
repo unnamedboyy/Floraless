@@ -46,7 +46,7 @@ export default function PegawaiJadwalPage() {
 
       start: today,
 
-      end: today,
+      end: "2099-12-31",
 
       status: "",
     });

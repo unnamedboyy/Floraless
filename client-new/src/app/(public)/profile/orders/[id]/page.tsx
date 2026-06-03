@@ -174,7 +174,9 @@ export default function OrderDetailPage() {
     <>
 
       <div className="
-        space-y-8
+        max-w-7xl
+        mx-auto
+        space-y-12
       ">
 
         {/* =====================================================
@@ -182,11 +184,9 @@ export default function OrderDetailPage() {
         ===================================================== */}
 
         <div className="
-          rounded-[2rem]
-          border
-          bg-white
-          p-8
-          shadow-sm
+          pb-10
+          border-b
+          border-gray-200
         ">
 
           <div className="
@@ -236,9 +236,11 @@ export default function OrderDetailPage() {
               </div>
 
               <h1 className="
-                mt-5
-                text-4xl
+                mt-6
+                text-5xl
                 font-bold
+                tracking-tight
+                text-[#111827]
               ">
 
                 {
@@ -338,27 +340,32 @@ export default function OrderDetailPage() {
         <div className="
           grid
           gap-8
-          xl:grid-cols-[1fr_380px]
+          xl:grid-cols-[minmax(0,1fr)_360px]
         ">
 
           {/* ===================================================
              LEFT
           =================================================== */}
 
-          <div className="
-            space-y-8
-          ">
+          <div
+            className="
+              space-y-8
+              xl:sticky
+              xl:top-6
+              h-fit
+            "
+          >
 
             {/* =================================================
                DETAIL ACARA
             ================================================= */}
 
             <div className="
-              rounded-[2rem]
+              rounded-[32px]
               border
+              border-gray-200
               bg-white
-              p-8
-              shadow-sm
+              p-10
             ">
 
               <div className="
@@ -525,11 +532,11 @@ export default function OrderDetailPage() {
             ================================================= */}
 
             <div className="
-              rounded-[2rem]
+              rounded-[32px]
               border
+              border-gray-200
               bg-white
-              p-8
-              shadow-sm
+              p-10
             ">
 
               <div className="
@@ -627,9 +634,12 @@ export default function OrderDetailPage() {
                         <div
                           key={item._id}
                           className="
-                            rounded-2xl
+                            rounded-[28px]
                             border
-                            p-5
+                            border-gray-200
+                            p-6
+                            transition-all
+                            hover:border-gray-300
                           "
                         >
 
@@ -776,153 +786,6 @@ export default function OrderDetailPage() {
 
             </div>
 
-            {/* =================================================
-               ACTIVITY LOGS
-            ================================================= */}
-
-            <div className="
-              rounded-[2rem]
-              border
-              bg-white
-              p-8
-              shadow-sm
-            ">
-
-              <h2 className="
-                text-2xl
-                font-bold
-              ">
-                Activity Timeline
-              </h2>
-
-              <div className="
-                mt-10
-                space-y-6
-              ">
-
-                {
-                  logs.length === 0 ? (
-
-                    <div className="
-                      rounded-2xl
-                      bg-gray-50
-                      p-6
-                      text-center
-                      text-gray-500
-                    ">
-
-                      Belum ada aktivitas.
-
-                    </div>
-
-                  ) : (
-
-                    logs.map(
-                      (log: any, index: number) => (
-
-                        <div
-                          key={log._id}
-                          className="
-                            relative
-                            flex
-                            gap-5
-                          "
-                        >
-
-                          {
-                            index !==
-                            logs.length - 1 && (
-
-                              <div className="
-                                absolute
-                                left-[15px]
-                                top-8
-                                h-full
-                                w-[2px]
-                                bg-gray-200
-                              " />
-                            )
-                          }
-
-                          <div className="
-                            relative
-                            z-10
-                            mt-1
-                            h-8
-                            w-8
-                            rounded-full
-                            bg-black
-                          " />
-
-                          <div className="
-                            flex-1
-                            rounded-2xl
-                            border
-                            p-5
-                          ">
-
-                            <div className="
-                              flex
-                              flex-wrap
-                              items-center
-                              justify-between
-                              gap-3
-                            ">
-
-                              <h3 className="
-                                font-bold
-                              ">
-
-                                {
-                                  log.action
-                                }
-
-                              </h3>
-
-                              <p className="
-                                text-sm
-                                text-gray-500
-                              ">
-
-                                {
-                                  log.createdAt
-
-                                    ? new Date(
-                                        log.createdAt
-                                      ).toLocaleString(
-                                        "id-ID"
-                                      )
-
-                                    : "-"
-                                }
-
-                              </p>
-
-                            </div>
-
-                            <p className="
-                              mt-3
-                              text-gray-600
-                            ">
-
-                              {
-                                log.description
-                              }
-
-                            </p>
-
-                          </div>
-
-                        </div>
-                      )
-                    )
-                  )
-                }
-
-              </div>
-
-            </div>
-
           </div>
 
           {/* ===================================================
@@ -934,15 +797,138 @@ export default function OrderDetailPage() {
           ">
 
             {/* =================================================
+               PIC & JADWAL
+            ================================================= */}
+
+            <div className="
+              rounded-[32px]
+              border
+              border-gray-200
+              bg-white
+              p-8
+            ">
+
+              <div className="
+                flex
+                items-center
+                gap-3
+              ">
+
+                <User size={22} />
+
+                <h2 className="
+                  text-2xl
+                  font-bold
+                ">
+                  PIC & Jadwal
+                </h2>
+
+              </div>
+
+              <div className="
+                mt-8
+                space-y-6
+              ">
+
+                <div>
+
+                  <p className="
+                    text-sm
+                    text-gray-500
+                  ">
+                    PIC
+                  </p>
+
+                  <p className="
+                    mt-2
+                    text-lg
+                    font-semibold
+                  ">
+
+                    {
+                      pegawai?.nama ||
+                      "Belum ditentukan"
+                    }
+
+                  </p>
+
+                </div>
+
+                <div>
+
+                  <p className="
+                    text-sm
+                    text-gray-500
+                  ">
+                    Status Jadwal
+                  </p>
+
+                  <p className="
+                    mt-2
+                    text-lg
+                    font-semibold
+                  ">
+
+                    {
+                      jadwal?.status ||
+                      "-"
+                    }
+
+                  </p>
+
+                </div>
+
+                <div>
+
+                  <p className="
+                    text-sm
+                    text-gray-500
+                  ">
+                    Tanggal Acara
+                  </p>
+
+                  <p className="
+                    mt-2
+                    text-lg
+                    font-semibold
+                  ">
+
+                    {
+                      jadwal?.tanggal_acara
+
+                        ? new Date(
+                            jadwal.tanggal_acara
+                          ).toLocaleDateString(
+                            "id-ID",
+                            {
+                              weekday: "long",
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            }
+                          )
+
+                        : "-"
+                    }
+
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* =================================================
                PAYMENT SUMMARY
             ================================================= */}
 
             <div className="
-              rounded-[2rem]
+              rounded-[32px]
               border
+              border-gray-200
               bg-white
               p-8
-              shadow-sm
             ">
 
               <div className="
@@ -1057,123 +1043,148 @@ export default function OrderDetailPage() {
             </div>
 
             {/* =================================================
-               PIC & JADWAL
+               ACTIVITY LOGS
             ================================================= */}
 
             <div className="
-              rounded-[2rem]
+              rounded-[32px]
               border
+              border-gray-200
               bg-white
-              p-8
-              shadow-sm
+              p-10
             ">
 
-              <div className="
-                flex
-                items-center
-                gap-3
+              <h2 className="
+                text-2xl
+                font-bold
               ">
-
-                <User size={22} />
-
-                <h2 className="
-                  text-2xl
-                  font-bold
-                ">
-                  PIC & Jadwal
-                </h2>
-
-              </div>
+                Activity Timeline
+              </h2>
 
               <div className="
-                mt-8
+                mt-10
                 space-y-6
               ">
 
-                <div>
+                {
+                  logs.length === 0 ? (
 
-                  <p className="
-                    text-sm
-                    text-gray-500
-                  ">
-                    PIC
-                  </p>
+                    <div className="
+                      rounded-2xl
+                      bg-gray-50
+                      p-6
+                      text-center
+                      text-gray-500
+                    ">
 
-                  <p className="
-                    mt-2
-                    text-lg
-                    font-semibold
-                  ">
+                      Belum ada aktivitas.
 
-                    {
-                      pegawai?.nama ||
-                      "Belum ditentukan"
-                    }
+                    </div>
 
-                  </p>
+                  ) : (
 
-                </div>
+                    logs.map(
+                      (log: any, index: number) => (
 
-                <div>
+                        <div
+                          key={log._id}
+                          className="
+                            relative
+                            flex
+                            gap-5
+                          "
+                        >
 
-                  <p className="
-                    text-sm
-                    text-gray-500
-                  ">
-                    Status Jadwal
-                  </p>
+                          {
+                            index !==
+                            logs.length - 1 && (
 
-                  <p className="
-                    mt-2
-                    text-lg
-                    font-semibold
-                  ">
+                              <div className="
+                                absolute
+                                left-[15px]
+                                top-8
+                                h-full
+                                w-[2px]
+                                bg-gray-200
+                              " />
+                            )
+                          }
 
-                    {
-                      jadwal?.status ||
-                      "-"
-                    }
+                          <div className="
+                            relative
+                            z-10
+                            mt-1
+                            h-8
+                            w-8
+                            rounded-full
+                            bg-black
+                          " />
 
-                  </p>
+                          <div className="
+                            rounded-[24px]
+                            border
+                            border-gray-200
+                            bg-white
+                            p-6
+                          ">
 
-                </div>
+                            <div className="
+                              flex
+                              flex-wrap
+                              items-center
+                              justify-between
+                              gap-3
+                            ">
 
-                <div>
+                              <h3 className="
+                                font-bold
+                              ">
 
-                  <p className="
-                    text-sm
-                    text-gray-500
-                  ">
-                    Tanggal Acara
-                  </p>
+                                {
+                                  log.action
+                                }
 
-                  <p className="
-                    mt-2
-                    text-lg
-                    font-semibold
-                  ">
+                              </h3>
 
-                    {
-                      jadwal?.tanggal_acara
+                              <p className="
+                                text-sm
+                                text-gray-500
+                              ">
 
-                        ? new Date(
-                            jadwal.tanggal_acara
-                          ).toLocaleDateString(
-                            "id-ID",
-                            {
-                              weekday: "long",
-                              day: "numeric",
-                              month: "long",
-                              year: "numeric",
-                            }
-                          )
+                                {
+                                  log.createdAt
 
-                        : "-"
-                    }
+                                    ? new Date(
+                                        log.createdAt
+                                      ).toLocaleString(
+                                        "id-ID"
+                                      )
 
-                  </p>
+                                    : "-"
+                                }
 
-                </div>
+                              </p>
+
+                            </div>
+
+                            <p className="
+                              mt-3
+                              text-gray-600
+                            ">
+
+                              {
+                                log.description
+                              }
+
+                            </p>
+
+                          </div>
+
+                        </div>
+                      )
+                    )
+                  )
+                }
 
               </div>
 

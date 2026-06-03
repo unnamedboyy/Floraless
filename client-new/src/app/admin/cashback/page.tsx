@@ -2,29 +2,44 @@
 
 import { useState } from "react";
 
+import {
+  Eye,
+} from "lucide-react";
+
 import TableWrapper from "@/components/table/TableWrapper";
 
-import { useCashback } from "@/hooks/useCashback";
+import CashbackDetailModal
+from "@/components/modal/CashbackDetailModal";
+
+import {
+  useCashback,
+} from "@/hooks/useCashback";
 
 import {
   approveCashback,
   rejectCashback,
 } from "@/services/cashback.service";
 
-import CashbackDetailModal from "@/components/modal/CashbackDetailModal";
+import toast from "react-hot-toast";
 
 export default function CashbackPage() {
 
-  /* ================= STATE ================= */
+  /* =====================================================
+     STATE
+  ===================================================== */
 
-  const [query, setQuery] = useState({
-    page: 1,
-    limit: 10,
-    status: "",
-    search: "",
-  });
+  const [query, setQuery] =
+    useState({
 
-  /* 🔥 VIEW */
+      page: 1,
+
+      limit: 10,
+
+      status: "",
+
+      search: "",
+    });
+
   const [view, setView] =
     useState<"list" | "grid">(
       "list"
@@ -33,15 +48,23 @@ export default function CashbackPage() {
   const [selected, setSelected] =
     useState<any>(null);
 
-  /* ================= DATA ================= */
+  /* =====================================================
+     DATA
+  ===================================================== */
 
   const {
+
     data = [],
+
     total = 0,
+
     reload,
+
   } = useCashback(query);
 
-  /* ================= ACTION ================= */
+  /* =====================================================
+     APPROVE
+  ===================================================== */
 
   const handleApprove =
     async (
@@ -51,26 +74,41 @@ export default function CashbackPage() {
 
       try {
 
-        if (!bukti)
-          return alert(
+        if (!bukti) {
+
+          toast.error(
             "Bukti wajib diisi"
           );
+
+          return;
+        }
 
         await approveCashback(
           id,
           bukti
         );
 
+        toast.success(
+          "Cashback berhasil disetujui"
+        );
+
         reload();
+
         setSelected(null);
 
       } catch (err) {
+
         console.error(err);
-        alert(
+
+        toast.error(
           "Gagal approve cashback"
         );
       }
     };
+
+  /* =====================================================
+     REJECT
+  ===================================================== */
 
   const handleReject =
     async (
@@ -80,14 +118,22 @@ export default function CashbackPage() {
 
       try {
 
-        if (!alasan)
-          return alert(
+        if (!alasan) {
+
+          toast.error(
             "Alasan wajib diisi"
           );
+
+          return;
+        }
 
         await rejectCashback(
           id,
           alasan
+        );
+
+        toast.success(
+          "Cashback berhasil ditolak"
         );
 
         reload();
@@ -98,13 +144,15 @@ export default function CashbackPage() {
 
         console.error(err);
 
-        alert(
+        toast.error(
           "Gagal reject cashback"
         );
       }
     };
 
-  /* ================= BADGE ================= */
+  /* =====================================================
+     BADGE
+  ===================================================== */
 
   const getStatusBadge =
     (status: string) => {
@@ -122,27 +170,48 @@ export default function CashbackPage() {
       };
 
       return (
+
         map[status] ||
+
         "bg-gray-100 text-gray-700 border"
       );
     };
 
-  /* ================= UI ================= */
+  /* =====================================================
+     UI
+  ===================================================== */
 
   return (
 
-    <div className="p-6 space-y-5">
+    <div className="
+      p-6
+      space-y-5
+    ">
 
-      {/* HEADER */}
-      <div className="flex items-center justify-between">
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
+
+      <div className="
+        flex
+        items-center
+        justify-between
+      ">
 
         <div>
 
-          <h1 className="text-2xl font-bold">
+          <h1 className="
+            text-2xl
+            font-bold
+          ">
             Cashback Claim
           </h1>
 
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="
+            text-sm
+            text-gray-500
+            mt-1
+          ">
             Kelola pengajuan cashback pelanggan
           </p>
 
@@ -150,34 +219,53 @@ export default function CashbackPage() {
 
       </div>
 
-      {/* TABLE */}
+      {/* =====================================================
+          TABLE
+      ===================================================== */}
+
       <TableWrapper
 
-        /* 🔥 VIEW */
+        /* ================= VIEW ================= */
+
         view={view}
+
         setView={setView}
 
-        /* 🔥 FILTER */
+        /* ================= FILTER ================= */
+
         filterContent={
 
-          <div className="space-y-3">
+          <div className="
+            space-y-3
+          ">
 
             {/* STATUS */}
             <div>
 
-              <p className="text-xs text-gray-500 mb-1">
+              <p className="
+                text-xs
+                text-gray-500
+                mb-1
+              ">
                 Status
               </p>
 
               <select
+
                 value={query.status}
+
                 onChange={(e) =>
                   setQuery((prev) => ({
+
                     ...prev,
-                    status: e.target.value,
+
+                    status:
+                      e.target.value,
+
                     page: 1,
                   }))
                 }
+
                 className="
                   w-full
                   border
@@ -211,21 +299,31 @@ export default function CashbackPage() {
             {/* LIMIT */}
             <div>
 
-              <p className="text-xs text-gray-500 mb-1">
+              <p className="
+                text-xs
+                text-gray-500
+                mb-1
+              ">
                 Data per halaman
               </p>
 
               <select
+
                 value={query.limit}
+
                 onChange={(e) =>
                   setQuery((prev) => ({
+
                     ...prev,
+
                     limit: Number(
                       e.target.value
                     ),
+
                     page: 1,
                   }))
                 }
+
                 className="
                   w-full
                   border
@@ -258,14 +356,20 @@ export default function CashbackPage() {
 
             {/* RESET */}
             <button
+
               onClick={() =>
                 setQuery({
+
                   page: 1,
+
                   limit: 10,
+
                   status: "",
+
                   search: "",
                 })
               }
+
               className="
                 w-full
                 bg-black
@@ -275,17 +379,23 @@ export default function CashbackPage() {
                 text-sm
               "
             >
+
               Reset Filter
+
             </button>
 
           </div>
         }
 
         data={data}
+
         total={total}
 
         query={query}
+
         setQuery={setQuery}
+
+        /* ================= COLUMNS ================= */
 
         columns={[
 
@@ -306,15 +416,44 @@ export default function CashbackPage() {
 
           {
             label: "Status",
+
             key: "status",
+
+            render: (value: string) => (
+
+              <span className={`
+                inline-flex
+                items-center
+                px-3
+                py-1
+                rounded-full
+                text-xs
+                font-medium
+                ${getStatusBadge(value)}
+              `}>
+
+                {value}
+
+              </span>
+            ),
           },
 
         ]}
 
+        /* ================= ACTION ================= */
+
         actions={[
 
           {
-            label: "Detail",
+            icon: (
+              <Eye size={17} />
+            ),
+
+            className: `
+              bg-gray-100
+              text-gray-700
+              hover:bg-gray-200
+            `,
 
             onClick: (row) =>
               setSelected(row),
@@ -338,37 +477,49 @@ export default function CashbackPage() {
           >
 
             {/* TOP */}
-            <div className="flex items-start justify-between gap-3">
+            <div className="
+              flex
+              items-start
+              justify-between
+              gap-3
+            ">
 
               <div>
 
-                <p className="font-semibold text-base">
+                <p className="
+                  font-semibold
+                  text-base
+                ">
                   {row.pelangganId?.nama ||
                     "-"}
                 </p>
 
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="
+                  text-sm
+                  text-gray-500
+                  mt-1
+                ">
                   {row.kode_voucher ||
                     "-"}
                 </p>
 
               </div>
 
-              <span
-                className={`
-                  inline-flex
-                  items-center
-                  px-3
-                  py-1
-                  rounded-full
-                  text-xs
-                  font-medium
-                  ${getStatusBadge(
-                    row.status
-                  )}
-                `}
-              >
+              <span className={`
+                inline-flex
+                items-center
+                px-3
+                py-1
+                rounded-full
+                text-xs
+                font-medium
+                ${getStatusBadge(
+                  row.status
+                )}
+              `}>
+
                 {row.status}
+
               </span>
 
             </div>
@@ -376,24 +527,40 @@ export default function CashbackPage() {
             {/* BANK */}
             <div>
 
-              <p className="text-xs text-gray-400">
+              <p className="
+                text-xs
+                text-gray-400
+              ">
                 Bank Tujuan
               </p>
 
-              <p className="text-sm font-medium mt-1">
+              <p className="
+                text-sm
+                font-medium
+                mt-1
+              ">
                 {row.bank || "-"}
               </p>
 
             </div>
 
             {/* ACCOUNT */}
-            <div className="pt-2 border-t">
+            <div className="
+              pt-2
+              border-t
+            ">
 
-              <p className="text-xs text-gray-400">
+              <p className="
+                text-xs
+                text-gray-400
+              ">
                 Nama Rekening
               </p>
 
-              <p className="text-sm mt-1">
+              <p className="
+                text-sm
+                mt-1
+              ">
                 {row.nama_rekening ||
                   "-"}
               </p>
@@ -405,14 +572,22 @@ export default function CashbackPage() {
 
       />
 
-      {/* MODAL */}
+      {/* =====================================================
+          MODAL
+      ===================================================== */}
+
       <CashbackDetailModal
+
         open={!!selected}
+
         data={selected}
+
         onClose={() =>
           setSelected(null)
         }
+
         onApprove={handleApprove}
+
         onReject={handleReject}
       />
 

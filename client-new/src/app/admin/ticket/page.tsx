@@ -1,21 +1,40 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
-import { useTickets } from "@/hooks/useTickets";
+import toast from "react-hot-toast";
 
-import TableWrapper from "@/components/table/TableWrapper";
+import {
+  Eye,
+  UserPlus,
+  Play,
+  CheckCircle2,
+} from "lucide-react";
 
-import AssignPICModal from "@/components/modal/AssignPICModal";
+import TableWrapper
+from "@/components/table/TableWrapper";
 
-import TicketDetailModal from "@/components/modal/TicketDetailModal";
+import AssignPICModal
+from "@/components/modal/AssignPICModal";
+
+import TicketDetailModal
+from "@/components/modal/TicketDetailModal";
+
+import {
+  useTickets,
+} from "@/hooks/useTickets";
 
 import {
   approveTicket,
   updateStatusTicket,
 } from "@/services/ticket.service";
 
-/* ================= BADGE ================= */
+/* =====================================================
+   BADGE
+===================================================== */
 
 const getStatusBadge =
   (status: string) => {
@@ -36,23 +55,31 @@ const getStatusBadge =
     };
 
     return (
+
       map[status] ||
+
       "bg-gray-100 text-gray-700 border"
     );
   };
 
 export default function TicketPage() {
 
-  /* ================= STATE ================= */
+  /* =====================================================
+     STATE
+  ===================================================== */
 
-  const [query, setQuery] = useState({
-    page: 1,
-    limit: 10,
-    status: "",
-    search: "",
-  });
+  const [query, setQuery] =
+    useState({
 
-  /* 🔥 VIEW */
+      page: 1,
+
+      limit: 10,
+
+      status: "",
+
+      search: "",
+    });
+
   const [view, setView] =
     useState<"list" | "grid">(
       "list"
@@ -72,62 +99,97 @@ export default function TicketPage() {
       null
     );
 
-  /* ================= DATA ================= */
+  /* =====================================================
+     DATA
+  ===================================================== */
 
   const {
+
     data = [],
+
     total = 0,
+
     reload,
+
   } = useTickets(query);
 
-  /* ================= DEBOUNCE SEARCH ================= */
+  /* =====================================================
+     DEBOUNCE SEARCH
+  ===================================================== */
 
   useEffect(() => {
 
     const t = setTimeout(() => {
 
       setQuery((q) => ({
+
         ...q,
+
         search: searchInput,
+
         page: 1,
       }));
 
     }, 400);
 
-    return () => clearTimeout(t);
+    return () =>
+      clearTimeout(t);
 
   }, [searchInput]);
 
-  /* ================= ACTION ================= */
+  /* =====================================================
+     APPROVE
+  ===================================================== */
 
   const handleApprove =
     async (
       pegawaiId: string
     ) => {
 
-      if (!pegawaiId)
-        return alert(
+      if (!pegawaiId) {
+
+        toast.error(
           "Pilih pegawai dulu"
         );
+
+        return;
+      }
 
       try {
 
         await approveTicket(
+
           selected._id,
+
           pegawaiId
         );
 
+        toast.success(
+          "PIC berhasil ditugaskan"
+        );
+
         setOpenAssign(false);
+
         setSelected(null);
+
         reload();
 
-      } catch {
+      } catch (err: any) {
 
-        alert(
+        console.error(err);
+
+        toast.error(
+
+          err?.response?.data?.message ||
+
           "Gagal assign PIC"
         );
       }
     };
+
+  /* =====================================================
+     UPDATE STATUS
+  ===================================================== */
 
   const handleStatus =
     async (row: any) => {
@@ -138,6 +200,7 @@ export default function TicketPage() {
         row.status ===
         "approved"
       ) {
+
         nextStatus =
           "in_progress";
       }
@@ -146,109 +209,215 @@ export default function TicketPage() {
         row.status ===
         "in_progress"
       ) {
-        nextStatus = "done";
+
+        nextStatus =
+          "done";
       }
 
-      if (!nextStatus) return;
+      if (!nextStatus)
+        return;
 
       try {
 
         await updateStatusTicket(
+
           row._id,
+
           nextStatus
+        );
+
+        toast.success(
+          "Status ticket berhasil diperbarui"
         );
 
         reload();
 
-      } catch {
+      } catch (err: any) {
 
-        alert(
+        console.error(err);
+
+        toast.error(
+
+          err?.response?.data?.message ||
+
           "Gagal update status"
         );
       }
     };
 
-  /* ================= ACTION CONFIG ================= */
+  /* =====================================================
+     ACTIONS
+  ===================================================== */
 
   const actions = [
 
+    /* ================= DETAIL ================= */
+
     {
-      label: "Detail",
+      icon: (
+        <Eye size={17} />
+      ),
+
+      className: `
+        bg-gray-100
+        text-gray-700
+        hover:bg-gray-200
+      `,
 
       onClick: (row: any) =>
         setDetailId(row._id),
     },
 
+    /* ================= ASSIGN ================= */
+
     {
-      label: "Action",
+      icon: (
+        <UserPlus size={17} />
+      ),
+
+      className: `
+        bg-blue-100
+        text-blue-700
+        hover:bg-blue-200
+      `,
+
+      show: (row: any) =>
+        row.status ===
+        "pending",
 
       onClick: (row: any) => {
 
-        if (
-          row.status ===
-          "pending"
-        ) {
+        setSelected(row);
 
-          setSelected(row);
-
-          setOpenAssign(true);
-
-        } else {
-
-          handleStatus(row);
-        }
+        setOpenAssign(true);
       },
+    },
+
+    /* ================= START ================= */
+
+    {
+      icon: (
+        <Play size={17} />
+      ),
+
+      className: `
+        bg-yellow-100
+        text-yellow-700
+        hover:bg-yellow-200
+      `,
+
+      show: (row: any) =>
+        row.status ===
+        "approved",
+
+      onClick: (row: any) =>
+        handleStatus(row),
+    },
+
+    /* ================= DONE ================= */
+
+    {
+      icon: (
+        <CheckCircle2 size={17} />
+      ),
+
+      className: `
+        bg-green-100
+        text-green-700
+        hover:bg-green-200
+      `,
+
+      show: (row: any) =>
+        row.status ===
+        "in_progress",
+
+      onClick: (row: any) =>
+        handleStatus(row),
     },
 
   ];
 
-  /* ================= UI ================= */
+  /* =====================================================
+     UI
+  ===================================================== */
 
   return (
 
-    <div className="p-6 space-y-5">
+    <div className="
+      p-6
+      space-y-5
+    ">
 
-      {/* HEADER */}
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
+
       <div>
 
-        <h1 className="text-2xl font-bold">
+        <h1 className="
+          text-2xl
+          font-bold
+        ">
           Kelola Ticket
         </h1>
 
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="
+          text-sm
+          text-gray-500
+          mt-1
+        ">
           Monitoring ticket dan progress layanan
         </p>
 
       </div>
 
-      {/* TABLE */}
+      {/* =====================================================
+          TABLE
+      ===================================================== */}
+
       <TableWrapper
 
-        /* 🔥 VIEW */
+        /* ================= VIEW ================= */
+
         view={view}
+
         setView={setView}
 
-        /* 🔥 FILTER */
+        /* ================= FILTER ================= */
+
         filterContent={
 
-          <div className="space-y-3">
+          <div className="
+            space-y-3
+          ">
 
             {/* STATUS */}
             <div>
 
-              <p className="text-xs text-gray-500 mb-1">
+              <p className="
+                text-xs
+                text-gray-500
+                mb-1
+              ">
                 Status Ticket
               </p>
 
               <select
+
                 value={query.status}
+
                 onChange={(e) =>
                   setQuery((prev) => ({
+
                     ...prev,
-                    status: e.target.value,
+
+                    status:
+                      e.target.value,
+
                     page: 1,
                   }))
                 }
+
                 className="
                   w-full
                   border
@@ -286,21 +455,31 @@ export default function TicketPage() {
             {/* LIMIT */}
             <div>
 
-              <p className="text-xs text-gray-500 mb-1">
+              <p className="
+                text-xs
+                text-gray-500
+                mb-1
+              ">
                 Data per halaman
               </p>
 
               <select
+
                 value={query.limit}
+
                 onChange={(e) =>
                   setQuery((prev) => ({
+
                     ...prev,
+
                     limit: Number(
                       e.target.value
                     ),
+
                     page: 1,
                   }))
                 }
+
                 className="
                   w-full
                   border
@@ -333,17 +512,23 @@ export default function TicketPage() {
 
             {/* RESET */}
             <button
+
               onClick={() => {
 
                 setSearchInput("");
 
                 setQuery({
+
                   page: 1,
+
                   limit: 10,
+
                   status: "",
+
                   search: "",
                 });
               }}
+
               className="
                 w-full
                 bg-black
@@ -353,17 +538,23 @@ export default function TicketPage() {
                 text-sm
               "
             >
+
               Reset Filter
+
             </button>
 
           </div>
         }
 
         data={data}
+
         total={total}
 
         query={query}
+
         setQuery={setQuery}
+
+        /* ================= COLUMNS ================= */
 
         columns={[
 
@@ -384,7 +575,26 @@ export default function TicketPage() {
 
           {
             label: "Status",
+
             key: "status",
+
+            render: (value: string) => (
+
+              <span className={`
+                inline-flex
+                items-center
+                px-3
+                py-1
+                rounded-full
+                text-xs
+                font-medium
+                ${getStatusBadge(value)}
+              `}>
+
+                {value}
+
+              </span>
+            ),
           },
 
         ]}
@@ -407,37 +617,49 @@ export default function TicketPage() {
           >
 
             {/* TOP */}
-            <div className="flex items-start justify-between gap-3">
+            <div className="
+              flex
+              items-start
+              justify-between
+              gap-3
+            ">
 
               <div>
 
-                <p className="font-semibold text-base">
+                <p className="
+                  font-semibold
+                  text-base
+                ">
                   {row.pelangganId?.nama ||
                     "-"}
                 </p>
 
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="
+                  text-sm
+                  text-gray-500
+                  mt-1
+                ">
                   {row.layananId?.nama ||
                     "-"}
                 </p>
 
               </div>
 
-              <span
-                className={`
-                  inline-flex
-                  items-center
-                  px-3
-                  py-1
-                  rounded-full
-                  text-xs
-                  font-medium
-                  ${getStatusBadge(
-                    row.status
-                  )}
-                `}
-              >
+              <span className={`
+                inline-flex
+                items-center
+                px-3
+                py-1
+                rounded-full
+                text-xs
+                font-medium
+                ${getStatusBadge(
+                  row.status
+                )}
+              `}>
+
                 {row.status}
+
               </span>
 
             </div>
@@ -445,113 +667,21 @@ export default function TicketPage() {
             {/* PIC */}
             <div>
 
-              <p className="text-xs text-gray-400">
+              <p className="
+                text-xs
+                text-gray-400
+              ">
                 PIC Pegawai
               </p>
 
-              <p className="text-sm font-medium mt-1">
+              <p className="
+                text-sm
+                font-medium
+                mt-1
+              ">
                 {row.pegawaiId?.nama ||
                   "-"}
               </p>
-
-            </div>
-
-            {/* ACTION */}
-            <div
-              className="
-                pt-3
-                border-t
-                flex
-                flex-wrap
-                gap-2
-              "
-            >
-
-              <button
-                onClick={() =>
-                  setDetailId(
-                    row._id
-                  )
-                }
-                className="
-                  px-3
-                  py-1.5
-                  rounded-xl
-                  bg-gray-100
-                  text-sm
-                "
-              >
-                Detail
-              </button>
-
-              {row.status ===
-                "pending" && (
-
-                <button
-                  onClick={() => {
-
-                    setSelected(row);
-
-                    setOpenAssign(
-                      true
-                    );
-                  }}
-                  className="
-                    px-3
-                    py-1.5
-                    rounded-xl
-                    bg-blue-100
-                    text-blue-700
-                    text-sm
-                  "
-                >
-                  Assign
-                </button>
-              )}
-
-              {row.status ===
-                "approved" && (
-
-                <button
-                  onClick={() =>
-                    handleStatus(
-                      row
-                    )
-                  }
-                  className="
-                    px-3
-                    py-1.5
-                    rounded-xl
-                    bg-yellow-100
-                    text-yellow-700
-                    text-sm
-                  "
-                >
-                  Start
-                </button>
-              )}
-
-              {row.status ===
-                "in_progress" && (
-
-                <button
-                  onClick={() =>
-                    handleStatus(
-                      row
-                    )
-                  }
-                  className="
-                    px-3
-                    py-1.5
-                    rounded-xl
-                    bg-green-100
-                    text-green-700
-                    text-sm
-                  "
-                >
-                  Done
-                </button>
-              )}
 
             </div>
 
@@ -560,20 +690,29 @@ export default function TicketPage() {
 
       />
 
-      {/* ================= MODALS ================= */}
+      {/* =====================================================
+          MODALS
+      ===================================================== */}
 
       <AssignPICModal
+
         open={openAssign}
+
         onClose={() =>
           setOpenAssign(false)
         }
+
         onSubmit={handleApprove}
+
         ticket={selected}
       />
 
       <TicketDetailModal
+
         open={!!detailId}
+
         ticketId={detailId}
+
         onClose={() =>
           setDetailId(null)
         }

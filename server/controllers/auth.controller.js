@@ -8,911 +8,529 @@ import Pelanggan from "../models/pelanggan.js";
 import Pegawai from "../models/pegawai.js";
 import Admin from "../models/admin.js";
 
-import {
-  createPegawaiProfile,
-} from "./pegawai.controller.js";
-
-import {
-  createPelangganProfile,
-} from "./pelanggan.controller.js";
+import { createPegawaiProfile } from "./pegawai.controller.js";
+import { createPelangganProfile } from "./pelanggan.controller.js";
 
 /* =====================================================
-   CREATE USER
+   HELPERS
 ===================================================== */
 
-const createUser = async (
-  username,
-  password,
-  role
-) => {
+const createUser = async (username, password, role) => {
+  const hash = await bcrypt.hash(password, 10);
 
-  const hash =
-    await bcrypt.hash(password, 10);
-
-  return await User.create({
-
+  return User.create({
     username,
-
     password: hash,
-
     role,
-
     isActive: true,
   });
 };
 
-/* =====================================================
-   GET MODEL BY ROLE
-===================================================== */
-
-const getModelByRole = (
-  role
-) => {
-
-  if (role === "pelanggan") {
-    return Pelanggan;
-  }
-
-  if (role === "pegawai") {
-    return Pegawai;
-  }
-
-  if (role === "admin") {
-    return Admin;
-  }
-
-  throw {
-    status: 400,
-    message:
-      "Role tidak valid",
+const getModelByRole = (role) => {
+  const models = {
+    pelanggan: Pelanggan,
+    pegawai: Pegawai,
+    admin: Admin,
   };
+
+  const model = models[role];
+
+  if (!model) {
+    throw {
+      status: 400,
+      message: "Role tidak valid",
+    };
+  }
+
+  return model;
+};
+
+const checkUsername = async (username, excludeId = null) => {
+  const existing = await User.findOne({
+    username,
+    ...(excludeId && {
+      _id: { $ne: excludeId },
+    }),
+  });
+
+  if (existing) {
+    throw {
+      status: 400,
+      message: "Username sudah digunakan",
+    };
+  }
+};
+
+const getProfileByRole = async (role, userId) => {
+  const Model = getModelByRole(role);
+  return Model.findOne({ userId });
 };
 
 /* =====================================================
    REGISTER PELANGGAN
 ===================================================== */
 
-export const registerPelanggan =
-  async (req, res, next) => {
+export const registerPelanggan = async (req, res, next) => {
+  try {
+    const {
+      username,
+      password,
+      nama,
+      no_telp,
+      email,
+      profile,
+      alamat,
+      jenis_kelamin,
+      tanggal_lahir,
+      bio,
+    } = req.body;
 
-    try {
+    await checkUsername(username);
 
-      const {
+    const user = await createUser(
+      username,
+      password,
+      "pelanggan"
+    );
 
-        username,
-        password,
+    const pelanggan = await createPelangganProfile({
+      userId: user._id,
+      nama,
+      no_telp,
+      email,
+      profile,
+      alamat,
+      jenis_kelamin,
+      tanggal_lahir,
+      bio,
+    });
 
-        nama,
-        no_telp,
-        email,
+    res.json({
+      success: true,
+      message: "Pelanggan berhasil dibuat",
+      user,
+      pelanggan,
+    });
 
-        profile,
-
-        alamat,
-
-        jenis_kelamin,
-
-        tanggal_lahir,
-
-        bio,
-
-      } = req.body;
-
-      /* =========================
-         CHECK USERNAME
-      ========================= */
-
-      const existing =
-        await User.findOne({
-          username,
-        });
-
-      if (existing) {
-
-        throw {
-          status: 400,
-          message:
-            "Username sudah digunakan",
-        };
-      }
-
-      /* =========================
-         CREATE USER
-      ========================= */
-
-      const user =
-        await createUser(
-          username,
-          password,
-          "pelanggan"
-        );
-
-      /* =========================
-         CREATE PROFILE
-      ========================= */
-
-      const pelanggan =
-        await createPelangganProfile({
-
-          userId:
-            user._id,
-
-          nama,
-
-          no_telp,
-
-          email,
-
-          profile,
-
-          alamat,
-
-          jenis_kelamin,
-
-          tanggal_lahir,
-
-          bio,
-        });
-
-      /* =========================
-         RESPONSE
-      ========================= */
-
-      res.json({
-
-        success: true,
-
-        message:
-          "Pelanggan berhasil dibuat",
-
-        user,
-
-        pelanggan,
-      });
-
-    } catch (err) {
-
-      next(err);
-
-    }
-  };
+  } catch (err) {
+    next(err);
+  }
+};
 
 /* =====================================================
    REGISTER PEGAWAI
 ===================================================== */
 
-export const registerPegawai =
-  async (req, res, next) => {
+export const registerPegawai = async (req, res, next) => {
+  try {
+    const {
+      username,
+      password,
+      nama,
+      no_telp,
+      email,
+      profile,
+      alamat,
+      jenis_kelamin,
+      tanggal_lahir,
+      tanggal_masuk,
+      bio,
+    } = req.body;
 
-    try {
+    await checkUsername(username);
 
-      const {
+    const user = await createUser(
+      username,
+      password,
+      "pegawai"
+    );
 
-        username,
-        password,
+    const pegawai = await createPegawaiProfile({
+      userId: user._id,
+      nama,
+      no_telp,
+      email,
+      profile,
+      alamat,
+      jenis_kelamin,
+      tanggal_lahir,
+      tanggal_masuk,
+      bio,
+    });
 
-        nama,
-        no_telp,
-        email,
+    res.json({
+      success: true,
+      message: "Pegawai berhasil dibuat",
+      user,
+      pegawai,
+    });
 
-        profile,
-
-        alamat,
-
-        jenis_kelamin,
-
-        tanggal_lahir,
-
-        tanggal_masuk,
-
-        bio,
-
-      } = req.body;
-
-      /* =========================
-         CHECK USERNAME
-      ========================= */
-
-      const existing =
-        await User.findOne({
-          username,
-        });
-
-      if (existing) {
-
-        throw {
-          status: 400,
-          message:
-            "Username sudah digunakan",
-        };
-      }
-
-      /* =========================
-         CREATE USER
-      ========================= */
-
-      const user =
-        await createUser(
-          username,
-          password,
-          "pegawai"
-        );
-
-      /* =========================
-         CREATE PROFILE
-      ========================= */
-
-      const pegawai =
-        await createPegawaiProfile({
-
-          userId:
-            user._id,
-
-          nama,
-
-          no_telp,
-
-          email,
-
-          profile,
-
-          alamat,
-
-          jenis_kelamin,
-
-          tanggal_lahir,
-
-          tanggal_masuk,
-
-          bio,
-        });
-
-      /* =========================
-         RESPONSE
-      ========================= */
-
-      res.json({
-
-        success: true,
-
-        message:
-          "Pegawai berhasil dibuat",
-
-        user,
-
-        pegawai,
-      });
-
-    } catch (err) {
-
-      next(err);
-
-    }
-  };
+  } catch (err) {
+    next(err);
+  }
+};
 
 /* =====================================================
    REGISTER ADMIN
 ===================================================== */
 
-export const registerAdmin =
-  async (req, res, next) => {
+export const registerAdmin = async (req, res, next) => {
+  try {
+    const {
+      username,
+      password,
+      nama,
+      no_telp,
+    } = req.body;
 
-    try {
+    await checkUsername(username);
 
-      const {
+    const user = await createUser(
+      username,
+      password,
+      "admin"
+    );
 
-        username,
-        password,
+    const admin = await Admin.create({
+      userId: user._id,
+      nama,
+      no_telp,
+      isActive: true,
+    });
 
-        nama,
-        no_telp,
+    res.json({
+      success: true,
+      message: "Admin berhasil dibuat",
+      user,
+      admin,
+    });
 
-      } = req.body;
-
-      const existing =
-        await User.findOne({
-          username,
-        });
-
-      if (existing) {
-
-        throw {
-          status: 400,
-          message:
-            "Username sudah digunakan",
-        };
-      }
-
-      const user =
-        await createUser(
-          username,
-          password,
-          "admin"
-        );
-
-      const admin =
-        await Admin.create({
-
-          userId: user._id,
-
-          nama,
-
-          no_telp,
-
-          isActive: true,
-        });
-
-      res.json({
-
-        success: true,
-
-        message:
-          "Admin berhasil dibuat",
-
-        user,
-
-        admin,
-      });
-
-    } catch (err) {
-
-      next(err);
-
-    }
-  };
+  } catch (err) {
+    next(err);
+  }
+};
 
 /* =====================================================
    LOGIN
 ===================================================== */
 
-export const login =
-  async (req, res, next) => {
+export const login = async (req, res, next) => {
+  try {
+    const {
+      username,
+      password,
+    } = req.body;
 
-    try {
+    const user = await User.findOne({ username });
 
-      const {
-        username,
-        password,
-      } = req.body;
-
-      /* =========================
-         FIND USER
-      ========================= */
-
-      const user =
-        await User.findOne({
-          username,
-        });
-
-      if (!user) {
-
-        throw {
-          status: 404,
-          message:
-            "User tidak ditemukan",
-        };
-      }
-
-      /* =========================
-         CHECK ACTIVE
-      ========================= */
-
-      if (!user.isActive) {
-
-        throw {
-          status: 403,
-          message:
-            "Akun sudah dinonaktifkan",
-        };
-      }
-
-      /* =========================
-         CHECK PASSWORD
-      ========================= */
-
-      const match =
-        await bcrypt.compare(
-          password,
-          user.password
-        );
-
-      if (!match) {
-
-        throw {
-          status: 400,
-          message:
-            "Password salah",
-        };
-      }
-
-      /* =========================
-         TOKEN
-      ========================= */
-
-      const token = jwt.sign(
-
-        {
-          id: user._id,
-          role: user.role,
-        },
-
-        process.env.JWT_SECRET,
-
-        {
-          expiresIn: "1d",
-        }
-      );
-
-      /* =========================
-         PROFILE
-      ========================= */
-
-      let profile = null;
-
-      if (
-        user.role === "pelanggan"
-      ) {
-
-        profile =
-          await Pelanggan.findOne({
-            userId: user._id,
-          });
-      }
-
-      else if (
-        user.role === "pegawai"
-      ) {
-
-        profile =
-          await Pegawai.findOne({
-            userId: user._id,
-          });
-      }
-
-      else if (
-        user.role === "admin"
-      ) {
-
-        profile =
-          await Admin.findOne({
-            userId: user._id,
-          });
-      }
-
-      /* =========================
-         RESPONSE
-      ========================= */
-
-      res.json({
-
-        success: true,
-
-        message:
-          "Login berhasil",
-
-        token,
-
-        user: {
-
-          _id:
-            user._id,
-
-          username:
-            user.username,
-
-          role:
-            user.role,
-
-          isActive:
-            user.isActive,
-        },
-
-        profile,
-      });
-
-    } catch (err) {
-
-      next(err);
-
+    if (!user) {
+      throw {
+        status: 404,
+        message: "User tidak ditemukan",
+      };
     }
-  };
+
+    if (!user.isActive) {
+      throw {
+        status: 403,
+        message: "Akun sudah dinonaktifkan",
+      };
+    }
+
+    const match = await bcrypt.compare(
+      password,
+      user.password
+    );
+
+    if (!match) {
+      throw {
+        status: 400,
+        message: "Password salah",
+      };
+    }
+
+    const token = jwt.sign(
+      {
+        id: user._id,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1d",
+      }
+    );
+
+    const profile = await getProfileByRole(
+      user.role,
+      user._id
+    );
+
+    res.json({
+      success: true,
+      message: "Login berhasil",
+      token,
+
+      user: {
+        _id: user._id,
+        username: user.username,
+        role: user.role,
+        isActive: user.isActive,
+      },
+
+      profile,
+    });
+
+  } catch (err) {
+    next(err);
+  }
+};
 
 /* =====================================================
    GET USERS BY ROLE
 ===================================================== */
 
-export const getUsersByRole =
-  async (req, res, next) => {
+export const getUsersByRole = async (req, res, next) => {
+  try {
+    const { role } = req.params;
 
-    try {
+    const {
+      page = 1,
+      limit = 10,
+      search = "",
+    } = req.query;
 
-      const { role } =
-        req.params;
+    const Model = getModelByRole(role);
 
-      const {
-        page = 1,
-        limit = 10,
-        search = "",
-      } = req.query;
+    const filter = {
+      isActive: true,
+      nama: {
+        $regex: search,
+        $options: "i",
+      },
+    };
 
-      const Model =
-        getModelByRole(role);
+    const data = await Model.find(filter)
+      .populate(
+        "userId",
+        "username role isActive"
+      )
+      .skip((page - 1) * limit)
+      .limit(Number(limit))
+      .sort({ createdAt: -1 });
 
-      const filter = {
+    const total = await Model.countDocuments(
+      filter
+    );
 
-        isActive: true,
+    res.json({
+      success: true,
+      data,
+      total,
+      page: Number(page),
+      totalPages: Math.ceil(total / limit),
+    });
 
-        nama: {
-
-          $regex: search,
-
-          $options: "i",
-        },
-      };
-
-      const data =
-        await Model.find(filter)
-
-          .populate(
-            "userId",
-            "username role isActive"
-          )
-
-          .skip(
-            (page - 1) * limit
-          )
-
-          .limit(Number(limit))
-
-          .sort({
-            createdAt: -1,
-          });
-
-      const total =
-        await Model.countDocuments(
-          filter
-        );
-
-      res.json({
-
-        success: true,
-
-        data,
-
-        total,
-
-        page: Number(page),
-
-        totalPages:
-          Math.ceil(
-            total / limit
-          ),
-      });
-
-    } catch (err) {
-
-      next(err);
-
-    }
-  };
+  } catch (err) {
+    next(err);
+  }
+};
 
 /* =====================================================
    GET USER BY ID
 ===================================================== */
 
-export const getUserById =
-  async (req, res, next) => {
+export const getUserById = async (req, res, next) => {
+  try {
+    const {
+      role,
+      id,
+    } = req.params;
 
-    try {
+    const Model = getModelByRole(role);
 
-      const {
-        role,
-        id,
-      } = req.params;
+    const data = await Model.findById(id)
+      .populate(
+        "userId",
+        "username role isActive"
+      );
 
-      const Model =
-        getModelByRole(role);
-
-      const data =
-        await Model.findById(id)
-
-          .populate(
-            "userId",
-            "username role isActive"
-          );
-
-      if (!data) {
-
-        throw {
-          status: 404,
-          message:
-            "Data tidak ditemukan",
-        };
-      }
-
-      res.json({
-
-        success: true,
-
-        data,
-      });
-
-    } catch (err) {
-
-      next(err);
-
+    if (!data) {
+      throw {
+        status: 404,
+        message: "Data tidak ditemukan",
+      };
     }
-  };
+
+    res.json({
+      success: true,
+      data,
+    });
+
+  } catch (err) {
+    next(err);
+  }
+};
 
 /* =====================================================
    UPDATE USER
 ===================================================== */
 
-export const updateUser =
-  async (req, res, next) => {
+export const updateUser = async (req, res, next) => {
+  try {
+    const {
+      role,
+      id,
+    } = req.params;
 
-    try {
+    const Model = getModelByRole(role);
 
-      const {
-        role,
-        id,
-      } = req.params;
+    const existing = await Model.findById(id);
 
-      const Model =
-        getModelByRole(role);
-
-      const existing =
-        await Model.findById(id);
-
-      if (!existing) {
-
-        throw {
-          status: 404,
-          message:
-            "Data tidak ditemukan",
-        };
-      }
-
-      /* =========================
-         UPDATE USERNAME
-      ========================= */
-
-      if (req.body.username) {
-
-        const checkUsername =
-          await User.findOne({
-
-            username:
-              req.body.username,
-
-            _id: {
-              $ne:
-                existing.userId,
-            },
-          });
-
-        if (checkUsername) {
-
-          throw {
-            status: 400,
-            message:
-              "Username sudah digunakan",
-          };
-        }
-
-        await User.findByIdAndUpdate(
-
-          existing.userId,
-
-          {
-            username:
-              req.body.username,
-          }
-        );
-      }
-
-      /* =========================
-        PROFILE IMAGE
-      ========================= */
-
-      let profileImage =
-        req.body.profile;
-
-      if (req.file) {
-
-        profileImage =
-          `/uploads/misc/${req.file.filename}`;
-      }
-
-      /* =========================
-         PAYLOAD
-      ========================= */
-
-      const payload = {
-
-        nama:
-          req.body.nama,
-
-        no_telp:
-          req.body.no_telp,
-
-        email:
-          req.body.email,
-
-        profile:
-          profileImage,
-
-        alamat:
-          req.body.alamat,
-
-        jenis_kelamin:
-          req.body.jenis_kelamin,
-
-        tanggal_lahir:
-          req.body.tanggal_lahir,
-
-        bio:
-          req.body.bio,
+    if (!existing) {
+      throw {
+        status: 404,
+        message: "Data tidak ditemukan",
       };
-
-      /* =========================
-         PEGAWAI ONLY
-      ========================= */
-
-      if (role === "pegawai") {
-
-        payload.tanggal_masuk =
-          req.body.tanggal_masuk;
-      }
-
-      /* =========================
-         UPDATE
-      ========================= */
-
-      const data =
-        await Model.findByIdAndUpdate(
-
-          id,
-
-          payload,
-
-          {
-            new: true,
-          }
-
-        ).populate(
-          "userId",
-          "username role isActive"
-        );
-
-      res.json({
-
-        success: true,
-
-        message:
-          "Data berhasil diperbarui",
-
-        data,
-      });
-
-    } catch (err) {
-
-      next(err);
-
     }
-  };
+
+    if (req.body.username) {
+      await checkUsername(
+        req.body.username,
+        existing.userId
+      );
+
+      await User.findByIdAndUpdate(
+        existing.userId,
+        {
+          username: req.body.username,
+        }
+      );
+    }
+
+    let profileImage = req.body.profile;
+
+    if (req.file) {
+      profileImage =
+        `/uploads/misc/${req.file.filename}`;
+    }
+
+    const payload = {
+      nama: req.body.nama,
+      no_telp: req.body.no_telp,
+      email: req.body.email,
+      profile: profileImage,
+      alamat: req.body.alamat,
+      jenis_kelamin: req.body.jenis_kelamin,
+      tanggal_lahir: req.body.tanggal_lahir,
+      bio: req.body.bio,
+    };
+
+    if (role === "pegawai") {
+      payload.tanggal_masuk =
+        req.body.tanggal_masuk;
+    }
+
+    const data = await Model.findByIdAndUpdate(
+      id,
+      payload,
+      { new: true }
+    ).populate(
+      "userId",
+      "username role isActive"
+    );
+
+    res.json({
+      success: true,
+      message: "Data berhasil diperbarui",
+      data,
+    });
+
+  } catch (err) {
+    next(err);
+  }
+};
 
 /* =====================================================
    DELETE USER (SOFT DELETE)
 ===================================================== */
 
-export const deleteUser =
-  async (req, res, next) => {
+export const deleteUser = async (req, res, next) => {
+  try {
+    const {
+      role,
+      id,
+    } = req.params;
 
-    try {
+    const Model = getModelByRole(role);
 
-      const {
-        role,
-        id,
-      } = req.params;
+    const data = await Model.findById(id);
 
-      const Model =
-        getModelByRole(role);
-
-      const data =
-        await Model.findById(id);
-
-      if (!data) {
-
-        throw {
-          status: 404,
-          message:
-            "Data tidak ditemukan",
-        };
-      }
-
-      /* =========================
-         NONAKTIF PROFILE
-      ========================= */
-
-      data.isActive = false;
-
-      await data.save();
-
-      /* =========================
-         NONAKTIF USER
-      ========================= */
-
-      await User.findByIdAndUpdate(
-
-        data.userId,
-
-        {
-          isActive: false,
-        }
-      );
-
-      res.json({
-
-        success: true,
-
-        message:
-          "User berhasil dinonaktifkan",
-      });
-
-    } catch (err) {
-
-      next(err);
-
+    if (!data) {
+      throw {
+        status: 404,
+        message: "Data tidak ditemukan",
+      };
     }
-  };
+
+    data.isActive = false;
+
+    await data.save();
+
+    await User.findByIdAndUpdate(
+      data.userId,
+      {
+        isActive: false,
+      }
+    );
+
+    res.json({
+      success: true,
+      message: "User berhasil dinonaktifkan",
+    });
+
+  } catch (err) {
+    next(err);
+  }
+};
 
 /* =====================================================
    DELETE USER PERMANENT
 ===================================================== */
 
-export const deleteUserPermanent =
-  async (req, res, next) => {
+export const deleteUserPermanent = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const {
+      role,
+      id,
+    } = req.params;
 
-    try {
+    const Model = getModelByRole(role);
 
-      const {
-        role,
-        id,
-      } = req.params;
+    const data = await Model.findByIdAndDelete(
+      id
+    );
 
-      const Model =
-        getModelByRole(role);
-
-      const data =
-        await Model.findByIdAndDelete(
-          id
-        );
-
-      if (!data) {
-
-        throw {
-          status: 404,
-          message:
-            "Data tidak ditemukan",
-        };
-      }
-
-      await User.findByIdAndDelete(
-        data.userId
-      );
-
-      res.json({
-
-        success: true,
-
-        message:
-          "User berhasil dihapus permanen",
-      });
-
-    } catch (err) {
-
-      next(err);
-
+    if (!data) {
+      throw {
+        status: 404,
+        message: "Data tidak ditemukan",
+      };
     }
-  };
+
+    await User.findByIdAndDelete(
+      data.userId
+    );
+
+    res.json({
+      success: true,
+      message: "User berhasil dihapus permanen",
+    });
+
+  } catch (err) {
+    next(err);
+  }
+};

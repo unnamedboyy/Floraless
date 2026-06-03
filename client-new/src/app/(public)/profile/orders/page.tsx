@@ -5,8 +5,7 @@ import {
   useState,
 } from "react";
 
-import OrderCard
-from "@/components/modal/OrderCard";
+import OrderCard from "@/components/modal/OrderCard";
 
 import {
   getTickets,
@@ -44,9 +43,7 @@ export default function OrdersPage() {
           Array.isArray(
             res.data?.data
           )
-
             ? res.data.data
-
             : [];
 
         setOrders(data);
@@ -58,118 +55,314 @@ export default function OrdersPage() {
       } finally {
 
         setLoading(false);
+
       }
+
     };
 
   return (
 
-    <div>
+    <div 
+      className="
+        rounded-[32px]
+        border
+        border-gray-200
+        bg-white
+        p-10"
+    >
 
       {/* =====================================================
          HEADER
       ===================================================== */}
 
-      <div className="
-        rounded-[2rem]
-        border
-        bg-white
-        p-8
-        shadow-sm
-      ">
+      <div>
 
-        <p className="
-          text-sm
-          uppercase
-          tracking-[0.3em]
-          text-[#C9AE63]
-        ">
+        <p
+          className="
+            text-sm
+            uppercase
+            tracking-[0.35em]
+            text-[#C9AE63]
+            font-medium
+          "
+        >
           Orders
         </p>
 
-        <h1 className="
-          mt-3
-          text-4xl
-          font-bold
-        ">
+        <h1
+          className="
+            mt-4
+            text-5xl
+            font-bold
+            tracking-tight
+            text-[#111827]
+          "
+        >
           Pesanan Saya
         </h1>
 
-        <p className="
-          mt-4
-          max-w-2xl
-          text-gray-600
-        ">
-          Lihat seluruh riwayat pemesanan dan
-          progress dekorasi acara Anda.
+        <p
+          className="
+            mt-5
+            max-w-3xl
+            text-lg
+            leading-8
+            text-gray-500
+          "
+        >
+          Lihat seluruh riwayat pemesanan,
+          progress pengerjaan dekorasi,
+          pembayaran, serta perkembangan
+          acara Anda dalam satu tempat.
         </p>
 
       </div>
 
       {/* =====================================================
-         CONTENT
+         STATS
       ===================================================== */}
 
-      <div className="
-        mt-8
-        space-y-6
-      ">
+      <div
+        className="
+          mt-14
+          grid
+          gap-8
+
+          md:grid-cols-3
+        "
+      >
+
+        <div>
+
+          <p
+            className="
+              text-sm
+              uppercase
+              tracking-wider
+              text-gray-500
+            "
+          >
+            Total Pesanan
+          </p>
+
+          <h2
+            className="
+              mt-3
+              text-4xl
+              font-bold
+              text-[#111827]
+            "
+          >
+            {orders.length}
+          </h2>
+
+        </div>
+
+        <div>
+
+          <p
+            className="
+              text-sm
+              uppercase
+              tracking-wider
+              text-gray-500
+            "
+          >
+            Sedang Berjalan
+          </p>
+
+          <h2
+            className="
+              mt-3
+              text-4xl
+              font-bold
+              text-[#111827]
+            "
+          >
+            {
+              orders.filter(
+                (item) =>
+                  item.status ===
+                  "in_progress"
+              ).length
+            }
+          </h2>
+
+        </div>
+
+        <div>
+
+          <p
+            className="
+              text-sm
+              uppercase
+              tracking-wider
+              text-gray-500
+            "
+          >
+            Selesai
+          </p>
+
+          <h2
+            className="
+              mt-3
+              text-4xl
+              font-bold
+              text-[#111827]
+            "
+          >
+            {
+              orders.filter(
+                (item) =>
+                  item.status ===
+                  "done"
+              ).length
+            }
+          </h2>
+
+        </div>
+
+      </div>
+
+      {/* =====================================================
+         LIST SECTION
+      ===================================================== */}
+
+      <div
+        className="
+          mt-16
+        "
+      >
+
+        <div
+          className="
+            pb-5
+            border-b
+            border-gray-300
+          "
+        >
+
+          <h2
+            className="
+              text-2xl
+              font-bold
+              text-[#111827]
+            "
+          >
+            Riwayat Pesanan
+          </h2>
+
+          <p
+            className="
+              mt-2
+              text-gray-500
+            "
+          >
+            Semua pesanan dan acara yang
+            pernah Anda buat.
+          </p>
+
+        </div>
+
+        {/* ===============================================
+           LOADING
+        =============================================== */}
 
         {
-          loading ? (
+          loading && (
 
-            <div className="
-              rounded-[2rem]
-              border
-              bg-white
-              p-10
-              text-center
-              text-gray-500
-            ">
-              Loading...
+            <div
+              className="
+                py-24
+                text-center
+              "
+            >
+
+              <div
+                className="
+                  text-gray-500
+                "
+              >
+                Loading pesanan...
+              </div>
+
             </div>
 
-          ) : orders.length === 0 ? (
+          )
+        }
 
-            <div className="
-              rounded-[2rem]
-              border
-              bg-white
-              p-10
-              text-center
-            ">
+        {/* ===============================================
+           EMPTY
+        =============================================== */}
 
-              <h2 className="
-                text-2xl
-                font-bold
-              ">
+        {
+          !loading &&
+          orders.length === 0 && (
+
+            <div
+              className="
+                py-24
+                text-center
+              "
+            >
+
+              <h3
+                className="
+                  text-3xl
+                  font-bold
+                  text-[#111827]
+                "
+              >
                 Belum Ada Pesanan
-              </h2>
+              </h3>
 
-              <p className="
-                mt-3
-                text-gray-500
-              ">
-                Anda belum melakukan pemesanan.
+              <p
+                className="
+                  mt-4
+                  text-gray-500
+                "
+              >
+                Anda belum memiliki
+                riwayat pemesanan layanan.
               </p>
 
             </div>
 
-          ) : (
+          )
+        }
 
-            orders.map(
-              (item) => (
+        {/* ===============================================
+           LIST
+        =============================================== */}
 
-                <OrderCard
-                  key={item._id}
-                  item={item}
-                />
-              )
-            )
+        {
+          !loading &&
+          orders.length > 0 && (
+
+            <div>
+
+              {
+                orders.map(
+                  (item) => (
+
+                    <OrderCard
+                      key={item._id}
+                      item={item}
+                    />
+
+                  )
+                )
+              }
+
+            </div>
+
           )
         }
 
       </div>
 
     </div>
+
   );
+
 }

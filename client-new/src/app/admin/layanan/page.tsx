@@ -4,30 +4,32 @@ import { useState } from "react";
 
 import toast from "react-hot-toast";
 
+import {
+  Eye,
+  Pencil,
+  Trash2,
+  Power,
+} from "lucide-react";
+
 import TableWrapper
-  from "@/components/table/TableWrapper";
+from "@/components/table/TableWrapper";
 
 import LayananFormModal
-  from "@/components/form/LayananFormModal";
+from "@/components/form/LayananFormModal";
 
 import DetailLayananModal
-  from "@/components/modal/LayananDetailModal";
-
-import {
-
-  createLayanan,
-
-  updateLayanan,
-
-  deleteLayanan,
-
-  toggleLayanan,
-
-} from "@/services/layanan.service";
+from "@/components/modal/LayananDetailModal";
 
 import {
   useLayanan,
 } from "@/hooks/useLayanan";
+
+import {
+  createLayanan,
+  updateLayanan,
+  deleteLayanan,
+  toggleLayanan,
+} from "@/services/layanan.service";
 
 export default function LayananPage() {
 
@@ -44,6 +46,11 @@ export default function LayananPage() {
 
       search: "",
     });
+
+  const [view, setView] =
+    useState<"list" | "grid">(
+      "list"
+    );
 
   const [openForm, setOpenForm] =
     useState(false);
@@ -79,11 +86,9 @@ export default function LayananPage() {
 
         setLoadingSubmit(true);
 
-        /* =========================
-           UPDATE
-        ========================= */
+        /* ================= UPDATE ================= */
 
-        if (selected) {
+        if (selected?._id) {
 
           await updateLayanan(
 
@@ -95,11 +100,10 @@ export default function LayananPage() {
           toast.success(
             "Layanan berhasil diperbarui"
           );
+
         }
 
-        /* =========================
-           CREATE
-        ========================= */
+        /* ================= CREATE ================= */
 
         else {
 
@@ -112,9 +116,7 @@ export default function LayananPage() {
           );
         }
 
-        /* =========================
-           RESET
-        ========================= */
+        /* ================= RESET ================= */
 
         setOpenForm(false);
 
@@ -146,36 +148,104 @@ export default function LayananPage() {
   const handleDelete =
     async (row: any) => {
 
-      const confirmDelete =
-        confirm(
-          `Hapus layanan "${row.nama}" ?`
-        );
+      toast((t) => (
 
-      if (!confirmDelete) return;
+        <div className="
+          w-[300px]
+        ">
 
-      try {
+          {/* TITLE */}
+          <p className="
+            font-semibold
+            text-sm
+          ">
+            Hapus Layanan?
+          </p>
 
-        await deleteLayanan(
-          row._id
-        );
+          {/* DESC */}
+          <p className="
+            text-sm
+            text-gray-500
+            mt-1
+          ">
+            Layanan tidak dapat dikembalikan
+          </p>
 
-        toast.success(
-          "Layanan berhasil dihapus"
-        );
+          {/* ACTION */}
+          <div className="
+            flex
+            justify-end
+            gap-2
+            mt-4
+          ">
 
-        refresh();
+            {/* CANCEL */}
+            <button
+              onClick={() =>
+                toast.dismiss(t.id)
+              }
+              className="
+                px-3
+                py-2
+                rounded-xl
+                border
+                text-sm
+                hover:bg-gray-50
+              "
+            >
+              Batal
+            </button>
 
-      } catch (err: any) {
+            {/* DELETE */}
+            <button
+              onClick={async () => {
 
-        console.error(err);
+                toast.dismiss(t.id);
 
-        toast.error(
+                try {
 
-          err?.response?.data?.message ||
+                  await deleteLayanan(
+                    row._id
+                  );
 
-          "Gagal menghapus layanan"
-        );
-      }
+                  toast.success(
+                    "Layanan berhasil dihapus"
+                  );
+
+                  refresh();
+
+                } catch (err: any) {
+
+                  console.error(err);
+
+                  toast.error(
+
+                    err?.response?.data?.message ||
+
+                    "Gagal menghapus layanan"
+                  );
+                }
+              }}
+              className="
+                px-3
+                py-2
+                rounded-xl
+                bg-red-500
+                text-white
+                text-sm
+                hover:bg-red-600
+              "
+            >
+              Ya, Hapus
+            </button>
+
+          </div>
+
+        </div>
+
+      ), {
+        duration: 10000,
+      });
     };
 
   /* =====================================================
@@ -193,7 +263,7 @@ export default function LayananPage() {
 
         toast.success(
 
-          row.isFutured
+          row.isActive
 
             ? "Layanan dinonaktifkan"
 
@@ -221,41 +291,38 @@ export default function LayananPage() {
 
   return (
 
-    <div className="space-y-6 p-6">
+    <div className="
+      space-y-6
+      p-6
+    ">
 
       {/* =====================================================
           HEADER
       ===================================================== */}
 
       <div className="
-
         flex
         items-center
         justify-between
         gap-4
         flex-wrap
-
       ">
 
         <div>
 
           <h1 className="
-
             text-[34px]
             font-bold
             tracking-tight
             text-[#0F172A]
-
           ">
             Data Layanan
           </h1>
 
           <p className="
-
             text-sm
             text-slate-500
             mt-1
-
           ">
             Kelola layanan FLORALESS
           </p>
@@ -272,28 +339,21 @@ export default function LayananPage() {
           }}
 
           className="
-
             h-12
             px-5
-
             rounded-2xl
-
             bg-[#0F172A]
-
             text-white
-
             text-sm
             font-semibold
-
             hover:opacity-90
-
             transition
-
             shadow-sm
-
           "
         >
+
           + Tambah Layanan
+
         </button>
 
       </div>
@@ -304,6 +364,12 @@ export default function LayananPage() {
 
       <TableWrapper
 
+        /* ================= VIEW ================= */
+
+        view={view}
+
+        setView={setView}
+
         data={data}
 
         total={data.length}
@@ -311,6 +377,8 @@ export default function LayananPage() {
         query={query}
 
         setQuery={setQuery}
+
+        /* ================= COLUMNS ================= */
 
         columns={[
 
@@ -321,7 +389,24 @@ export default function LayananPage() {
 
           {
             label: "Harga",
+
             key: "harga",
+
+            render: (value: number) => (
+
+              <span className="
+                font-medium
+              ">
+                Rp {
+
+                  Number(
+                    value || 0
+                  ).toLocaleString(
+                    "id-ID"
+                  )
+                }
+              </span>
+            ),
           },
 
           {
@@ -331,21 +416,18 @@ export default function LayananPage() {
 
           {
             label: "Featured",
+
             key: "isFeatured",
 
             render: (value: boolean) => (
 
               <span className={`
-
                 inline-flex
                 items-center
                 justify-center
-
                 px-3
                 py-1.5
-
                 rounded-full
-
                 text-xs
                 font-semibold
 
@@ -362,7 +444,6 @@ export default function LayananPage() {
                       text-slate-500
                     `
                 }
-
               `}>
 
                 {
@@ -374,12 +455,23 @@ export default function LayananPage() {
               </span>
             ),
           },
+
         ]}
+
+        /* ================= ACTION ================= */
 
         actions={[
 
           {
-            label: "Detail",
+            icon: (
+              <Eye size={17} />
+            ),
+
+            className: `
+              bg-gray-100
+              text-gray-700
+              hover:bg-gray-200
+            `,
 
             onClick: (row) => {
               setSelected(row);
@@ -387,7 +479,15 @@ export default function LayananPage() {
           },
 
           {
-            label: "Edit",
+            icon: (
+              <Pencil size={17} />
+            ),
+
+            className: `
+              bg-yellow-100
+              text-yellow-700
+              hover:bg-yellow-200
+            `,
 
             onClick: (row) => {
 
@@ -398,52 +498,54 @@ export default function LayananPage() {
           },
 
           {
-            label:
+            icon: (
+              <Power size={17} />
+            ),
 
-              "Toggle",
+            className: `
+              bg-blue-100
+              text-blue-700
+              hover:bg-blue-200
+            `,
 
-            onClick:
-              handleToggle,
+            onClick: handleToggle,
           },
 
           {
-            label:
-              "Delete",
+            icon: (
+              <Trash2 size={17} />
+            ),
 
-            onClick:
-              handleDelete,
+            className: `
+              bg-red-100
+              text-red-700
+              hover:bg-red-200
+            `,
+
+            onClick: handleDelete,
           },
+
         ]}
+
+        /* ================= GRID ================= */
 
         renderItem={(row) => (
 
           <div className="
-
             bg-white
-
             border
             border-slate-200
-
             rounded-[28px]
-
             overflow-hidden
-
             shadow-sm
-
           ">
 
-            {/* =========================
-               IMAGE
-            ========================= */}
+            {/* ================= IMAGE ================= */}
 
             <div className="
-
               aspect-[16/9]
-
               bg-slate-100
-
               overflow-hidden
-
             ">
 
               {
@@ -459,12 +561,9 @@ export default function LayananPage() {
                       alt={row.nama}
 
                       className="
-
                         w-full
                         h-full
-
                         object-cover
-
                       "
                     />
                   )
@@ -472,17 +571,13 @@ export default function LayananPage() {
                   : (
 
                     <div className="
-
                       w-full
                       h-full
-
                       flex
                       items-center
                       justify-center
-
                       text-slate-400
                       text-sm
-
                     ">
                       Tidak ada thumbnail
                     </div>
@@ -491,11 +586,12 @@ export default function LayananPage() {
 
             </div>
 
-            {/* =========================
-               CONTENT
-            ========================= */}
+            {/* ================= CONTENT ================= */}
 
-            <div className="p-5 space-y-3">
+            <div className="
+              p-5
+              space-y-3
+            ">
 
               {/* CATEGORY */}
               {
@@ -505,22 +601,15 @@ export default function LayananPage() {
                   <div>
 
                     <span className="
-
                       inline-flex
                       items-center
-
                       px-3
                       py-1
-
                       rounded-full
-
                       bg-slate-100
-
                       text-slate-600
-
                       text-xs
                       font-medium
-
                     ">
                       {row.kategori}
                     </span>
@@ -533,12 +622,9 @@ export default function LayananPage() {
               <div>
 
                 <h3 className="
-
                   text-lg
                   font-bold
-
                   text-[#0F172A]
-
                 ">
                   {row.nama}
                 </h3>
@@ -547,13 +633,11 @@ export default function LayananPage() {
 
               {/* PRICE */}
               <div className="
-
                 text-[15px]
                 font-semibold
-
                 text-slate-700
-
               ">
+
                 Rp {
 
                   Number(
@@ -562,48 +646,40 @@ export default function LayananPage() {
                     "id-ID"
                   )
                 }
+
               </div>
 
               {/* DESCRIPTION */}
               <p className="
-
                 text-sm
                 leading-relaxed
-
                 text-slate-500
-
                 line-clamp-3
-
               ">
+
                 {
                   row.deskripsi ||
                   "Tidak ada deskripsi"
                 }
+
               </p>
 
               {/* FOOTER */}
               <div className="
-
                 flex
                 items-center
                 justify-between
-
                 pt-3
-
               ">
 
                 <div>
 
                   <span className={`
-
                     inline-flex
                     items-center
-
                     px-3
                     py-1
-
                     rounded-full
-
                     text-xs
                     font-medium
 
@@ -620,7 +696,6 @@ export default function LayananPage() {
                           text-red-700
                         `
                     }
-
                   `}>
 
                     {
@@ -641,11 +716,9 @@ export default function LayananPage() {
                   row.isFeatured && (
 
                     <span className="
-
                       text-amber-500
                       text-sm
                       font-semibold
-
                     ">
                       ★ Featured
                     </span>
@@ -658,6 +731,7 @@ export default function LayananPage() {
 
           </div>
         )}
+
       />
 
       {/* =====================================================
@@ -669,10 +743,8 @@ export default function LayananPage() {
         loading && (
 
           <div className="
-
             text-sm
             text-slate-500
-
           ">
             Loading layanan...
           </div>

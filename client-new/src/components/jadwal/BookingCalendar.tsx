@@ -1,7 +1,10 @@
 "use client";
 
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
+import FullCalendar
+from "@fullcalendar/react";
+
+import dayGridPlugin
+from "@fullcalendar/daygrid";
 
 type Props = {
   data: any[];
@@ -11,24 +14,48 @@ export default function BookingCalendar({
   data,
 }: Props) {
 
-  const events =
-    data.map((item: any) => ({
+  /* =====================================================
+     FORMAT EVENTS
+  ===================================================== */
 
-      id: item._id,
+const events =
+  data.map((item: any) => ({
 
-      title: "Booked",
+    id: item._id,
+    title: "Booked",
+    start: item.tanggal_acara,
+    allDay: true,
+    backgroundColor:
+      item.status === "pending"
+        ? "#F59E0B"
+        : item.status === "approved"
+        ? "#3B82F6"
+        : item.status === "in_progress"
+        ? "#10B981"
+        : item.status === "done"
+        ? "#6366F1"
+        : "#111111",
 
-      start:
-        item.tanggal_acara,
+    borderColor:
+      item.status === "pending"
+        ? "#F59E0B"
+        : item.status === "approved"
+        ? "#3B82F6"
+        : item.status === "in_progress"
+        ? "#10B981"
+        : item.status === "done"
+        ? "#6366F1"
+        : "#111111",
 
-      allDay: true,
+    textColor: "#ffffff",
+  }));
 
-      backgroundColor: "#111111",
-      borderColor: "#111111",
-      textColor: "#ffffff",
-    }));
+  /* =====================================================
+     RENDER
+  ===================================================== */
 
   return (
+
     <div className="
       rounded-[32px]
       border
@@ -39,6 +66,7 @@ export default function BookingCalendar({
     ">
 
       {/* HEADER */}
+
       <div className="mb-6">
 
         <p className="
@@ -48,7 +76,7 @@ export default function BookingCalendar({
           text-[#C9AE63]
           font-medium
         ">
-          AVAILABILITY
+          EVENT CALENDAR
         </p>
 
         <h2 className="
@@ -57,7 +85,7 @@ export default function BookingCalendar({
           font-semibold
           tracking-tight
         ">
-          Cek Jadwal Tersedia
+          Jadwal Acara
         </h2>
 
         <p className="
@@ -67,27 +95,37 @@ export default function BookingCalendar({
           max-w-2xl
           leading-relaxed
         ">
-          Tanggal yang memiliki acara akan ditandai
-          sebagai booked dan tidak dapat dipilih
-          untuk booking baru.
+          Semua rencana acara akan tampil
+          pada kalender, termasuk jadwal
+          pending dan yang sudah disetujui.
         </p>
 
       </div>
 
       {/* CALENDAR */}
+
       <div className="booking-calendar">
 
         <FullCalendar
-          plugins={[dayGridPlugin]}
+
+          plugins={[
+            dayGridPlugin
+          ]}
+
           initialView="dayGridMonth"
           height="auto"
           events={events}
-
           headerToolbar={{
-            left: "prev,next today",
-            center: "title",
+
+            left:
+              "prev,next today",
+
+            center:
+              "title",
+
             right: "",
           }}
+
         />
 
       </div>

@@ -1,6 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import {
+  ArrowRight,
+  CalendarDays,
+  MapPin,
+} from "lucide-react";
 
 type Props = {
   item: any;
@@ -14,6 +19,29 @@ const formatRupiah = (
     "id-ID"
   );
 
+const getStatusLabel = (
+  status: string
+) => {
+
+  const map: any = {
+
+    pending: "Pending",
+
+    approved: "Approved",
+
+    in_progress:
+      "In Progress",
+
+    done: "Selesai",
+
+    rejected: "Rejected",
+  };
+
+  return (
+    map[status] || status
+  );
+};
+
 const getStatusColor = (
   status: string
 ) => {
@@ -21,24 +49,24 @@ const getStatusColor = (
   const map: any = {
 
     pending:
-      "bg-gray-100 text-gray-700",
+      "text-gray-600",
 
     approved:
-      "bg-yellow-100 text-yellow-700",
+      "text-amber-600",
 
     in_progress:
-      "bg-blue-100 text-blue-700",
+      "text-blue-600",
 
     done:
-      "bg-green-100 text-green-700",
+      "text-emerald-600",
 
     rejected:
-      "bg-red-100 text-red-700",
+      "text-red-600",
   };
 
   return (
     map[status] ||
-    "bg-gray-100 text-gray-700"
+    "text-gray-600"
   );
 };
 
@@ -54,57 +82,79 @@ export default function OrderCard({
 
   return (
 
-    <div className="
-      rounded-[2rem]
-      border
-      bg-white
-      p-6
-      shadow-sm
-    ">
+    <div
+      className="
+        border-b
+        border-gray-200
+        py-8
 
-      <div className="
-        flex
-        flex-col
-        gap-6
-        lg:flex-row
-        lg:items-center
-        lg:justify-between
-      ">
+        transition-all
+        duration-200
 
-        {/* ===================================================
+        hover:bg-gray-50/60
+      "
+    >
+
+      <div
+        className="
+          flex
+          flex-col
+          gap-6
+
+          lg:flex-row
+          lg:items-center
+          lg:justify-between
+        "
+      >
+
+        {/* ==========================================
            LEFT
-        =================================================== */}
+        ========================================== */}
 
-        <div className="
-          flex-1
-        ">
+        <div className="flex-1">
 
-          <div className="
-            flex
-            flex-wrap
-            items-center
-            gap-3
-          ">
+          <div
+            className="
+              flex
+              flex-wrap
+              items-center
+              gap-3
+            "
+          >
 
-            <span className={`
-              rounded-xl
-              px-3
-              py-1
-              text-xs
-              font-semibold
-              ${getStatusColor(item.status)}
-            `}>
+            <span
+              className={`
+                text-sm
+                font-semibold
+                ${getStatusColor(
+                  item.status
+                )}
+              `}
+            >
 
               {
-                item.status
+                getStatusLabel(
+                  item.status
+                )
               }
 
             </span>
 
-            <p className="
-              text-sm
-              text-gray-500
-            ">
+            <span
+              className="
+                text-gray-300
+              "
+            >
+              •
+            </span>
+
+            <span
+              className="
+                text-sm
+                text-gray-500
+              "
+            >
+
               {
                 new Date(
                   item.createdAt
@@ -117,55 +167,126 @@ export default function OrderCard({
                   }
                 )
               }
-            </p>
+
+            </span>
 
           </div>
 
-          <h3 className="
-            mt-4
-            text-2xl
-            font-bold
-          ">
+          <h2
+            className="
+              mt-4
+
+              text-3xl
+              font-bold
+              tracking-tight
+
+              text-[#111827]
+            "
+          >
 
             {
               detail?.nama_acara ||
               "Acara"
             }
 
-          </h3>
+          </h2>
 
-          <p className="
-            mt-2
-            text-gray-600
-          ">
+          <div
+            className="
+              mt-4
 
-            {
-              detail?.lokasi ||
-              "-"
-            }
+              flex
+              flex-wrap
+              items-center
+              gap-x-6
+              gap-y-3
 
-          </p>
+              text-gray-600
+            "
+          >
 
-          <div className="
-            mt-5
-            flex
-            flex-wrap
-            gap-8
-          ">
+            <div
+              className="
+                flex
+                items-center
+                gap-2
+              "
+            >
+
+              <MapPin
+                size={16}
+              />
+
+              {
+                detail?.lokasi ||
+                "-"
+              }
+
+            </div>
+
+            <div
+              className="
+                flex
+                items-center
+                gap-2
+              "
+            >
+
+              <CalendarDays
+                size={16}
+              />
+
+              {
+                detail?.tanggal_acara
+
+                  ? new Date(
+                      detail.tanggal_acara
+                    ).toLocaleDateString(
+                      "id-ID",
+                      {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      }
+                    )
+
+                  : "-"
+              }
+
+            </div>
+
+          </div>
+
+          <div
+            className="
+              mt-6
+
+              grid
+              grid-cols-2
+              gap-8
+
+              md:grid-cols-3
+            "
+          >
 
             <div>
 
-              <p className="
-                text-sm
-                text-gray-500
-              ">
+              <p
+                className="
+                  text-sm
+                  text-gray-500
+                "
+              >
                 Layanan
               </p>
 
-              <p className="
-                mt-1
-                font-semibold
-              ">
+              <p
+                className="
+                  mt-1
+                  font-medium
+                  text-[#111827]
+                "
+              >
                 {
                   layanan?.nama ||
                   "-"
@@ -176,55 +297,28 @@ export default function OrderCard({
 
             <div>
 
-              <p className="
-                text-sm
-                text-gray-500
-              ">
+              <p
+                className="
+                  text-sm
+                  text-gray-500
+                "
+              >
                 Harga
               </p>
 
-              <p className="
-                mt-1
-                font-semibold
-              ">
+              <p
+                className="
+                  mt-1
+                  font-medium
+                  text-[#111827]
+                "
+              >
+
                 {
                   formatRupiah(
-                    layanan?.harga || 0
+                    layanan?.harga ||
+                      0
                   )
-                }
-              </p>
-
-            </div>
-
-            <div>
-
-              <p className="
-                text-sm
-                text-gray-500
-              ">
-                Tanggal Acara
-              </p>
-
-              <p className="
-                mt-1
-                font-semibold
-              ">
-
-                {
-                  detail?.tanggal_acara
-
-                    ? new Date(
-                        detail.tanggal_acara
-                      ).toLocaleDateString(
-                        "id-ID",
-                        {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        }
-                      )
-
-                    : "-"
                 }
 
               </p>
@@ -235,34 +329,35 @@ export default function OrderCard({
 
         </div>
 
-        {/* ===================================================
-           RIGHT
-        =================================================== */}
+        {/* ==========================================
+           ACTION
+        ========================================== */}
 
-        <div className="
-          flex
-          items-center
-          gap-3
-        ">
+        <Link
+          href={`/profile/orders/${item._id}`}
+          className="
+            inline-flex
+            items-center
+            gap-2
 
-          <Link
-            href={`/profile/orders/${item._id}`}
-            className="
-              rounded-full
-              bg-black
-              px-6
-              py-3
-              text-sm
-              font-semibold
-              text-white
-              transition
-              hover:opacity-90
-            "
-          >
-            Lihat Detail
-          </Link>
+            text-sm
+            font-semibold
 
-        </div>
+            text-[#111827]
+
+            hover:gap-3
+
+            transition-all
+          "
+        >
+
+          Lihat Detail
+
+          <ArrowRight
+            size={16}
+          />
+
+        </Link>
 
       </div>
 

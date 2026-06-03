@@ -6,9 +6,17 @@ import TableToolbar from "./TableToolbar";
 import Pagination from "./Pagination";
 
 type Action = {
-  label: string;
-  onClick: (row: any) => void;
-  show?: (row: any) => boolean;
+  icon: React.ReactNode;
+
+  onClick: (
+    row: any
+  ) => void;
+
+  show?: (
+    row: any
+  ) => boolean;
+
+  className?: string;
 };
 
 type Props = {

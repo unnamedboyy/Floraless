@@ -1,4 +1,3 @@
-
 import api from "@/lib/axios";
 
 /* =========================================================
@@ -9,15 +8,9 @@ export const login = async (data: {
   username: string;
   password: string;
 }) => {
-
   const res = await api.post(
     "/auth/login",
     data
-  );
-
-  console.log(
-    "AUTH SERVICE RESPONSE:",
-    res.data
   );
 
   return res.data;
@@ -34,7 +27,6 @@ export const register = async (data: {
   password: string;
   role?: string;
 }) => {
-
   const res = await api.post(
     "/auth/registerPelanggan",
     {
@@ -51,7 +43,6 @@ export const register = async (data: {
 ========================================================= */
 
 export const logout = () => {
-
   localStorage.removeItem("token");
   localStorage.removeItem("user");
   localStorage.removeItem("profile");
@@ -64,13 +55,11 @@ export const logout = () => {
 ========================================================= */
 
 export const getUser = () => {
-
   if (typeof window === "undefined") {
     return null;
   }
 
-  const user =
-    localStorage.getItem("user");
+  const user = localStorage.getItem("user");
 
   return user
     ? JSON.parse(user)
@@ -82,7 +71,6 @@ export const getUser = () => {
 ========================================================= */
 
 export const getProfile = () => {
-
   if (typeof window === "undefined") {
     return null;
   }
@@ -100,14 +88,11 @@ export const getProfile = () => {
 ========================================================= */
 
 export const getToken = () => {
-
   if (typeof window === "undefined") {
     return null;
   }
 
-  return localStorage.getItem(
-    "token"
-  );
+  return localStorage.getItem("token");
 };
 
 /* =========================================================
@@ -115,6 +100,5 @@ export const getToken = () => {
 ========================================================= */
 
 export const isLoggedIn = () => {
-
   return !!getToken();
 };

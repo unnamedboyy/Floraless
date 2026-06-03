@@ -1,30 +1,27 @@
 "use client";
 
 import {
-
   useEffect,
   useState,
-
 } from "react";
 
 import toast from "react-hot-toast";
 
+import {
+  Eye,
+  Pencil,
+  Trash2,
+} from "lucide-react";
+
 import TableWrapper from "@/components/table/TableWrapper";
-
 import JadwalCalendar from "@/components/jadwal/JadwalCalendar";
-
 import JadwalFormModal from "@/components/form/JadwalFormModal";
-
 import DetailJadwalModal from "@/components/modal/DetailJadwalModal";
 
 import {
-
   createJadwal,
-
   updateJadwal,
-
   deleteJadwal,
-
 } from "@/services/jadwal.service";
 
 import {
@@ -38,6 +35,15 @@ import {
 export default function JadwalPage() {
 
   /* =====================================================
+     TODAY
+  ===================================================== */
+
+  const today =
+    new Date()
+      .toISOString()
+      .split("T")[0];
+
+  /* =====================================================
      STATE
   ===================================================== */
 
@@ -48,7 +54,7 @@ export default function JadwalPage() {
 
   const [mode, setMode] =
     useState<"table" | "calendar">(
-      "table"
+      "calendar"
     );
 
   const [query, setQuery] =
@@ -60,9 +66,9 @@ export default function JadwalPage() {
 
       search: "",
 
-      start: "",
+      start: today,
 
-      end: "",
+      end: "2099-12-31",
 
       status: "",
     });
@@ -87,13 +93,9 @@ export default function JadwalPage() {
   ===================================================== */
 
   const {
-
     data = [],
-
     loading,
-
     refetch,
-
   } = useJadwal(query);
 
   /* =====================================================
@@ -138,7 +140,7 @@ export default function JadwalPage() {
   }, []);
 
   /* =====================================================
-     ACTION
+     SUBMIT
   ===================================================== */
 
   const handleSubmit =
@@ -151,9 +153,7 @@ export default function JadwalPage() {
         if (selected?._id) {
 
           await updateJadwal(
-
             selected._id,
-
             form
           );
 
@@ -195,38 +195,109 @@ export default function JadwalPage() {
       }
     };
 
+  /* =====================================================
+     DELETE
+  ===================================================== */
+
   const handleDelete =
     async (row: any) => {
 
-      if (
-        !confirm(
-          "Hapus jadwal ini?"
-        )
-      ) return;
+      toast((t) => (
 
-      try {
+        <div className="w-[300px]">
 
-        await deleteJadwal(
-          row._id
-        );
+          {/* TITLE */}
+          <p className="
+            font-semibold
+            text-sm
+          ">
+            Hapus Jadwal?
+          </p>
 
-        toast.success(
-          "Jadwal berhasil dihapus"
-        );
+          {/* DESC */}
+          <p className="
+            text-sm
+            text-gray-500
+            mt-1
+          ">
+            Jadwal tidak dapat dikembalikan
+          </p>
 
-        refetch();
+          {/* ACTION */}
+          <div className="
+            flex
+            justify-end
+            gap-2
+            mt-4
+          ">
 
-      } catch (err: any) {
+            {/* CANCEL */}
+            <button
+              onClick={() =>
+                toast.dismiss(t.id)
+              }
+              className="
+                px-3
+                py-2
+                rounded-xl
+                border
+                text-sm
+                hover:bg-gray-50
+              "
+            >
+              Batal
+            </button>
 
-        console.error(err);
+            {/* DELETE */}
+            <button
+              onClick={async () => {
 
-        toast.error(
+                toast.dismiss(t.id);
 
-          err?.response?.data?.message ||
+                try {
 
-          "Gagal menghapus jadwal"
-        );
-      }
+                  await deleteJadwal(
+                    row._id
+                  );
+
+                  toast.success(
+                    "Jadwal berhasil dihapus"
+                  );
+
+                  refetch();
+
+                } catch (err: any) {
+
+                  console.error(err);
+
+                  toast.error(
+
+                    err?.response?.data?.message ||
+
+                    "Gagal menghapus jadwal"
+                  );
+                }
+              }}
+              className="
+                px-3
+                py-2
+                rounded-xl
+                bg-red-500
+                text-white
+                text-sm
+                hover:bg-red-600
+              "
+            >
+              Hapus
+            </button>
+
+          </div>
+
+        </div>
+
+      ), {
+        duration: 10000,
+      });
     };
 
   /* =====================================================
@@ -238,47 +309,24 @@ export default function JadwalPage() {
 
       const map: any = {
 
-        available: `
+        available:
+          "bg-emerald-50 text-emerald-700 border border-emerald-200",
 
-          bg-emerald-50
-          text-emerald-700
-          border
-          border-emerald-200
-        `,
+        booked:
+          "bg-amber-50 text-amber-700 border border-amber-200",
 
-        booked: `
+        ongoing:
+          "bg-blue-50 text-blue-700 border border-blue-200",
 
-          bg-amber-50
-          text-amber-700
-          border
-          border-amber-200
-        `,
-
-        ongoing: `
-
-          bg-blue-50
-          text-blue-700
-          border
-          border-blue-200
-        `,
-
-        done: `
-
-          bg-slate-100
-          text-slate-700
-          border
-          border-slate-200
-        `,
+        done:
+          "bg-slate-100 text-slate-700 border border-slate-200",
       };
 
       return (
+
         map[status] ||
 
-        `
-          bg-gray-100
-          text-gray-700
-          border
-        `
+        "bg-gray-100 text-gray-700 border"
       );
     };
 
@@ -327,35 +375,25 @@ export default function JadwalPage() {
         </div>
 
         <button
-
           onClick={() => {
 
             setSelected(null);
 
             setOpenForm(true);
           }}
-
           className="
             h-12
             px-5
-
             rounded-2xl
-
             bg-[#0F172A]
-
             text-white
-
             text-sm
             font-semibold
-
             hover:opacity-90
-
             transition
           "
         >
-
           + Tambah Jadwal
-
         </button>
 
       </div>
@@ -364,31 +402,21 @@ export default function JadwalPage() {
           MODE SWITCH
       ===================================================== */}
 
-      <div className="
-        flex
-        gap-2
-      ">
+      <div className="flex gap-2">
 
         <button
-
           onClick={() =>
             setMode("table")
           }
-
           className={`
-
             h-11
             px-5
-
             rounded-2xl
-
             text-sm
             font-semibold
-
             transition
 
             ${
-
               mode === "table"
 
                 ? `
@@ -403,34 +431,24 @@ export default function JadwalPage() {
                   text-slate-700
                 `
             }
-
           `}
         >
-
           Table
-
         </button>
 
         <button
-
           onClick={() =>
             setMode("calendar")
           }
-
           className={`
-
             h-11
             px-5
-
             rounded-2xl
-
             text-sm
             font-semibold
-
             transition
 
             ${
-
               mode === "calendar"
 
                 ? `
@@ -445,12 +463,9 @@ export default function JadwalPage() {
                   text-slate-700
                 `
             }
-
           `}
         >
-
           Calendar
-
         </button>
 
       </div>
@@ -497,9 +512,7 @@ export default function JadwalPage() {
                     </label>
 
                     <select
-
                       value={query.status}
-
                       onChange={(e) =>
                         setQuery((prev) => ({
 
@@ -511,26 +524,17 @@ export default function JadwalPage() {
                           page: 1,
                         }))
                       }
-
                       className="
                         w-full
                         h-12
-
                         rounded-2xl
-
                         border
                         border-slate-200
-
                         bg-white
-
                         px-4
-
                         text-sm
-
                         outline-none
-
                         transition-all
-
                         focus:border-slate-400
                       "
                     >
@@ -559,240 +563,6 @@ export default function JadwalPage() {
 
                   </div>
 
-                  {/* START DATE */}
-                  <div className="
-                    space-y-2
-                  ">
-
-                    <label className="
-                      text-xs
-                      font-semibold
-                      uppercase
-                      tracking-wider
-                      text-slate-500
-                    ">
-                      Dari Tanggal
-                    </label>
-
-                    <input
-
-                      type="date"
-
-                      value={query.start}
-
-                      onChange={(e) =>
-                        setQuery((prev) => ({
-
-                          ...prev,
-
-                          start:
-                            e.target.value,
-
-                          page: 1,
-                        }))
-                      }
-
-                      className="
-                        w-full
-                        h-12
-
-                        rounded-2xl
-
-                        border
-                        border-slate-200
-
-                        bg-white
-
-                        px-4
-
-                        text-sm
-
-                        outline-none
-
-                        transition-all
-
-                        focus:border-slate-400
-                      "
-                    />
-
-                  </div>
-
-                  {/* END DATE */}
-                  <div className="
-                    space-y-2
-                  ">
-
-                    <label className="
-                      text-xs
-                      font-semibold
-                      uppercase
-                      tracking-wider
-                      text-slate-500
-                    ">
-                      Sampai Tanggal
-                    </label>
-
-                    <input
-
-                      type="date"
-
-                      value={query.end}
-
-                      onChange={(e) =>
-                        setQuery((prev) => ({
-
-                          ...prev,
-
-                          end:
-                            e.target.value,
-
-                          page: 1,
-                        }))
-                      }
-
-                      className="
-                        w-full
-                        h-12
-
-                        rounded-2xl
-
-                        border
-                        border-slate-200
-
-                        bg-white
-
-                        px-4
-
-                        text-sm
-
-                        outline-none
-
-                        transition-all
-
-                        focus:border-slate-400
-                      "
-                    />
-
-                  </div>
-
-                  {/* LIMIT */}
-                  <div className="
-                    space-y-2
-                  ">
-
-                    <label className="
-                      text-xs
-                      font-semibold
-                      uppercase
-                      tracking-wider
-                      text-slate-500
-                    ">
-                      Data per halaman
-                    </label>
-
-                    <select
-
-                      value={query.limit}
-
-                      onChange={(e) =>
-                        setQuery((prev) => ({
-
-                          ...prev,
-
-                          limit: Number(
-                            e.target.value
-                          ),
-
-                          page: 1,
-                        }))
-                      }
-
-                      className="
-                        w-full
-                        h-12
-
-                        rounded-2xl
-
-                        border
-                        border-slate-200
-
-                        bg-white
-
-                        px-4
-
-                        text-sm
-
-                        outline-none
-
-                        transition-all
-
-                        focus:border-slate-400
-                      "
-                    >
-
-                      <option value={5}>
-                        5
-                      </option>
-
-                      <option value={10}>
-                        10
-                      </option>
-
-                      <option value={20}>
-                        20
-                      </option>
-
-                      <option value={50}>
-                        50
-                      </option>
-
-                    </select>
-
-                  </div>
-
-                  {/* RESET */}
-                  <button
-
-                    onClick={() =>
-                      setQuery({
-
-                        page: 1,
-
-                        limit: 10,
-
-                        search: "",
-
-                        start: "",
-
-                        end: "",
-
-                        status: "",
-                      })
-                    }
-
-                    className="
-                      w-full
-                      h-12
-
-                      rounded-2xl
-
-                      bg-[#0F172A]
-
-                      text-white
-
-                      text-sm
-                      font-semibold
-
-                      hover:opacity-90
-
-                      transition
-                    "
-                  >
-
-                    Reset Filter
-
-                  </button>
-
                 </div>
               }
 
@@ -804,28 +574,26 @@ export default function JadwalPage() {
 
               setQuery={setQuery}
 
+              /* ================= COLUMNS ================= */
+
               columns={[
 
                 {
                   label: "Tanggal",
-
                   key: "tanggal_acara",
                 },
 
                 {
                   label: "Pegawai",
-
                   key: "pegawaiId.nama",
                 },
 
                 {
                   label: "Lokasi",
-
                   key: "lokasi",
                 },
 
                 {
-
                   label: "Status",
 
                   key: "status",
@@ -833,25 +601,18 @@ export default function JadwalPage() {
                   render: (row: any) => (
 
                     <div className={`
-
                       h-9
                       px-4
-
                       rounded-2xl
-
                       inline-flex
                       items-center
                       justify-center
-
                       text-xs
                       font-semibold
-
                       border
-
                       ${getStatusBadge(
                         row.status
                       )}
-
                     `}>
 
                       {row.status}
@@ -862,11 +623,20 @@ export default function JadwalPage() {
 
               ]}
 
+              /* ================= ACTION ================= */
+
               actions={[
 
                 {
+                  icon: (
+                    <Eye size={17} />
+                  ),
 
-                  label: "Detail",
+                  className: `
+                    bg-gray-100
+                    text-gray-700
+                    hover:bg-gray-200
+                  `,
 
                   onClick: (row) => {
 
@@ -877,8 +647,15 @@ export default function JadwalPage() {
                 },
 
                 {
+                  icon: (
+                    <Pencil size={17} />
+                  ),
 
-                  label: "Edit",
+                  className: `
+                    bg-yellow-100
+                    text-yellow-700
+                    hover:bg-yellow-200
+                  `,
 
                   onClick: (row) => {
 
@@ -889,196 +666,20 @@ export default function JadwalPage() {
                 },
 
                 {
+                  icon: (
+                    <Trash2 size={17} />
+                  ),
 
-                  label: "Delete",
+                  className: `
+                    bg-red-100
+                    text-red-700
+                    hover:bg-red-200
+                  `,
 
                   onClick: handleDelete,
                 },
 
               ]}
-
-              /* ================= GRID ================= */
-
-              renderItem={(row) => (
-
-                <div className="
-
-                  bg-white
-
-                  border
-                  border-slate-200
-
-                  rounded-3xl
-
-                  p-5
-
-                  space-y-4
-
-                  shadow-sm
-
-                ">
-
-                  {/* TOP */}
-                  <div className="
-                    flex
-                    items-start
-                    justify-between
-                    gap-3
-                  ">
-
-                    <div>
-
-                      <p className="
-                        font-semibold
-                        text-base
-                        text-[#0F172A]
-                      ">
-
-                        {
-
-                          row.title ||
-
-                          row.ticketId
-                            ?.layananId
-                            ?.nama ||
-
-                          "-"
-                        }
-
-                      </p>
-
-                      <p className="
-                        text-sm
-                        text-slate-500
-                        mt-1
-                      ">
-
-                        {
-                          row.pegawaiId
-                            ?.nama || "-"
-                        }
-
-                      </p>
-
-                    </div>
-
-                    <span className={`
-
-                      inline-flex
-                      items-center
-
-                      px-3
-                      py-1
-
-                      rounded-full
-
-                      text-xs
-                      font-medium
-
-                      ${getStatusBadge(
-                        row.status
-                      )}
-
-                    `}>
-
-                      {row.status}
-
-                    </span>
-
-                  </div>
-
-                  {/* DATE */}
-                  <div>
-
-                    <p className="
-                      text-xs
-                      text-slate-400
-                    ">
-                      Tanggal Acara
-                    </p>
-
-                    <p className="
-                      text-sm
-                      font-medium
-                      mt-1
-                    ">
-
-                      {
-
-                        row.tanggal_acara
-
-                          ? new Date(
-                              row.tanggal_acara
-                            )
-
-                            .toLocaleDateString(
-                              "id-ID"
-                            )
-
-                          : "-"
-                      }
-
-                    </p>
-
-                  </div>
-
-                  {/* LOCATION */}
-                  <div className="
-                    pt-2
-                    border-t
-                    border-slate-100
-                  ">
-
-                    <p className="
-                      text-xs
-                      text-slate-400
-                    ">
-                      Lokasi
-                    </p>
-
-                    <p className="
-                      text-sm
-                      mt-1
-                      line-clamp-2
-                    ">
-                      {row.lokasi || "-"}
-                    </p>
-
-                  </div>
-
-                  {/* CATATAN */}
-                  {
-
-                    row.catatan && (
-
-                      <div className="
-                        pt-2
-                        border-t
-                        border-slate-100
-                      ">
-
-                        <p className="
-                          text-xs
-                          text-slate-400
-                        ">
-                          Catatan
-                        </p>
-
-                        <p className="
-                          text-sm
-                          mt-1
-                          line-clamp-2
-                          text-slate-600
-                        ">
-                          {row.catatan}
-                        </p>
-
-                      </div>
-                    )
-                  }
-
-                </div>
-              )}
 
             />
 

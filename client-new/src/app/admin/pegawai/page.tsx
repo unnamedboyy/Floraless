@@ -5,14 +5,16 @@ import { useUsers } from "@/hooks/useUsers";
 import TableWrapper from "@/components/table/TableWrapper";
 import UserFormModal from "@/components/form/UserFormModal";
 import DetailUserModal from "@/components/modal/DetailUserModal";
+import SwitchToggle from "@/components/table/SwitchToggle";
+import { createUser, updateUser, softDeleteUser} from "@/services/user.service";
 
 import toast from "react-hot-toast";
 
 import {
-  createUser,
-  updateUser,
-  softDeleteUser,
-} from "@/services/user.service";
+  Eye,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 
 export default function PegawaiPage() {
 
@@ -99,41 +101,102 @@ export default function PegawaiPage() {
       }
     };
 
-  const handleDelete =
-    async (row: any) => {
+const handleDelete =
+  async (row: any) => {
 
-      if (
-        !confirm(
-          "Yakin hapus?"
-        )
-      ) return;
+    toast((t) => (
 
-      try {
+      <div className="w-[300px]">
 
-        await softDeleteUser(
-          "pegawai",
-          row._id
-        );
+        {/* TITLE */}
+        <p className="font-semibold text-sm">
+          Hapus Pegawai?
+        </p>
 
-        reload();
+        {/* DESC */}
+        <p className="text-sm text-gray-500 mt-1">
+          Data pegawai tidak dapat dikembalikan
+        </p>
 
-      } catch (err) {
+        {/* ACTION */}
+        <div className="flex justify-end gap-2 mt-4">
 
-        console.error(
-          "ERROR RESPONSE:",
-          (err as any).response?.data
-        );
+          {/* CANCEL */}
+          <button
+            onClick={() =>
+              toast.dismiss(t.id)
+            }
+            className="
+              px-3
+              py-2
+              rounded-xl
+              border
+              text-sm
+              hover:bg-gray-50
+            "
+          >
+            Batal
+          </button>
 
-        console.error(err);
+          {/* DELETE */}
+          <button
+            onClick={async () => {
 
-        toast.error(
-          (err as any)
-            .response?.data?.message ||
+              toast.dismiss(t.id);
 
-          "Gagal menghapus data"
-        );
-      }
-    };
+              try {
+
+                await softDeleteUser(
+                  "pegawai",
+                  row._id
+                );
+
+                toast.success(
+                  "Pegawai berhasil dihapus"
+                );
+
+                reload();
+
+              } catch (err) {
+
+                console.error(
+                  "ERROR RESPONSE:",
+                  (err as any)
+                    .response?.data
+                );
+
+                console.error(err);
+
+                toast.error(
+                  (err as any)
+                    .response?.data
+                    ?.message ||
+
+                  "Gagal menghapus data"
+                );
+              }
+            }}
+            className="
+              px-3
+              py-2
+              rounded-xl
+              bg-red-500
+              text-white
+              text-sm
+              hover:bg-red-600
+            "
+          >
+            Hapus
+          </button>
+
+        </div>
+
+      </div>
+
+    ), {
+      duration: 10000,
+    });
+  };
 
   /* ================= BADGE ================= */
 
@@ -275,7 +338,7 @@ export default function PegawaiPage() {
                   5
                 </option>
 
-                <option value={10}>
+                <option value={8}>
                   10
                 </option>
 
@@ -377,14 +440,30 @@ export default function PegawaiPage() {
         actions={[
 
           {
-            label: "Detail",
+            icon: (
+              <Eye size={17} />
+            ),
+
+            className: `
+              bg-gray-100
+              text-gray-700
+              hover:bg-gray-200
+            `,
 
             onClick: (row) =>
               setSelected(row),
           },
 
           {
-            label: "Edit",
+            icon: (
+              <Pencil size={17} />
+            ),
+
+            className: `
+              bg-yellow-100
+              text-yellow-700
+              hover:bg-yellow-200
+            `,
 
             onClick: (row) => {
 
@@ -395,7 +474,15 @@ export default function PegawaiPage() {
           },
 
           {
-            label: "Delete",
+            icon: (
+              <Trash2 size={17} />
+            ),
+
+            className: `
+              bg-red-100
+              text-red-700
+              hover:bg-red-200
+            `,
 
             onClick: handleDelete,
           },

@@ -7,9 +7,9 @@ import Image from "next/image";
 import {
   User,
   ShoppingBag,
-  CreditCard,
   Gift,
   LogOut,
+  ChevronRight,
 } from "lucide-react";
 
 import {
@@ -79,35 +79,49 @@ export default function ProfileSidebar() {
 
   return (
 
-    <aside className="
-      rounded-[2rem]
-      border
-      bg-white
-      p-6
-      shadow-sm
-    ">
+    <aside
+      className="
+        xl:sticky
+        xl:top-6
+        h-fit
+      "
+    >
 
-      {/* PROFILE */}
+      {/* ==========================================
+         PROFILE
+      ========================================== */}
 
-      <div className="
-        border-b
-        pb-6
-      ">
+      <div
+        className="
+          pb-8
+          border-b
+          border-gray-200
+        "
+      >
 
-        <div className="
-          flex
-          items-center
-          gap-4
-        ">
+        <div
+          className="
+            flex
+            items-center
+            gap-5
+          "
+        >
 
-          <div className="
-            relative
-            h-16
-            w-16
-            overflow-hidden
-            rounded-full
-            border
-          ">
+          <div
+            className="
+              relative
+
+              h-20
+              w-20
+
+              overflow-hidden
+
+              rounded-full
+
+              border
+              border-gray-200
+            "
+          >
 
             <Image
               src={avatar}
@@ -120,10 +134,26 @@ export default function ProfileSidebar() {
 
           <div>
 
-            <h2 className="
-              font-semibold
-              text-lg
-            ">
+            <p
+              className="
+                text-xs
+                uppercase
+                tracking-[0.25em]
+                text-[#C9AE63]
+              "
+            >
+              Customer
+            </p>
+
+            <h2
+              className="
+                mt-2
+                text-2xl
+                font-bold
+                tracking-tight
+                text-[#111827]
+              "
+            >
 
               {
                 profile?.nama ||
@@ -132,11 +162,14 @@ export default function ProfileSidebar() {
 
             </h2>
 
-            <p className="
-              text-sm
-              text-gray-500
-            ">
-              Customer Floraless
+            <p
+              className="
+                mt-1
+                text-sm
+                text-gray-500
+              "
+            >
+              Floraless Client
             </p>
 
           </div>
@@ -145,82 +178,164 @@ export default function ProfileSidebar() {
 
       </div>
 
-      {/* MENUS */}
+      {/* ==========================================
+         MENU
+      ========================================== */}
 
-      <div className="
-        mt-6
-        space-y-2
-      ">
+      <div
+        className="
+          mt-8
+        "
+      >
 
-        {
-          menus.map(
-            (item) => {
+        <div
+          className="
+            space-y-1
+          "
+        >
 
-              const active =
-                pathname ===
-                item.href;
+          {
+            menus.map(
+              (item) => {
 
-              return (
+                const active =
+                  pathname ===
+                  item.href;
 
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`
-                    flex
-                    items-center
-                    gap-3
-                    rounded-2xl
-                    px-4
-                    py-3
-                    text-sm
-                    font-medium
-                    transition
+                return (
 
-                    ${
-                      active
-                        ? `
-                          bg-black
-                          text-white
-                        `
-                        : `
-                          text-gray-600
-                          hover:bg-gray-100
-                        `
-                    }
-                  `}
-                >
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`
+                      group
 
-                  {item.icon}
+                      flex
+                      items-center
+                      justify-between
 
-                  {item.label}
+                      py-4
 
-                </Link>
-              );
-            }
-          )
-        }
+                      border-b
+                      border-gray-100
+
+                      transition-all
+
+                      ${
+                        active
+
+                          ? `
+                            text-[#111827]
+                          `
+
+                          : `
+                            text-gray-500
+                            hover:text-[#111827]
+                          `
+                      }
+                    `}
+                  >
+
+                    <div
+                      className="
+                        flex
+                        items-center
+                        gap-3
+                      "
+                    >
+
+                      <div
+                        className={`
+                          transition
+
+                          ${
+                            active
+
+                              ? `
+                                text-[#111827]
+                              `
+
+                              : `
+                                text-gray-400
+                                group-hover:text-[#111827]
+                              `
+                          }
+                        `}
+                      >
+
+                        {item.icon}
+
+                      </div>
+
+                      <span
+                        className={`
+                          text-sm
+
+                          ${
+                            active
+
+                              ? `
+                                font-semibold
+                              `
+
+                              : `
+                                font-medium
+                              `
+                          }
+                        `}
+                      >
+
+                        {item.label}
+
+                      </span>
+
+                    </div>
+
+                    <ChevronRight
+                      size={16}
+                      className="
+                        text-gray-300
+
+                        transition
+
+                        group-hover:translate-x-1
+                      "
+                    />
+
+                  </Link>
+
+                );
+              }
+            )
+          }
+
+        </div>
 
       </div>
 
-      {/* LOGOUT */}
+      {/* ==========================================
+         LOGOUT
+      ========================================== */}
 
       <button
+
         onClick={logout}
+
         className="
-          mt-8
+          mt-10
+
           flex
-          w-full
           items-center
           gap-3
-          rounded-2xl
-          bg-red-50
-          px-4
-          py-3
+
           text-sm
           font-medium
+
           text-red-500
+
           transition
-          hover:bg-red-100
+
+          hover:text-red-600
         "
       >
 

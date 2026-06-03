@@ -1,223 +1,430 @@
-import Jadwal from "../models/jadwal.js";
-import Pegawai from "../models/pegawai.js";
-import { logActivity } from "../utils/logger.js";
+import Jadwal
+from "../models/jadwal.js";
+
+import Pegawai
+from "../models/pegawai.js";
+
+import { logActivity }
+from "../utils/logger.js";
+
+/* =========================================================
+   SOCKET
+========================================================= */
+
+import {
+
+  getIO,
+
+} from "../socket/index.js";
 
 /* =========================================================
    GET JADWAL
 ========================================================= */
-export const getJadwal = async (req, res, next) => {
-  try {
 
-    const { start, end } = req.query;
+export const getJadwal =
+  async (
+    req,
+    res,
+    next
+  ) => {
 
-    const filter = {};
+    try {
 
-    /* ================= FILTER TANGGAL ================= */
-    if (start && end) {
+      const {
+        start,
+        end,
+      } = req.query;
 
-      filter.tanggal_acara = {
-        $gte: new Date(start),
-        $lte: new Date(end)
-      };
-    }
+      const filter = {};
 
-    /* =================================================
-       ROLE FILTER
-    ================================================= */
+      /* ================= FILTER TANGGAL ================= */
 
-    // 🔥 PEGAWAI -> hanya lihat jadwal sendiri
-    if (req.user.role === "pegawai") {
+      if (
+        start &&
+        end
+      ) {
 
-      const pegawai = await Pegawai.findOne({
-        userId: req.user.id
-      });
+        filter.tanggal_acara = {
 
-      if (!pegawai) {
-        return res.json([]);
+          $gte:
+            new Date(start),
+
+          $lte:
+            new Date(end),
+        };
       }
 
-      filter.pegawaiId = pegawai._id;
-    }
+      /* =================================================
+         ROLE FILTER
+      ================================================= */
 
-    // 🔥 ADMIN -> lihat semua
-    // tidak perlu filter pegawaiId
 
-    /* ================= GET DATA ================= */
+      if (
+        req.user.role ===
+        "pegawai"
+      ) {
 
-    const data = await Jadwal.find(filter)
+        const pegawai =
+          await Pegawai.findOne({
 
-      .populate("pegawaiId", "nama")
+            userId:
+              req.user.id,
+          });
 
-      .populate({
-        path: "ticketId",
-        populate: {
-          path: "layananId",
-          select: "nama"
+        if (!pegawai) {
+
+          return res.json([]);
         }
-      });
 
-    console.log("TOTAL JADWAL:", data.length);
-    /*console.log(data);*/
+        filter.pegawaiId =
+          pegawai._id;
+      }
 
-    res.json(data);
+      /* ================= GET DATA ================= */
 
-  } catch (err) {
-    next(err);
-  }
-};
+      const data =
+        await Jadwal.find(
+          filter
+        )
+
+        .populate(
+          "pegawaiId",
+          "nama"
+        )
+
+        .populate({
+
+          path:
+            "ticketId",
+
+          populate: {
+
+            path:
+              "layananId",
+
+            select:
+              "nama",
+          },
+        });
+
+      console.log(
+        "TOTAL JADWAL:",
+        data.length
+      );
+
+      res.json(data);
+
+    } catch (err) {
+
+      next(err);
+    }
+  };
 
 /* =========================================================
    CREATE JADWAL
 ========================================================= */
-export const createJadwal = async (req, res, next) => {
-  try {
-    const {
-      tanggal_acara,
-      pegawaiId,
-      ticketId,
-      title,
-      lokasi,
-      catatan,
-      status
-    } = req.body;
 
-    /* ================= CEK BENTROK ================= */
-    if (pegawaiId) {
-      const bentrok = await Jadwal.findOne({
+export const createJadwal =
+  async (
+    req,
+    res,
+    next
+  ) => {
+
+    try {
+
+      const {
+
+        tanggal_acara,
+
         pegawaiId,
-        tanggal_acara
+
+        ticketId,
+
+        title,
+
+        lokasi,
+
+        catatan,
+
+        status,
+
+      } = req.body;
+
+      /* ================= CEK BENTROK ================= */
+
+      if (pegawaiId) {
+
+        const bentrok =
+          await Jadwal.findOne({
+
+            pegawaiId,
+
+            tanggal_acara,
+          });
+
+        if (bentrok) {
+
+          throw {
+
+            status: 400,
+
+            message:
+              "Pegawai sudah memiliki jadwal di tanggal ini",
+          };
+        }
+      }
+
+      /* ================= CREATE ================= */
+
+      const jadwal =
+        await Jadwal.create({
+
+          ticketId,
+
+          pegawaiId,
+
+          title,
+
+          lokasi,
+
+          tanggal_acara,
+
+          status:
+            status ||
+            "booked",
+
+          catatan:
+            catatan || "",
+        });
+
+      /* =========================================================
+         REALTIME EMIT
+      ========================================================= */
+
+      getIO().emit(
+        "jadwal:update"
+      );
+
+      /* ================= LOG ================= */
+
+      await logActivity({
+
+        userId:
+          req.user.id,
+
+        customDescription:
+          `Membuat jadwal baru pada ${tanggal_acara}`,
       });
 
-      if (bentrok) {
-        throw {
-          status: 400,
-          message: "Pegawai sudah memiliki jadwal di tanggal ini"
-        };
-      }
+      res.json(jadwal);
+
+    } catch (err) {
+
+      next(err);
     }
-
-    /* ================= CREATE ================= */
-    const jadwal = await Jadwal.create({
-      ticketId,
-      pegawaiId,
-      title,
-      lokasi,
-      tanggal_acara,
-      status: status || "booked",
-      catatan: catatan || ""
-    });
-
-    await logActivity({
-      userId: req.user.id,
-      customDescription: `Membuat jadwal baru pada ${tanggal_acara}`
-    });
-
-    res.json(jadwal);
-
-  } catch (err) {
-    next(err);
-  }
-};
+  };
 
 /* =========================================================
    UPDATE JADWAL
 ========================================================= */
-export const updateJadwal = async (req, res, next) => {
-  try {
-    const { id } = req.params;
 
-    const {
-      tanggal_acara,
-      status,
-      lokasi,
-      title
-    } = req.body;
+export const updateJadwal =
+  async (
+    req,
+    res,
+    next
+  ) => {
 
-    /* ================= FIND ================= */
-    const jadwal = await Jadwal.findById(id);
+    try {
 
-    if (!jadwal) {
-      throw {
-        status: 404,
-        message: "Jadwal tidak ditemukan"
-      };
-    }
+      const { id } =
+        req.params;
 
-    /* ================= CEK BENTROK ================= */
-    if (tanggal_acara && jadwal.pegawaiId) {
-      const bentrok = await Jadwal.findOne({
-        _id: { $ne: id },
-        pegawaiId: jadwal.pegawaiId,
-        tanggal_acara
-      });
+      const {
 
-      if (bentrok) {
+        tanggal_acara,
+
+        status,
+
+        lokasi,
+
+        title,
+
+      } = req.body;
+
+      /* ================= FIND ================= */
+
+      const jadwal =
+        await Jadwal.findById(
+          id
+        );
+
+      if (!jadwal) {
+
         throw {
-          status: 400,
-          message: "Jadwal bentrok"
+
+          status: 404,
+
+          message:
+            "Jadwal tidak ditemukan",
         };
       }
+
+      /* ================= CEK BENTROK ================= */
+
+      if (
+        tanggal_acara &&
+        jadwal.pegawaiId
+      ) {
+
+        const bentrok =
+          await Jadwal.findOne({
+
+            _id: {
+              $ne: id,
+            },
+
+            pegawaiId:
+              jadwal.pegawaiId,
+
+            tanggal_acara,
+          });
+
+        if (bentrok) {
+
+          throw {
+
+            status: 400,
+
+            message:
+              "Jadwal bentrok",
+          };
+        }
+      }
+
+      /* ================= UPDATE FIELD ================= */
+
+      if (tanggal_acara) {
+
+        jadwal.tanggal_acara =
+          tanggal_acara;
+      }
+
+      if (status) {
+
+        jadwal.status =
+          status;
+      }
+
+      if (
+        lokasi !==
+        undefined
+      ) {
+
+        jadwal.lokasi =
+          lokasi;
+      }
+
+      if (
+        title !==
+        undefined
+      ) {
+
+        jadwal.title =
+          title;
+      }
+
+      await jadwal.save();
+
+      /* =========================================================
+         REALTIME EMIT
+      ========================================================= */
+
+      getIO().emit(
+        "jadwal:update"
+      );
+
+      /* ================= LOG ================= */
+
+      await logActivity({
+
+        userId:
+          req.user.id,
+
+        customDescription:
+          `Jadwal ${jadwal._id} berhasil diperbarui`,
+      });
+
+      res.json(jadwal);
+
+    } catch (err) {
+
+      next(err);
     }
-
-    /* ================= UPDATE FIELD ================= */
-    if (tanggal_acara) {
-      jadwal.tanggal_acara = tanggal_acara;
-    }
-
-    if (status) {
-      jadwal.status = status;
-    }
-
-    if (lokasi !== undefined) {
-      jadwal.lokasi = lokasi;
-    }
-
-    if (title !== undefined) {
-      jadwal.title = title;
-    }
-
-    await jadwal.save();
-
-    await logActivity({
-      userId: req.user.id,
-      customDescription: `Jadwal ${jadwal._id} berhasil diperbarui`
-    });
-
-    res.json(jadwal);
-
-  } catch (err) {
-    next(err);
-  }
-};
+  };
 
 /* =========================================================
    DELETE JADWAL
 ========================================================= */
-export const deleteJadwal = async (req, res, next) => {
-  try {
-    const { id } = req.params;
 
-    const jadwal = await Jadwal.findById(id);
+export const deleteJadwal =
+  async (
+    req,
+    res,
+    next
+  ) => {
 
-    if (!jadwal) {
-      throw {
-        status: 404,
-        message: "Jadwal tidak ditemukan"
-      };
+    try {
+
+      const { id } =
+        req.params;
+
+      const jadwal =
+        await Jadwal.findById(
+          id
+        );
+
+      if (!jadwal) {
+
+        throw {
+
+          status: 404,
+
+          message:
+            "Jadwal tidak ditemukan",
+        };
+      }
+
+      await jadwal.deleteOne();
+
+      /* =========================================================
+         REALTIME EMIT
+      ========================================================= */
+
+      getIO().emit(
+        "jadwal:update"
+      );
+
+      /* ================= LOG ================= */
+
+      await logActivity({
+
+        userId:
+          req.user.id,
+
+        customDescription:
+          `Menghapus jadwal ${jadwal._id}`,
+      });
+
+      res.json({
+
+        message:
+          "Jadwal berhasil dihapus",
+      });
+
+    } catch (err) {
+
+      next(err);
     }
-
-    await jadwal.deleteOne();
-
-    await logActivity({
-      userId: req.user.id,
-      customDescription: `Menghapus jadwal ${jadwal._id}`
-    });
-
-    res.json({
-      message: "Jadwal berhasil dihapus"
-    });
-
-  } catch (err) {
-    next(err);
-  }
-};
+  };

@@ -2,107 +2,209 @@
 
 import { useState } from "react";
 
-import TableWrapper from "@/components/table/TableWrapper";
+import toast from "react-hot-toast";
 
-import { useReviews } from "@/hooks/useReviews";
+import {
+  Power,
+  Trash2,
+} from "lucide-react";
+
+import TableWrapper
+from "@/components/table/TableWrapper";
+
+import {
+  useReviews,
+} from "@/hooks/useReviews";
 
 export default function ReviewPage() {
 
-  /* ================= STATE ================= */
+  /* =====================================================
+     DATA
+  ===================================================== */
 
   const {
+
     data = [],
+
     loading,
+
     toggle,
+
     remove,
+
   } = useReviews();
 
-  const [query, setQuery] = useState({
-    page: 1,
-    limit: 10,
-    search: "",
-  });
+  /* =====================================================
+     STATE
+  ===================================================== */
 
-  /* 🔥 VIEW */
+  const [query, setQuery] =
+    useState({
+
+      page: 1,
+
+      limit: 10,
+
+      search: "",
+    });
+
   const [view, setView] =
     useState<"list" | "grid">(
       "list"
     );
 
-  /* 🔥 FILTER */
   const [layananFilter, setLayananFilter] =
     useState("");
 
-  /* ================= DATA ================= */
+  /* =====================================================
+     FILTERED DATA
+  ===================================================== */
 
-  // 🔥 UNIQUE LAYANAN
-  const layananList = Array.from(
+  const layananList =
+    Array.from(
 
-    new Set(
+      new Set(
 
-      data
-        .map(
-          (r: any) =>
-            r.ticketId
-              ?.layananId?.nama
-        )
-        .filter(Boolean)
+        data
+          .map(
+            (r: any) =>
+              r.ticketId
+                ?.layananId?.nama
+          )
+          .filter(Boolean)
+      )
+    );
 
-    )
-  );
+  const filtered =
+    data.filter(
+      (r: any) => {
 
-  // 🔥 FILTER
-  const filtered = data.filter(
-    (r: any) => {
+        const search =
+          query.search.toLowerCase();
 
-      const search =
-        query.search.toLowerCase();
+        const matchSearch =
 
-      const matchSearch =
+          r.komentar
+            ?.toLowerCase()
+            .includes(search)
 
-        r.komentar
-          ?.toLowerCase()
-          .includes(search)
+          ||
 
-        ||
+          r.pelangganId
+            ?.nama
+            ?.toLowerCase()
+            .includes(search);
 
-        r.pelangganId
-          ?.nama
-          ?.toLowerCase()
-          .includes(search);
+        const matchLayanan =
 
-      const matchLayanan =
+          !layananFilter ||
 
-        !layananFilter ||
+          r.ticketId
+            ?.layananId?.nama ===
+            layananFilter;
 
-        r.ticketId
-          ?.layananId?.nama ===
-          layananFilter;
+        return (
+          matchSearch &&
+          matchLayanan
+        );
+      }
+    );
 
-      return (
-        matchSearch &&
-        matchLayanan
-      );
-    }
-  );
+  const total =
+    filtered.length;
 
-  const total = filtered.length;
-
-  /* ================= HANDLER ================= */
+  /* =====================================================
+     DELETE
+  ===================================================== */
 
   const handleDelete =
     (row: any) => {
 
-      if (
-        !confirm(
-          "Yakin hapus review?"
-        )
-      ) return;
+      toast((t) => (
 
-      remove(row._id);
+        <div className="
+          w-[300px]
+        ">
+
+          {/* TITLE */}
+          <p className="
+            font-semibold
+            text-sm
+          ">
+            Hapus Review?
+          </p>
+
+          {/* DESC */}
+          <p className="
+            text-sm
+            text-gray-500
+            mt-1
+          ">
+            Review tidak dapat dikembalikan
+          </p>
+
+          {/* ACTION */}
+          <div className="
+            flex
+            justify-end
+            gap-2
+            mt-4
+          ">
+
+            {/* CANCEL */}
+            <button
+              onClick={() =>
+                toast.dismiss(t.id)
+              }
+              className="
+                px-3
+                py-2
+                rounded-xl
+                border
+                text-sm
+                hover:bg-gray-50
+              "
+            >
+              Batal
+            </button>
+
+            {/* DELETE */}
+            <button
+              onClick={() => {
+
+                toast.dismiss(t.id);
+
+                remove(row._id);
+
+                toast.success(
+                  "Review berhasil dihapus"
+                );
+              }}
+              className="
+                px-3
+                py-2
+                rounded-xl
+                bg-red-500
+                text-white
+                text-sm
+                hover:bg-red-600
+              "
+            >
+              Hapus
+            </button>
+
+          </div>
+
+        </div>
+
+      ), {
+        duration: 10000,
+      });
     };
 
-  /* ================= BADGE ================= */
+  /* =====================================================
+     BADGE
+  ===================================================== */
 
   const getStatusBadge =
     (status: boolean) => {
@@ -114,51 +216,81 @@ export default function ReviewPage() {
         : "bg-gray-100 text-gray-600 border border-gray-200";
     };
 
-  /* ================= UI ================= */
+  /* =====================================================
+     UI
+  ===================================================== */
 
   return (
 
-    <div className="p-6 space-y-5">
+    <div className="
+      p-6
+      space-y-5
+    ">
 
-      {/* HEADER */}
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
+
       <div>
 
-        <h1 className="text-2xl font-bold">
+        <h1 className="
+          text-2xl
+          font-bold
+        ">
           Kelola Review
         </h1>
 
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="
+          text-sm
+          text-gray-500
+          mt-1
+        ">
           Monitoring review dan rating pelanggan
         </p>
 
       </div>
 
-      {/* TABLE */}
+      {/* =====================================================
+          TABLE
+      ===================================================== */}
+
       <TableWrapper
 
-        /* 🔥 VIEW */
+        /* ================= VIEW ================= */
+
         view={view}
+
         setView={setView}
 
-        /* 🔥 FILTER */
+        /* ================= FILTER ================= */
+
         filterContent={
 
-          <div className="space-y-3">
+          <div className="
+            space-y-3
+          ">
 
             {/* LAYANAN */}
             <div>
 
-              <p className="text-xs text-gray-500 mb-1">
+              <p className="
+                text-xs
+                text-gray-500
+                mb-1
+              ">
                 Filter Layanan
               </p>
 
               <select
+
                 value={layananFilter}
+
                 onChange={(e) =>
                   setLayananFilter(
                     e.target.value
                   )
                 }
+
                 className="
                   w-full
                   border
@@ -173,17 +305,20 @@ export default function ReviewPage() {
                   Semua Layanan
                 </option>
 
-                {layananList.map(
-                  (l: any) => (
+                {
 
-                    <option
-                      key={l}
-                      value={l}
-                    >
-                      {l}
-                    </option>
+                  layananList.map(
+                    (l: any) => (
+
+                      <option
+                        key={l}
+                        value={l}
+                      >
+                        {l}
+                      </option>
+                    )
                   )
-                )}
+                }
 
               </select>
 
@@ -192,21 +327,31 @@ export default function ReviewPage() {
             {/* LIMIT */}
             <div>
 
-              <p className="text-xs text-gray-500 mb-1">
+              <p className="
+                text-xs
+                text-gray-500
+                mb-1
+              ">
                 Data per halaman
               </p>
 
               <select
+
                 value={query.limit}
+
                 onChange={(e) =>
                   setQuery((prev) => ({
+
                     ...prev,
+
                     limit: Number(
                       e.target.value
                     ),
+
                     page: 1,
                   }))
                 }
+
                 className="
                   w-full
                   border
@@ -239,16 +384,21 @@ export default function ReviewPage() {
 
             {/* RESET */}
             <button
+
               onClick={() => {
 
                 setLayananFilter("");
 
                 setQuery({
+
                   page: 1,
+
                   limit: 10,
+
                   search: "",
                 });
               }}
+
               className="
                 w-full
                 bg-black
@@ -258,17 +408,23 @@ export default function ReviewPage() {
                 text-sm
               "
             >
+
               Reset Filter
+
             </button>
 
           </div>
         }
 
         data={filtered}
+
         total={total}
 
         query={query}
+
         setQuery={setQuery}
+
+        /* ================= COLUMNS ================= */
 
         columns={[
 
@@ -284,7 +440,17 @@ export default function ReviewPage() {
 
           {
             label: "Rating",
+
             key: "rating",
+
+            render: (value: number) => (
+
+              <span className="
+                font-medium
+              ">
+                ⭐ {value || 0}
+              </span>
+            ),
           },
 
           {
@@ -294,22 +460,68 @@ export default function ReviewPage() {
 
           {
             label: "Tanggal",
+
             key: "createdAt",
+
+            render: (value: string) => (
+
+              <span>
+
+                {
+
+                  value
+
+                    ? new Date(value)
+                        .toLocaleDateString(
+                          "id-ID"
+                        )
+
+                    : "-"
+                }
+
+              </span>
+            ),
           },
 
         ]}
 
+        /* ================= ACTION ================= */
+
         actions={[
 
           {
-            label: "Toggle",
+            icon: (
+              <Power size={17} />
+            ),
 
-            onClick: (row) =>
-              toggle(row._id),
+            className: `
+              bg-blue-100
+              text-blue-700
+              hover:bg-blue-200
+            `,
+
+            onClick: (row) => {
+
+              toggle(row._id);
+
+              toast.success(
+                row.isActive
+                  ? "Review dinonaktifkan"
+                  : "Review diaktifkan"
+              );
+            },
           },
 
           {
-            label: "Delete",
+            icon: (
+              <Trash2 size={17} />
+            ),
+
+            className: `
+              bg-red-100
+              text-red-700
+              hover:bg-red-200
+            `,
 
             onClick: handleDelete,
           },
@@ -332,16 +544,28 @@ export default function ReviewPage() {
           >
 
             {/* TOP */}
-            <div className="flex items-start justify-between gap-3">
+            <div className="
+              flex
+              items-start
+              justify-between
+              gap-3
+            ">
 
               <div>
 
-                <p className="font-semibold text-base">
+                <p className="
+                  font-semibold
+                  text-base
+                ">
                   {row.pelangganId?.nama ||
                     "-"}
                 </p>
 
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="
+                  text-sm
+                  text-gray-500
+                  mt-1
+                ">
                   {row.ticketId
                     ?.layananId?.nama ||
                     "-"}
@@ -349,23 +573,23 @@ export default function ReviewPage() {
 
               </div>
 
-              <span
-                className={`
-                  inline-flex
-                  items-center
-                  px-3
-                  py-1
-                  rounded-full
-                  text-xs
-                  font-medium
-                  ${getStatusBadge(
-                    row.isActive
-                  )}
-                `}
-              >
+              <span className={`
+                inline-flex
+                items-center
+                px-3
+                py-1
+                rounded-full
+                text-xs
+                font-medium
+                ${getStatusBadge(
+                  row.isActive
+                )}
+              `}>
+
                 {row.isActive
                   ? "Active"
                   : "Non-active"}
+
               </span>
 
             </div>
@@ -373,24 +597,41 @@ export default function ReviewPage() {
             {/* RATING */}
             <div>
 
-              <p className="text-xs text-gray-400">
+              <p className="
+                text-xs
+                text-gray-400
+              ">
                 Rating
               </p>
 
-              <p className="text-xl font-bold mt-1">
+              <p className="
+                text-xl
+                font-bold
+                mt-1
+              ">
                 ⭐ {row.rating || 0}
               </p>
 
             </div>
 
             {/* KOMENTAR */}
-            <div className="pt-2 border-t">
+            <div className="
+              pt-2
+              border-t
+            ">
 
-              <p className="text-xs text-gray-400">
+              <p className="
+                text-xs
+                text-gray-400
+              ">
                 Komentar
               </p>
 
-              <p className="text-sm mt-1 line-clamp-3">
+              <p className="
+                text-sm
+                mt-1
+                line-clamp-3
+              ">
                 {row.komentar || "-"}
               </p>
 
@@ -401,14 +642,22 @@ export default function ReviewPage() {
 
       />
 
-      {/* LOADING */}
-      {loading && (
+      {/* =====================================================
+          LOADING
+      ===================================================== */}
 
-        <p className="text-sm text-gray-500">
-          Loading...
-        </p>
+      {
 
-      )}
+        loading && (
+
+          <p className="
+            text-sm
+            text-gray-500
+          ">
+            Loading...
+          </p>
+        )
+      }
 
     </div>
   );

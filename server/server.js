@@ -1,11 +1,14 @@
-
 import dotenv from "dotenv";
-dotenv.config();
-
 import express from "express";
 import cors from "cors";
-import connectDB from "./config/db.js";
 import path from "path";
+import http from "http";
+
+import connectDB from "./config/db.js";
+
+import { initSocket } from "./socket/index.js";
+
+/* ================= ROUTES ================= */
 
 import authRoutes from "./routes/auth.router.js";
 import ticketRoutes from "./routes/ticket.router.js";
@@ -25,48 +28,101 @@ import pelangganRouter from "./routes/pelanggan.router.js";
 import uploadRoutes from "./routes/upload.router.js";
 import reportRoutes from "./routes/report.routes.js";
 
+/* ================= MIDDLEWARE ================= */
+
 import errorHandler from "./middlewares/errorHandler.js";
 
+dotenv.config();
+
+/* ================= APP ================= */
+
 const app = express();
-connectDB();
+const server = http.createServer(app);
 
-console.log("JWT_SECRET:", process.env.JWT_SECRET);
+/* ================= SOCKET ================= */
 
-app.use(cors());
+initSocket(server);
+
+/* ================= MIDDLEWARE ================= */
+
+app.use(
+  cors({
+    origin: "*",
+    credentials: true,
+  })
+);
+
 app.use(express.json());
+
+/* ================= STATIC ================= */
 
 app.use(
   "/uploads",
   express.static(
-    path.join(
-      process.cwd(),
-      "uploads"
-    )
+    path.join(process.cwd(), "uploads")
   )
 );
 
+/* ================= API ROUTES ================= */
+
 app.use("/api/auth", authRoutes);
+
 app.use("/api/tickets", ticketRoutes);
+
 app.use("/api/payments", paymentRoutes);
+
 app.use("/api/vouchers", voucherRoutes);
+
 app.use("/api/layanans", layananRoutes);
+
 app.use("/api/log", logRoutes);
+
 app.use("/api/cashback", cashbackRoutes);
+
 app.use("/api/reviews", reviewRoutes);
-app.use("/api/voucher", voucherRoutes);
+
 app.use("/api/portfolio", portfolioRoutes);
-app.use("/api/portfolio-images", fotoPortfolioRoutes);
+
+app.use(
+  "/api/portfolio-images",
+  fotoPortfolioRoutes
+);
+
 app.use("/api/detail", detailRoutes);
+
 app.use("/api/jadwal", jadwalRoutes);
+
 app.use("/api/dashboard", dashboardRoutes);
+
 app.use("/api/pegawai", pegawaiRouter);
+
 app.use("/api/pelanggan", pelangganRouter);
+
 app.use("/api/reports", reportRoutes);
 
-app.use("/api/upload",uploadRoutes);
-app.use("/uploads", express.static("uploads"));
+app.use("/api/upload", uploadRoutes);
+
+/* ================= ERROR HANDLER ================= */
+
 app.use(errorHandler);
 
-app.listen(process.env.PORT, () =>
-  console.log("Server running on port " + process.env.PORT)
-);
+/* ================= START SERVER ================= */
+
+const startServer = async () => {
+  try {
+    await connectDB();
+
+    console.log("DATABASE CONNECTED");
+
+    server.listen(process.env.PORT, () => {
+      console.log(
+        `Server running on port ${process.env.PORT}`
+      );
+    });
+
+  } catch (err) {
+    console.error("SERVER ERROR:", err);
+  }
+};
+
+startServer();

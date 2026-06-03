@@ -161,11 +161,11 @@ export default function ProfilePage() {
   return (
 
     <div className="
-      rounded-[2rem]
+      rounded-[32px]
       border
+      border-gray-200
       bg-white
-      p-8
-      shadow-sm
+      p-10
     ">
 
       {/* HEADER */}

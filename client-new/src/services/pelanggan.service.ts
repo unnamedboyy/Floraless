@@ -9,6 +9,5 @@ export const createPelanggan = (data: any) =>
 export const updatePelanggan = (id: string, data: any) =>
   api.put(`/pelanggan/${id}`, data);
 
-// 🔥 SOFT DELETE
 export const deletePelanggan = (id: string) =>
   api.patch(`/pelanggan/${id}/delete`);

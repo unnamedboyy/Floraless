@@ -4,18 +4,24 @@ import { useState } from "react";
 
 import toast from "react-hot-toast";
 
-import TableWrapper from "@/components/table/TableWrapper";
+import TableWrapper
+from "@/components/table/TableWrapper";
 
-import { useVoucher } from "@/hooks/useVoucher";
+import VoucherFormModal
+from "@/components/form/VoucherFormModal";
+
+import DetailVoucherModal
+from "@/components/modal/VoucherDetailModal";
+
+import {
+  useVoucher,
+} from "@/hooks/useVoucher";
 
 import {
   createVoucher,
   updateVoucher,
   deleteVoucher,
 } from "@/services/voucher.service";
-
-import VoucherFormModal from "@/components/form/VoucherFormModal";
-import DetailVoucherModal from "@/components/modal/VoucherDetailModal";
 
 import {
 
@@ -103,27 +109,25 @@ export default function VoucherPage() {
      EDIT
   ===================================================== */
 
-  const handleEdit = (
-    row: any
-  ) => {
+  const handleEdit =
+    (row: any) => {
 
-    setEditData(row);
+      setEditData(row);
 
-    setOpenForm(true);
-  };
+      setOpenForm(true);
+    };
 
   /* =====================================================
      DETAIL
   ===================================================== */
 
-  const handleDetail = (
-    row: any
-  ) => {
+  const handleDetail =
+    (row: any) => {
 
-    setSelected(row);
+      setSelected(row);
 
-    setOpenDetail(true);
-  };
+      setOpenDetail(true);
+    };
 
   /* =====================================================
      SUBMIT
@@ -197,53 +201,121 @@ export default function VoucherPage() {
   ===================================================== */
 
   const handleDelete =
-    async (row: any) => {
+    (row: any) => {
 
-      const confirmed =
-        confirm(
-          "Hapus voucher ini?"
-        );
+      toast((t) => (
 
-      if (!confirmed) return;
+        <div className="
+          w-[300px]
+        ">
 
-      try {
+          {/* TITLE */}
+          <p className="
+            font-semibold
+            text-sm
+          ">
+            Hapus Voucher?
+          </p>
 
-        await deleteVoucher(
-          row._id
-        );
+          {/* DESC */}
+          <p className="
+            text-sm
+            text-gray-500
+            mt-1
+          ">
+            Voucher tidak dapat dikembalikan
+          </p>
 
-        toast.success(
-          "Voucher berhasil dihapus"
-        );
+          {/* ACTION */}
+          <div className="
+            flex
+            justify-end
+            gap-2
+            mt-4
+          ">
 
-        reload();
+            {/* CANCEL */}
+            <button
+              onClick={() =>
+                toast.dismiss(t.id)
+              }
+              className="
+                px-3
+                py-2
+                rounded-xl
+                border
+                text-sm
+                hover:bg-gray-50
+              "
+            >
+              Batal
+            </button>
 
-      } catch (err: any) {
+            {/* DELETE */}
+            <button
+              onClick={async () => {
 
-        console.error(err);
+                toast.dismiss(t.id);
 
-        const errors =
-          err?.response?.data?.errors;
+                try {
 
-        if (
-          Array.isArray(errors) &&
-          errors.length > 0
-        ) {
+                  await deleteVoucher(
+                    row._id
+                  );
 
-          toast.error(
-            errors[0].msg
-          );
+                  toast.success(
+                    "Voucher berhasil dihapus"
+                  );
 
-          return;
-        }
+                  reload();
 
-        toast.error(
+                } catch (err: any) {
 
-          err?.response?.data?.message ||
+                  console.error(err);
 
-          "Gagal menyimpan voucher"
-        );
-      }
+                  const errors =
+                    err?.response?.data?.errors;
+
+                  if (
+                    Array.isArray(errors) &&
+                    errors.length > 0
+                  ) {
+
+                    toast.error(
+                      errors[0].msg
+                    );
+
+                    return;
+                  }
+
+                  toast.error(
+
+                    err?.response?.data?.message ||
+
+                    "Gagal menghapus voucher"
+                  );
+                }
+              }}
+              className="
+                px-3
+                py-2
+                rounded-xl
+                bg-red-500
+                text-white
+                text-sm
+                hover:bg-red-600
+              "
+            >
+              Hapus
+            </button>
+
+          </div>
+
+        </div>
+
+      ), {
+        duration: 10000,
+      });
     };
 
   /* =====================================================
@@ -376,6 +448,7 @@ export default function VoucherPage() {
         /* ================= VIEW ================= */
 
         view={view}
+
         setView={setView}
 
         /* ================= FILTER ================= */
@@ -429,8 +502,6 @@ export default function VoucherPage() {
                   outline-none
                   transition-all
                   focus:border-slate-400
-                  focus:ring-4
-                  focus:ring-slate-100
                 "
               >
 
@@ -494,8 +565,6 @@ export default function VoucherPage() {
                   outline-none
                   transition-all
                   focus:border-slate-400
-                  focus:ring-4
-                  focus:ring-slate-100
                 "
               >
 
@@ -581,7 +650,24 @@ export default function VoucherPage() {
 
           {
             label: "Amount",
+
             key: "amount",
+
+            render: (value: number) => (
+
+              <span className="
+                font-medium
+              ">
+                Rp {
+
+                  Number(
+                    value || 0
+                  ).toLocaleString(
+                    "id-ID"
+                  )
+                }
+              </span>
+            ),
           },
 
           {
@@ -591,40 +677,36 @@ export default function VoucherPage() {
 
             render: (value: boolean) => (
 
-              <span
-                className={`
-                  inline-flex
-                  items-center
-                  px-3
-                  py-1
-                  rounded-full
-                  text-xs
-                  font-medium
-                  border
+              <span className={`
+                inline-flex
+                items-center
+                px-3
+                py-1
+                rounded-full
+                text-xs
+                font-medium
+                border
 
-                  ${
-                    value
+                ${
+                  value
 
-                      ? `
-                        bg-red-100
-                        text-red-700
-                        border-red-200
-                      `
+                    ? `
+                      bg-red-100
+                      text-red-700
+                      border-red-200
+                    `
 
-                      : `
-                        bg-emerald-100
-                        text-emerald-700
-                        border-emerald-200
-                      `
-                  }
-                `}
-              >
+                    : `
+                      bg-emerald-100
+                      text-emerald-700
+                      border-emerald-200
+                    `
+                }
+              `}>
 
                 {
                   value
-
                     ? "Sudah Digunakan"
-
                     : "Belum Digunakan"
                 }
 
@@ -634,7 +716,27 @@ export default function VoucherPage() {
 
           {
             label: "Expired",
+
             key: "expiredAt",
+
+            render: (value: string) => (
+
+              <span>
+
+                {
+
+                  value
+
+                    ? new Date(value)
+                        .toLocaleDateString(
+                          "id-ID"
+                        )
+
+                    : "-"
+                }
+
+              </span>
+            ),
           },
 
         ]}
@@ -644,19 +746,43 @@ export default function VoucherPage() {
         actions={[
 
           {
-            label: "Detail",
+            icon: (
+              <Eye size={17} />
+            ),
+
+            className: `
+              bg-gray-100
+              text-gray-700
+              hover:bg-gray-200
+            `,
 
             onClick: handleDetail,
           },
 
           {
-            label: "Edit",
+            icon: (
+              <Pencil size={17} />
+            ),
+
+            className: `
+              bg-yellow-100
+              text-yellow-700
+              hover:bg-yellow-200
+            `,
 
             onClick: handleEdit,
           },
 
           {
-            label: "Delete",
+            icon: (
+              <Trash2 size={17} />
+            ),
+
+            className: `
+              bg-red-100
+              text-red-700
+              hover:bg-red-200
+            `,
 
             onClick: handleDelete,
           },
@@ -682,43 +808,29 @@ export default function VoucherPage() {
           return (
 
             <div className="
-
               rounded-[30px]
-
               border
               border-slate-200
-
               bg-white
-
               p-5
-
               space-y-5
-
               shadow-sm
-
             ">
 
               {/* TOP */}
-
               <div className="
-
                 flex
                 items-start
                 justify-between
-
                 gap-4
-
               ">
 
                 <div>
 
                   <div className="
-
                     flex
                     items-center
-
                     gap-2
-
                   ">
 
                     <TicketPercent
@@ -729,12 +841,9 @@ export default function VoucherPage() {
                     />
 
                     <p className="
-
                       text-lg
                       font-bold
-
                       text-[#0F172A]
-
                     ">
 
                       {row.code || "-"}
@@ -744,19 +853,13 @@ export default function VoucherPage() {
                   </div>
 
                   <p className="
-
                     mt-2
-
                     text-sm
-
                     text-slate-500
-
                   ">
 
                     {
-
                       row.pelangganId?.nama ||
-
                       "-"
                     }
 
@@ -765,30 +868,20 @@ export default function VoucherPage() {
                 </div>
 
                 <div className="
-
                   flex
                   flex-col
-
                   items-end
-
                   gap-2
-
                 ">
 
                   <span className={`
-
                     h-9
-
                     px-4
-
                     rounded-2xl
-
                     inline-flex
                     items-center
-
                     text-xs
                     font-semibold
-
                     border
 
                     ${
@@ -796,15 +889,11 @@ export default function VoucherPage() {
                         row.isUsed
                       )
                     }
-
                   `}>
 
                     {
-
                       row.isUsed
-
                         ? "Used"
-
                         : "Available"
                     }
 
@@ -815,25 +904,17 @@ export default function VoucherPage() {
                     isExpired && (
 
                       <span className="
-
                         h-9
-
                         px-4
-
                         rounded-2xl
-
                         inline-flex
                         items-center
-
                         text-xs
                         font-semibold
-
                         border
-
                         bg-red-50
                         border-red-200
                         text-red-700
-
                       ">
 
                         Expired
@@ -847,32 +928,20 @@ export default function VoucherPage() {
               </div>
 
               {/* AMOUNT */}
-
               <div className="
-
                 rounded-[24px]
-
                 border
                 border-emerald-200
-
                 bg-emerald-50
-
                 p-5
-
               ">
 
                 <p className="
-
                   text-xs
-
                   font-semibold
-
                   uppercase
-
                   tracking-wider
-
                   text-emerald-600
-
                 ">
 
                   Nominal Voucher
@@ -880,14 +949,10 @@ export default function VoucherPage() {
                 </p>
 
                 <div className="
-
                   mt-3
-
                   flex
                   items-center
-
                   gap-2
-
                 ">
 
                   <Wallet
@@ -898,17 +963,11 @@ export default function VoucherPage() {
                   />
 
                   <p className="
-
                     text-[28px]
-
                     leading-none
-
                     font-bold
-
                     tracking-tight
-
                     text-[#0F172A]
-
                   ">
 
                     Rp {
@@ -925,30 +984,22 @@ export default function VoucherPage() {
               </div>
 
               {/* INFO */}
-
               <div className="
                 space-y-4
               ">
 
                 <div className="
-
                   flex
                   items-center
                   justify-between
-
                   gap-3
-
                 ">
 
                   <div className="
-
                     flex
                     items-center
-
                     gap-2
-
                     text-slate-500
-
                   ">
 
                     <CalendarDays
@@ -964,12 +1015,9 @@ export default function VoucherPage() {
                   </div>
 
                   <span className="
-
                     text-sm
                     font-semibold
-
                     text-slate-700
-
                   ">
 
                     {
@@ -990,24 +1038,17 @@ export default function VoucherPage() {
                 </div>
 
                 <div className="
-
                   flex
                   items-center
                   justify-between
-
                   gap-3
-
                 ">
 
                   <div className="
-
                     flex
                     items-center
-
                     gap-2
-
                     text-slate-500
-
                   ">
 
                     {
@@ -1036,12 +1077,9 @@ export default function VoucherPage() {
                   </div>
 
                   <span className="
-
                     text-sm
                     font-semibold
-
                     text-slate-700
-
                   ">
 
                     {
@@ -1056,107 +1094,6 @@ export default function VoucherPage() {
                   </span>
 
                 </div>
-
-              </div>
-
-              {/* ACTION */}
-
-              <div className="
-
-                pt-5
-
-                border-t
-                border-slate-100
-
-                flex
-                items-center
-
-                gap-3
-
-              ">
-
-                <button
-
-                  onClick={() =>
-                    handleDetail(row)
-                  }
-
-                  className="
-                    flex-1
-                    h-11
-                    rounded-2xl
-                    border
-                    border-slate-200
-                    bg-white
-                    inline-flex
-                    items-center
-                    justify-center
-                    gap-2
-                    text-sm
-                    font-medium
-                    text-slate-700
-                    hover:bg-slate-100
-                    transition-all
-                  "
-                >
-
-                  <Eye size={16} />
-
-                  Detail
-
-                </button>
-
-                <button
-
-                  onClick={() =>
-                    handleEdit(row)
-                  }
-
-                  className="
-                    w-11
-                    h-11
-                    rounded-2xl
-                    border
-                    border-slate-200
-                    bg-white
-                    inline-flex
-                    items-center
-                    justify-center
-                    text-slate-700
-                    hover:bg-slate-100
-                    transition-all
-                  "
-                >
-
-                  <Pencil size={16} />
-
-                </button>
-
-                <button
-
-                  onClick={() =>
-                    handleDelete(row)
-                  }
-
-                  className="
-                    w-11
-                    h-11
-                    rounded-2xl
-                    border
-                    border-red-200
-                    bg-red-50
-                    inline-flex
-                    items-center
-                    justify-center
-                    text-red-600
-                    hover:bg-red-100
-                    transition-all
-                  "
-                >
-
-                  <Trash2 size={16} />
-
-                </button>
 
               </div>
 
