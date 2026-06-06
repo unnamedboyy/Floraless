@@ -2,6 +2,7 @@
 
 import Sidebar from "@/components/layout/Sidebar";
 import { pegawaiMenu } from "@/constants/menu";
+import { Toaster } from "sonner";
 
 export default function PegawaiLayout({
   children,
@@ -14,6 +15,7 @@ export default function PegawaiLayout({
 
       <div className="flex-1 bg-gray-50 min-h-screen p-6">
         {children}
+        <Toaster position="top-right" />
       </div>
     </div>
   );

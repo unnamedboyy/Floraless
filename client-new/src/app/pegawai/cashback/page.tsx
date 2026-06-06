@@ -1,3 +1,5 @@
+// cashback page
+
 "use client";
 
 import { useState } from "react";
@@ -8,6 +10,14 @@ from "@/components/table/TableWrapper";
 import {
   useCashback,
 } from "@/hooks/useCashback";
+
+import {
+  Eye,
+  Check,
+  X,
+} from "lucide-react";
+
+import { toast } from "sonner";
 
 import {
   approveCashback,
@@ -67,90 +77,64 @@ export default function PegawaiCashbackPage() {
      ACTIONS
   ===================================================== */
 
-  const handleApprove =
-    async (
-      id: string,
-      bukti: string
-    ) => {
+  const handleApprove = async (
+    id: string,
+    bukti: string
+  ): Promise<void> => {
+    if (!bukti) {
+      toast.error("Bukti transfer wajib diisi");
+      return;
+    }
 
-      try {
+    try {
+      await approveCashback(id, bukti);
 
-        if (!bukti) {
+      toast.success(
+        "Cashback berhasil diapprove"
+      );
 
-          return alert(
-            "Bukti transfer wajib diisi"
-          );
-        }
+      reload();
 
-        await approveCashback(
-          id,
-          bukti
-        );
+      setSelected(null);
+    } catch (err: any) {
+      console.error(err);
 
-        alert(
-          "Cashback berhasil diapprove"
-        );
-
-        reload();
-
-        setSelected(null);
-
-      } catch (err: any) {
-
-        console.error(err);
-
-        alert(
-
-          err?.response?.data
-            ?.message ||
-
+      toast.error(
+        err?.response?.data?.message ||
           "Gagal approve cashback"
-        );
-      }
-    };
+      );
+    }
+  };
 
-  const handleReject =
-    async (
-      id: string,
-      alasan: string
-    ) => {
+  const handleReject = async (
+    id: string,
+    alasan: string
+  ): Promise<void> => {
+    if (!alasan) {
+      toast.error("Alasan reject wajib diisi");
+      return;
+    }
 
-      try {
+    try {
+      await rejectCashback(id, alasan);
 
-        if (!alasan) {
+      toast.success(
+        "Cashback berhasil direject"
+      );
 
-          return alert(
-            "Alasan reject wajib diisi"
-          );
-        }
+      reload();
 
-        await rejectCashback(
-          id,
-          alasan
-        );
+      setSelected(null);
+    } catch (err: any) {
+      console.error(err);
 
-        alert(
-          "Cashback berhasil direject"
-        );
-
-        reload();
-
-        setSelected(null);
-
-      } catch (err: any) {
-
-        console.error(err);
-
-        alert(
-
-          err?.response?.data
-            ?.message ||
-
+      toast.error(
+        err?.response?.data?.message ||
           "Gagal reject cashback"
-        );
-      }
-    };
-
+      );
+    }
+  };
+  
   /* =====================================================
      UI
   ===================================================== */
@@ -166,53 +150,19 @@ export default function PegawaiCashbackPage() {
          HEADER
       ================================================= */}
 
-      <div className="
-        rounded-3xl
-        border
-        bg-white
-        p-6
-        shadow-sm
-      ">
-
-        <p className="
-          text-sm
-          uppercase
-          tracking-[0.3em]
-          text-[#C9AE63]
-        ">
-          Cashback
-        </p>
-
-        <h1 className="
-          mt-3
-          text-3xl
-          font-bold
-        ">
+      <div>
+        <h1 className="text-2xl font-bold">
           Cashback Claim
         </h1>
 
-        <p className="
-          mt-3
-          max-w-2xl
-          text-gray-500
-        ">
-          Kelola claim cashback pelanggan
-          dan proses approval transfer.
+        <p className="mt-1 text-sm text-gray-500">
+          Monitoring dan proses approval cashback pelanggan.
         </p>
-
       </div>
 
       {/* =================================================
          TABLE
       ================================================= */}
-
-      <div className="
-        rounded-3xl
-        border
-        bg-white
-        p-4
-        shadow-sm
-      ">
 
         <TableWrapper
 
@@ -402,14 +352,17 @@ export default function PegawaiCashbackPage() {
           ]}
 
           actions={[
-
             {
-              label: "Detail",
+              icon: <Eye size={17} />,
 
-              onClick: (row) =>
+              className: `
+                bg-gray-100
+                text-gray-700
+                hover:bg-gray-200
+              `,
 
-                setSelected(row),
-            },
+              onClick: (row) => setSelected(row),
+            }
           ]}
 
           renderItem={(row) => (
@@ -597,7 +550,6 @@ export default function PegawaiCashbackPage() {
           )}
         />
 
-      </div>
 
       {/* =================================================
          MODAL

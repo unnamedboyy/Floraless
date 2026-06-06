@@ -15,6 +15,7 @@ const paymentSchema =
         "DP1",
         "DP2",
         "PELUNASAN",
+        "LUNAS",
       ],
       required: true,
     },

@@ -9,10 +9,12 @@ import {
   Trash2,
   Star,
   Images,
+  Search,
+  FolderKanban,
+  Sparkles,
 } from "lucide-react";
 
-import PortfolioFormModal
-from "@/components/form/PortfolioFormModal";
+import PortfolioFormModal from "@/components/form/PortfolioFormModal";
 
 import {
   createPortfolio,
@@ -21,84 +23,54 @@ import {
   updatePortfolio,
 } from "@/services/portfolio.service";
 
-import {
-  usePortfolio,
-} from "@/hooks/usePortfolio";
+import { usePortfolio } from "@/hooks/usePortfolio";
 
 export default function AdminPortfolioPage() {
-
   const {
     data,
     loading,
     refresh,
   } = usePortfolio();
 
-  const [open,
-    setOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState<any>(null);
 
-  const [saving,
-    setSaving] = useState(false);
-
-  const [search,
-    setSearch] = useState("");
-
-  const [selected,
-    setSelected] = useState<any>(null);
-
-  const filteredData =
-    useMemo(() => {
-
-      return data.filter((item) =>
-
-        item.title
-          ?.toLowerCase()
-          ?.includes(
-            search.toLowerCase()
-          )
-      );
-
-    }, [data, search]);
+  const filteredData = useMemo(() => {
+    return data.filter((item) =>
+      item.title
+        ?.toLowerCase()
+        ?.includes(search.toLowerCase())
+    );
+  }, [data, search]);
 
   const closeModal = () => {
-
     setOpen(false);
-
     setSelected(null);
   };
 
   const handleCreate = async (
     formData: FormData
   ) => {
-
     try {
-
       setSaving(true);
 
-      await createPortfolio(
-        formData
-      );
+      await createPortfolio(formData);
 
-      alert(
-        "Portfolio berhasil dibuat"
-      );
+      alert("Portfolio berhasil dibuat");
 
       closeModal();
 
       refresh();
-
     } catch (err: any) {
-
       console.error(err);
 
       alert(
-
-        err?.response?.data?.message ||
-
-        "Gagal membuat portfolio"
+        err?.response?.data?.message ??
+          "Gagal membuat portfolio"
       );
-
     } finally {
-
       setSaving(false);
     }
   };
@@ -106,15 +78,9 @@ export default function AdminPortfolioPage() {
   const handleUpdate = async (
     formData: FormData
   ) => {
-
     try {
-
       if (!selected?._id) {
-
-        alert(
-          "Portfolio ID tidak ditemukan"
-        );
-
+        alert("Portfolio ID tidak ditemukan");
         return;
       }
 
@@ -125,27 +91,19 @@ export default function AdminPortfolioPage() {
         formData
       );
 
-      alert(
-        "Portfolio berhasil diupdate"
-      );
+      alert("Portfolio berhasil diupdate");
 
       closeModal();
 
       refresh();
-
     } catch (err: any) {
-
       console.error(err);
 
       alert(
-
-        err?.response?.data?.message ||
-
-        "Gagal update portfolio"
+        err?.response?.data?.message ??
+          "Gagal update portfolio"
       );
-
     } finally {
-
       setSaving(false);
     }
   };
@@ -153,311 +111,282 @@ export default function AdminPortfolioPage() {
   const handleDelete = async (
     id: string
   ) => {
+    const confirmDelete = confirm(
+      "Hapus portfolio ini?"
+    );
 
-    const confirmDelete =
-      confirm(
-        "Hapus portfolio ini?"
-      );
-
-    if (!confirmDelete) {
-      return;
-    }
+    if (!confirmDelete) return;
 
     try {
-
       await deletePortfolio(id);
 
-      alert(
-        "Portfolio berhasil dihapus"
-      );
+      alert("Portfolio berhasil dihapus");
 
       refresh();
-
     } catch (err: any) {
-
       console.error(err);
 
       alert(
-
-        err?.response?.data?.message ||
-
-        "Gagal menghapus portfolio"
+        err?.response?.data?.message ??
+          "Gagal menghapus portfolio"
       );
     }
   };
 
   return (
+    <div className="min-h-screen bg-gradient-to-b from-neutral-50 via-white to-neutral-100 p-6 lg:p-8">
 
-    <div className="
-      min-h-screen
-      bg-[#f8f8f8]
-      p-6
-      md:p-8
-    ">
+      {/* Header */}
 
-      <div className="
-        mb-8
-        flex
-        flex-col
-        gap-5
-        lg:flex-row
-        lg:items-center
-        lg:justify-between
-      ">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
 
         <div>
 
-          <p className="
-            text-sm
-            font-medium
-            tracking-[0.3em]
-            text-neutral-400
-          ">
-            FLORALESS ADMIN
-          </p>
+          <div className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-xs font-semibold tracking-[0.2em] text-white">
 
-          <h1 className="
-            mt-3
-            text-4xl
-            font-bold
-            tracking-tight
-            text-[#111]
-          ">
+            <Sparkles size={14} />
+
+            FLORALESS ADMIN
+
+          </div>
+
+          <h1 className="mt-5 text-4xl font-bold tracking-tight text-neutral-900">
+
             Portfolio Management
+
           </h1>
+
+          <p className="mt-2 text-neutral-500">
+
+            Kelola seluruh portfolio yang ditampilkan pada website.
+
+          </p>
 
         </div>
 
         <button
           onClick={() => {
-
             setSelected(null);
-
             setOpen(true);
           }}
-          className="
-            inline-flex
-            items-center
-            gap-3
-            rounded-2xl
-            bg-black
-            px-6
-            py-4
-            text-sm
-            font-semibold
-            text-white
-          "
+          className="inline-flex items-center justify-center gap-3 rounded-2xl bg-black px-6 py-4 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-1 hover:shadow-xl"
         >
-
           <Plus size={18} />
 
           Create Portfolio
-
         </button>
 
       </div>
 
-      <div className="
-        mb-8
-        rounded-[28px]
-        border
-        bg-white
-        p-3
-      ">
+      {/* Search */}
 
-        <input
-          value={search}
-          onChange={(e) =>
-            setSearch(
-              e.target.value
-            )
-          }
-          placeholder="Cari portfolio..."
-          className="
-            h-14
-            w-full
-            rounded-2xl
-            border-0
-            bg-transparent
-            px-5
-            text-sm
-            outline-none
-          "
-        />
+      <div className="mt-8 rounded-3xl border border-neutral-200 bg-white px-4 shadow-sm">
+
+        <div className="flex items-center gap-4 rounded-2xl px-5">
+
+          <Search
+            size={20}
+            className="text-neutral-500"
+          />
+
+          <input
+            value={search}
+            onChange={(e) =>
+              setSearch(e.target.value)
+            }
+            placeholder="Cari portfolio..."
+            className="h-14 w-full text-sm outline-none"
+          />
+        </div>
 
       </div>
 
-      {
-        loading ? (
+      {/* Content */}
 
-          <div className="rounded-[32px] border bg-white p-20 text-center text-neutral-400">
-            Loading portfolio...
-          </div>
+      {loading ? (
+        <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div
+              key={index}
+              className="overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm animate-pulse"
+            >
+              <div className="h-[300px] bg-neutral-200" />
 
-        ) : filteredData.length === 0 ? (
+              <div className="space-y-4 p-6">
+                <div className="h-4 w-24 rounded bg-neutral-200" />
 
-          <div className="rounded-[32px] border bg-white p-20 text-center">
+                <div className="h-7 w-3/4 rounded bg-neutral-200" />
 
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-neutral-100">
-              <Images size={30} />
+                <div className="space-y-2">
+                  <div className="h-3 rounded bg-neutral-200" />
+                  <div className="h-3 rounded bg-neutral-200" />
+                  <div className="h-3 w-2/3 rounded bg-neutral-200" />
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <div className="h-12 flex-1 rounded-2xl bg-neutral-200" />
+                  <div className="h-12 w-12 rounded-2xl bg-neutral-200" />
+                </div>
+              </div>
             </div>
+          ))}
+        </div>
+      ) : filteredData.length === 0 ? (
+        <div className="mt-8 rounded-3xl border border-neutral-200 bg-white px-8 py-20 text-center shadow-sm">
 
-            <h2 className="mt-6 text-2xl font-bold">
-              Belum Ada Portfolio
-            </h2>
-
+          <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-neutral-100">
+            <Images
+              size={34}
+              className="text-neutral-500"
+            />
           </div>
 
-        ) : (
+          <h2 className="mt-7 text-3xl font-bold text-neutral-900">
+            Belum Ada Portfolio
+          </h2>
 
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          <p className="mx-auto mt-3 max-w-lg text-neutral-500">
+            Belum ada data portfolio yang tersedia.
+            Silakan tambahkan portfolio baru agar
+            dapat ditampilkan pada website.
+          </p>
 
-            {
-              filteredData.map(
-                (item: any) => {
+        </div>
+      ) : (
+        <div className="mt-8 grid gap-7 md:grid-cols-2 xl:grid-cols-3">
 
-                  const coverImage =
-                    item.coverImage?.url
+          {filteredData.map((item: any) => {
 
-                      ? `${process.env.NEXT_PUBLIC_API_URL}${item.coverImage.url}`
+            const coverImage =
+              item.coverImage?.url
+                ? `${process.env.NEXT_PUBLIC_API_URL}${item.coverImage.url}`
+                : "/placeholder.jpg";
 
-                      : "/placeholder.jpg";
+            return (
 
-                  return (
+              <div
+                key={item._id}
+                className="group overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+              >
 
-                    <div
-                      key={item._id}
-                      className="overflow-hidden rounded-[32px] border bg-white shadow-sm"
-                    >
+                <div className="relative h-[320px] overflow-hidden">
 
-                      <div className="relative h-[320px] overflow-hidden">
+                  <Image
+                    src={coverImage}
+                    alt={item.title}
+                    fill
+                    priority
+                    unoptimized
+                    className="object-cover transition duration-500 group-hover:scale-105"
+                  />
 
-                        <Image
-                          src={coverImage}
-                          alt={item.title}
-                          fill
-                          unoptimized
-                          priority
-                          className="object-cover"
-                        />
+                  {item.isFeatured && (
+                    <div className="absolute left-5 top-5 inline-flex items-center gap-2 rounded-full bg-[#D4B36A] px-4 py-2 text-xs font-bold text-black shadow">
 
-                        {
-                          item.isFeatured && (
+                      <Star size={14} />
 
-                            <div className="absolute left-5 top-5 inline-flex items-center gap-2 rounded-full bg-[#D4B36A] px-4 py-2 text-xs font-semibold text-black">
-
-                              <Star size={14} />
-
-                              FEATURED
-
-                            </div>
-                          )
-                        }
-
-                      </div>
-
-                      <div className="p-6">
-
-                        {
-                          item.layananIds?.length > 0 && (
-
-                            <div className="mb-4 flex flex-wrap gap-2">
-
-                              {
-                                item.layananIds.map(
-                                  (layanan: any) => (
-
-                                    <span
-                                      key={layanan._id}
-                                      className="rounded-full bg-neutral-100 px-3 py-1.5 text-xs font-medium text-neutral-700"
-                                    >
-                                      {layanan.nama}
-                                    </span>
-                                  )
-                                )
-                              }
-
-                            </div>
-                          )
-                        }
-
-                        <h2 className="line-clamp-1 text-2xl font-bold text-[#111]">
-                          {item.title}
-                        </h2>
-
-                        <p className="mt-4 line-clamp-3 text-sm leading-[1.9] text-neutral-500">
-                          {item.excerpt}
-                        </p>
-
-                        <div className="mt-7 flex items-center gap-3">
-
-                          <button
-                            onClick={async () => {
-
-                              try {
-
-                                const res =
-                                  await getPortfolioDetail(
-                                    item._id
-                                  );
-
-                                setSelected({
-
-                                  ...res.portfolio,
-
-                                  images:
-                                    res.images || [],
-
-                                  coverImage:
-                                    res.coverImage || null,
-                                });
-
-                                setOpen(true);
-
-                              } catch (err) {
-
-                                console.error(err);
-
-                                alert(
-                                  "Gagal ambil detail portfolio"
-                                );
-                              }
-                            }}
-                            className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border px-5 py-3.5 text-sm font-semibold"
-                          >
-
-                            <Pencil size={16} />
-
-                            Edit
-
-                          </button>
-
-                          <button
-                            onClick={() =>
-                              handleDelete(
-                                item._id
-                              )
-                            }
-                            className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl border text-red-500"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-
-                        </div>
-
-                      </div>
+                      FEATURED
 
                     </div>
-                  );
-                }
-              )
-            }
+                  )}
 
-          </div>
-        )
-      }
+                </div>
 
-      <PortfolioFormModal
+                <div className="p-6">
+
+                  {item.layananIds?.length > 0 && (
+
+                    <div className="mb-4 flex flex-wrap gap-2">
+
+                      {item.layananIds.map(
+                        (layanan: any) => (
+
+                          <span
+                            key={layanan._id}
+                            className="rounded-full bg-neutral-100 px-3 py-1.5 text-xs font-medium text-neutral-700"
+                          >
+                            {layanan.nama}
+                          </span>
+
+                        )
+                      )}
+
+                    </div>
+
+                  )}
+
+                  <h2 className="line-clamp-1 text-2xl font-bold text-neutral-900">
+                    {item.title}
+                  </h2>
+
+                  <p className="mt-4 line-clamp-3 text-sm leading-7 text-neutral-500">
+                    {item.excerpt}
+                  </p>
+
+                  <div className="mt-7 flex items-center justify-between border-t border-neutral-100 pt-5">
+
+                    <div className="text-sm text-neutral-500">
+                      {item.images?.length || 0} Images
+                    </div>
+
+                    <div className="flex gap-3">
+
+                      <button
+                        onClick={async () => {
+                          try {
+                            const res =
+                              await getPortfolioDetail(
+                                item._id
+                              );
+
+                            setSelected({
+                              ...res.portfolio,
+                              images:
+                                res.images || [],
+                              coverImage:
+                                res.coverImage || null,
+                            });
+
+                            setOpen(true);
+                          } catch (err) {
+                            console.error(err);
+
+                            alert(
+                              "Gagal mengambil detail portfolio"
+                            );
+                          }
+                        }}
+                        className="inline-flex items-center gap-2 rounded-2xl bg-neutral-100 px-5 py-3 text-sm font-semibold transition hover:bg-neutral-200"
+                      >
+                        <Pencil size={16} />
+
+                        Edit
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          handleDelete(item._id)
+                        }
+                        className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-600 transition hover:bg-red-100"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            );
+          })}
+
+        </div>
+      )}
+
+            <PortfolioFormModal
         open={open}
         onClose={closeModal}
         loading={saving}
@@ -468,7 +397,6 @@ export default function AdminPortfolioPage() {
             : handleCreate
         }
       />
-
     </div>
   );
 }

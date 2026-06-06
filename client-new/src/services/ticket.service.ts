@@ -73,13 +73,43 @@ export const approveTicket = (
    UPDATE STATUS
 ========================================================= */
 
-export const updateStatusTicket = (
+export const updateStatusTicket = async (
   id: string,
-  status: string
-) =>
-  api.patch(
+  status: string,
+  note?: string
+) => {
+
+  const res = await api.patch(
     `/tickets/${id}/status`,
     {
       status,
+      note,
     }
   );
+
+  return res.data;
+};
+
+export const rejectTicket = async (
+  id: string
+) => {
+  const res = await api.patch(
+    `/tickets/${id}/reject`
+  );
+
+  return res.data;
+};
+
+export const addTicketLog =
+  async (
+    id: string,
+    description: string
+  ) => {
+    const res =
+      await api.post(
+        `/tickets/${id}/logs`,
+        { description }
+      );
+
+    return res.data;
+  };

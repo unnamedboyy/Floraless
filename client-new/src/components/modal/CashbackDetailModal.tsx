@@ -22,7 +22,9 @@ import {
   FileText,
 } from "lucide-react";
 
+import toast from "react-hot-toast";
 import BaseModal from "@/components/form/BaseModal";
+import {uploadImage} from "@/services/upload.service";
 
 /* =====================================================
    TYPES
@@ -179,131 +181,234 @@ export default function CashbackDetailModal({
   /* =====================================================
      APPROVE
   ===================================================== */
+  const handleApproveClick = () => {
+    if (!buktiTf) {
+      toast.error(
+        "Upload bukti transfer terlebih dahulu"
+      );
+      return;
+    }
 
-  const handleApproveClick =
-    async () => {
+    toast(
+      (t) => (
+        <div className="w-[320px]">
+          <p className="font-semibold text-sm">
+            Approve Cashback?
+          </p>
 
-      try {
+          <p className="text-sm text-gray-500 mt-1">
+            Cashback akan disetujui dan tidak dapat
+            dibatalkan.
+          </p>
 
-        if (!buktiTf) {
+          <div className="flex justify-end gap-2 mt-4">
+            <button
+              onClick={() =>
+                toast.dismiss(t.id)
+              }
+              className="
+                px-3
+                py-2
+                rounded-xl
+                border
+                text-sm
+                hover:bg-gray-50
+              "
+            >
+              Batal
+            </button>
 
-          return alert(
-            "Upload bukti transfer terlebih dahulu"
-          );
-        }
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
 
-        setLoadingApprove(true);
+                try {
+                  await onApprove(
+                    data._id,
+                    buktiTf
+                  );
 
-        await onApprove(
-          data._id,
-          buktiTf
-        );
-
-      } catch (err) {
-
-        console.error(err);
-
-      } finally {
-
-        setLoadingApprove(false);
+                  toast.success(
+                    "Cashback berhasil diapprove"
+                  );
+                } catch (err: any) {
+                  toast.error(
+                    err?.response?.data?.message ||
+                      "Gagal approve cashback"
+                  );
+                }
+              }}
+              className="
+                px-3
+                py-2
+                rounded-xl
+                bg-green-500
+                text-white
+                text-sm
+                hover:bg-green-600
+              "
+            >
+              Setujui
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: 10000,
       }
-    };
+    );
+  };
 
   /* =====================================================
      REJECT
   ===================================================== */
+  const handleRejectClick = () => {
+    if (!alasan.trim()) {
+      toast.error(
+        "Alasan reject wajib diisi"
+      );
+      return;
+    }
 
-  const handleRejectClick =
-    async () => {
+    toast(
+      (t) => (
+        <div className="w-[320px]">
+          <p className="font-semibold text-sm">
+            Reject Cashback?
+          </p>
 
-      try {
+          <p className="text-sm text-gray-500 mt-1">
+            Cashback akan ditolak.
+          </p>
 
-        if (!alasan) {
+          <div className="mt-3 rounded-xl bg-red-50 border border-red-100 p-3 text-sm text-red-600">
+            {alasan}
+          </div>
 
-          return alert(
-            "Alasan reject wajib diisi"
-          );
-        }
+          <div className="flex justify-end gap-2 mt-4">
+            <button
+              onClick={() =>
+                toast.dismiss(t.id)
+              }
+              className="
+                px-3
+                py-2
+                rounded-xl
+                border
+                text-sm
+                hover:bg-gray-50
+              "
+            >
+              Batal
+            </button>
 
-        setLoadingReject(true);
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
 
-        await onReject(
-          data._id,
-          alasan
-        );
+                try {
+                  await onReject(
+                    data._id,
+                    alasan
+                  );
 
-      } catch (err) {
-
-        console.error(err);
-
-      } finally {
-
-        setLoadingReject(false);
+                  toast.success(
+                    "Cashback berhasil direject"
+                  );
+                } catch (err: any) {
+                  toast.error(
+                    err?.response?.data?.message ||
+                      "Gagal reject cashback"
+                  );
+                }
+              }}
+              className="
+                px-3
+                py-2
+                rounded-xl
+                bg-red-500
+                text-white
+                text-sm
+                hover:bg-red-600
+              "
+            >
+              Reject
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: 10000,
       }
-    };
+    );
+  };
 
   /* =====================================================
      UPLOAD
   ===================================================== */
 
-  const handleUpload =
-    async (
-      e: React.ChangeEvent<HTMLInputElement>
-    ) => {
+  const handleUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    try {
+      const file =
+        e.target.files?.[0];
 
-      try {
+      if (!file) return;
 
-        const file =
-          e.target.files?.[0];
-
-        if (!file)
-          return;
-
-        setUploading(true);
-
-        setPreview(
-          URL.createObjectURL(
-            file
-          )
+      if (
+        !file.type.startsWith(
+          "image/"
+        )
+      ) {
+        toast.error(
+          "File harus berupa gambar"
         );
-
-        const formData =
-          new FormData();
-
-        formData.append(
-          "image",
-          file
-        );
-
-        const res =
-          await api.post(
-            "/upload",
-            formData,
-            {
-              headers: {
-                "Content-Type":
-                  "multipart/form-data",
-              },
-            }
-          );
-
-        setBuktiTf(
-          res.data.url
-        );
-
-      } catch (err) {
-
-        console.error(err);
-
-        alert(
-          "Gagal upload gambar"
-        );
-
-      } finally {
-
-        setUploading(false);
+        return;
       }
-    };
+
+      if (
+        file.size >
+        5 * 1024 * 1024
+      ) {
+        toast.error(
+          "Ukuran maksimal 5MB"
+        );
+        return;
+      }
+
+      setPreview(
+        URL.createObjectURL(file)
+      );
+
+      setUploading(true);
+
+      const url =
+        await uploadImage(
+          file,
+          "cashback"
+        );
+
+      setBuktiTf(url);
+
+      toast.success(
+        "Bukti transfer berhasil diupload"
+      );
+
+    } catch (err: any) {
+
+      console.error(err);
+
+      toast.error(
+        err?.response?.data?.message ||
+        "Gagal upload gambar"
+      );
+
+    } finally {
+
+      setUploading(false);
+    }
+  };
 
   /* =====================================================
      RENDER

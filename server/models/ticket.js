@@ -36,6 +36,11 @@ const ticketSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+
+    alasanReject: {
+      type: String,
+      default: "",
+    },
   },
 
   {

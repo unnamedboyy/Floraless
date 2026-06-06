@@ -10,6 +10,7 @@ import Review from "../models/review.js";
 import CashbackClaim from "../models/cashbackClaim.js";
 import LogActivity from "../models/logAktivitas.js";
 import Portfolio from "../models/portfolio.js";
+import { getIO } from "../socket/index.js";
 
 /* =========================================================
    CUSTOMER CREATE TICKET
@@ -129,6 +130,8 @@ export const createTicket = async (req, res, next) => {
         status: "booked",
       });
 
+      getIO().emit("jadwal:update");
+
     } catch (err) {
 
       if (err.code === 11000) {
@@ -142,7 +145,7 @@ export const createTicket = async (req, res, next) => {
 
       throw err;
     }
-
+    
     /* ================= LOG ================= */
 
     await LogActivity.create({
@@ -467,7 +470,7 @@ export const approveTicket = async (req, res, next) => {
 
 export const updateStatusTicket = async (req, res, next) => {
   try {
-    const { status } = req.body;
+    const { status, note } = req.body;
     const { id } = req.params;
 
     const allowedStatus = [
@@ -513,15 +516,41 @@ export const updateStatusTicket = async (req, res, next) => {
 
     ticket.status = status;
 
+    /* ================= HAPUS JADWAL JIKA REJECT ================= */
+
+    if (status === "rejected") {
+
+      await Jadwal.deleteOne({
+        ticketId: ticket._id,
+      });
+
+      // await Jadwal.deleteMany({
+      //   ticketId: ticket._id,
+      // });
+
+      getIO().emit(
+        "jadwal:update"
+      );
+    }
+
     await ticket.save();
 
     await LogActivity.create({
-      ticketId: ticket._id,
-      action: "UPDATE_STATUS",
-      status,
-      description: `Status diubah ke ${status}`,
-    });
 
+      ticketId:
+        ticket._id,
+
+      action:
+        "UPDATE_STATUS",
+
+      status,
+
+      description:
+        status === "rejected"
+          ? `Ticket ditolak. Alasan: ${note || "-"}`
+          : `Status diubah ke ${status}`,
+    });
+    
     res.json({
       message: "Status berhasil diupdate",
       ticket,
@@ -721,3 +750,59 @@ export const getTicketFullById = async (req, res, next) => {
     next(err);
   }
 };
+
+
+export const addTicketLog =
+  async (req, res, next) => {
+    try {
+
+      const { id } =
+        req.params;
+
+      const {
+        description,
+      } = req.body;
+
+      const ticket =
+        await Ticket.findById(id);
+
+      if (!ticket) {
+        return res.status(404).json({
+          message:
+            "Ticket tidak ditemukan",
+        });
+      }
+
+      const log =
+        await LogActivity.create({
+
+          userId:
+            req.user.id,
+
+          ticketId:
+            ticket._id,
+
+          action:
+            "UPDATE_PROGRESS",
+
+          description,
+        });
+
+      getIO().emit(
+        "ticketUpdated"
+      );
+
+      return res.status(201).json({
+
+        success: true,
+
+        message:
+          "Log aktivitas berhasil ditambahkan",
+
+        data: log,
+      });
+
+    } catch (err) {
+      next(err);
+    }
+  };

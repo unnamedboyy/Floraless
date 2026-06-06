@@ -32,11 +32,8 @@ export const createPayment =
       const {
 
         ticketId,
-
         tipe,
-
         nama_pengirim,
-
         bank_pengirim,
 
       } = req.body;
@@ -119,6 +116,22 @@ export const createPayment =
         approvedPayments.map(
           (p) => p.tipe
         );
+
+      /* ===================================================
+        SUDAH LUNAS SEKALI BAYAR
+      =================================================== */
+
+      if (
+        approvedTypes.includes(
+          "LUNAS"
+        )
+      ) {
+        throw {
+          status: 400,
+          message:
+            "Ticket sudah lunas",
+        };
+      }
 
       const pendingSameType =
         payments.find(
@@ -242,6 +255,23 @@ export const createPayment =
         }
       }
 
+      if (
+        tipe === "LUNAS"
+      ) {
+
+        if (
+          approvedTypes.length > 0
+        ) {
+
+          throw {
+            status: 400,
+            message:
+              "Tidak bisa bayar lunas karena sudah ada pembayaran sebelumnya",
+          };
+        }
+
+      }
+
       /* ===================================================
          HITUNG NOMINAL
       =================================================== */
@@ -265,6 +295,13 @@ export const createPayment =
       ) {
 
         jumlah = harga * 0.5;
+      }
+
+      if (
+        tipe ===
+        "LUNAS"
+      ) {
+        jumlah = harga;
       }
 
       /* ===================================================
@@ -318,7 +355,7 @@ export const createPayment =
           "CREATE_PAYMENT",
 
         description:
-          `Membuat pembayaran ${tipe}`,
+          `Membuat pembayaran`,
       });
 
       res.json({
@@ -500,7 +537,7 @@ export const approvePayment =
             (p) => p.tipe
           );
 
-        if (
+        const isLunasBertahap =
 
           types.includes(
             "DP1"
@@ -512,8 +549,16 @@ export const approvePayment =
 
           types.includes(
             "PELUNASAN"
-          )
+          );
 
+        const isLunasSekali =
+          types.includes(
+            "LUNAS"
+          );
+
+        if (
+          isLunasBertahap ||
+          isLunasSekali
         ) {
 
           ticket.status =

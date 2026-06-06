@@ -1,3 +1,5 @@
+// jadwal page
+
 "use client";
 
 import { useState } from "react";
@@ -13,6 +15,12 @@ from "@/components/jadwal/JadwalCalendar";
 
 import DetailJadwalModal
 from "@/components/modal/DetailJadwalModal";
+
+import {
+  Eye,
+  Check,
+  X,
+} from "lucide-react";
 
 export default function PegawaiJadwalPage() {
 
@@ -119,39 +127,36 @@ export default function PegawaiJadwalPage() {
          HEADER
       ================================================= */}
 
-      <div className="
-        rounded-3xl
-        border
-        bg-white
-        p-6
-        shadow-sm
-      ">
+      <div
+        className="
+          flex
+          items-center
+          justify-between
+        "
+      >
 
-        <p className="
-          text-sm
-          uppercase
-          tracking-[0.3em]
-          text-[#C9AE63]
-        ">
-          Jadwal
-        </p>
+        <div>
 
-        <h1 className="
-          mt-3
-          text-3xl
-          font-bold
-        ">
-          Jadwal Saya
-        </h1>
+          <h1
+            className="
+              text-2xl
+              font-bold
+            "
+          >
+            Jadwal
+          </h1>
 
-        <p className="
-          mt-3
-          max-w-2xl
-          text-gray-500
-        ">
-          Monitoring jadwal pekerjaan
-          dan acara pegawai.
-        </p>
+          <p
+            className="
+              text-sm
+              text-gray-500
+              mt-1
+            "
+          >
+            Monitoring dan verifikasi jadwal pekerjaan
+          </p>
+
+        </div>
 
       </div>
 
@@ -221,14 +226,7 @@ export default function PegawaiJadwalPage() {
          CONTENT
       ================================================= */}
 
-      <div className="
-        rounded-3xl
-        border
-        bg-white
-        p-4
-        shadow-sm
-      ">
-
+      <div>
         {mode === "calendar" ? (
 
           <JadwalCalendar
@@ -480,12 +478,20 @@ export default function PegawaiJadwalPage() {
 
             actions={[
 
-              {
-                label: "Detail",
+                {
+                  icon: (
+                    <Eye size={17} />
+                  ),
 
-                onClick: (row) =>
-                  handleSelect(row),
-              },
+                  className: `
+                    bg-gray-100
+                    text-gray-700
+                    hover:bg-gray-200
+                  `,
+
+                  onClick: (row) =>
+                    setSelected(row),
+                },
 
             ]}
 

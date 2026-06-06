@@ -81,7 +81,7 @@ const fetchData =
         ),
 
         api.get(
-          "/voucher/me"
+          "/vouchers/me"
         ),
       ]);
 

@@ -11,11 +11,7 @@ from "../utils/logger.js";
    SOCKET
 ========================================================= */
 
-import {
-
-  getIO,
-
-} from "../socket/index.js";
+import { getIO, } from "../socket/index.js";
 
 /* =========================================================
    GET JADWAL
@@ -132,23 +128,14 @@ export const createJadwal =
   ) => {
 
     try {
-
       const {
-
         tanggal_acara,
-
         pegawaiId,
-
         ticketId,
-
         title,
-
         lokasi,
-
         catatan,
-
         status,
-
       } = req.body;
 
       /* ================= CEK BENTROK ================= */
@@ -179,21 +166,14 @@ export const createJadwal =
 
       const jadwal =
         await Jadwal.create({
-
           ticketId,
-
           pegawaiId,
-
           title,
-
           lokasi,
-
           tanggal_acara,
-
           status:
             status ||
             "booked",
-
           catatan:
             catatan || "",
         });
@@ -402,9 +382,7 @@ export const deleteJadwal =
          REALTIME EMIT
       ========================================================= */
 
-      getIO().emit(
-        "jadwal:update"
-      );
+      getIO().emit("jadwal:update");
 
       /* ================= LOG ================= */
 

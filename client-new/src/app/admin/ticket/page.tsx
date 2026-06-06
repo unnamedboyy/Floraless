@@ -12,6 +12,8 @@ import {
   UserPlus,
   Play,
   CheckCircle2,
+  XCircle,
+  FileText,
 } from "lucide-react";
 
 import TableWrapper
@@ -32,6 +34,8 @@ import {
   updateStatusTicket,
 } from "@/services/ticket.service";
 
+import AddLogActivityModal from "@/components/modal/AddLogActivityModal";
+
 /* =====================================================
    BADGE
 ===================================================== */
@@ -49,6 +53,9 @@ const getStatusBadge =
 
       in_progress:
         "bg-blue-100 text-blue-700 border border-blue-200",
+
+      rejected:
+        "bg-red-100 text-red-700 border border-red-200",
 
       done:
         "bg-green-100 text-green-700 border border-green-200",
@@ -98,6 +105,9 @@ export default function TicketPage() {
     useState<string | null>(
       null
     );
+
+  const [openLog, setOpenLog] =
+    useState(false);
 
   /* =====================================================
      DATA
@@ -169,9 +179,7 @@ export default function TicketPage() {
         );
 
         setOpenAssign(false);
-
         setSelected(null);
-
         reload();
 
       } catch (err: any) {
@@ -268,6 +276,29 @@ export default function TicketPage() {
         setDetailId(row._id),
     },
 
+    {
+      icon: (
+        <FileText size={17} />
+      ),
+
+      className: `
+        bg-indigo-100
+        text-indigo-700
+        hover:bg-indigo-200
+      `,
+
+      show: (row: any) =>
+        row.status !== "done" &&
+        row.status !== "rejected",
+
+      onClick: (row: any) => {
+
+        setSelected(row);
+
+        setOpenLog(true);
+      },
+    },
+
     /* ================= ASSIGN ================= */
 
     {
@@ -292,6 +323,131 @@ export default function TicketPage() {
         setOpenAssign(true);
       },
     },
+
+  // reject
+
+  {
+    icon: (
+      <XCircle size={17} />
+    ),
+
+    className: `
+      bg-red-100
+      text-red-700
+      hover:bg-red-200
+    `,
+
+    show: (row: any) =>
+      row.status === "pending",
+
+    onClick: (row: any) => {
+
+      let note = "";
+
+      toast((t) => (
+
+        <div className="w-[320px]">
+
+          <p className="font-semibold text-sm">
+            Tolak Ticket?
+          </p>
+
+          <p className="text-sm text-gray-500 mt-1">
+            Catatan penolakan wajib diisi.
+          </p>
+
+          <textarea
+            rows={4}
+            className="
+              w-full
+              mt-3
+              p-3
+              border
+              rounded-xl
+              text-sm
+            "
+            placeholder="Masukkan alasan penolakan..."
+            onChange={(e) => {
+              note = e.target.value;
+            }}
+          />
+
+          <div className="flex justify-end gap-2 mt-4">
+
+            <button
+              onClick={() =>
+                toast.dismiss(t.id)
+              }
+              className="
+                px-3
+                py-2
+                rounded-xl
+                border
+                text-sm
+              "
+            >
+              Batal
+            </button>
+
+            <button
+              onClick={async () => {
+
+                if (!note.trim()) {
+
+                  toast.error(
+                    "Catatan wajib diisi"
+                  );
+
+                  return;
+                }
+
+                toast.dismiss(t.id);
+
+                try {
+
+                  await updateStatusTicket(
+                    row._id,
+                    "rejected",
+                    note
+                  );
+
+                  toast.success(
+                    "Ticket berhasil ditolak"
+                  );
+
+                  reload();
+
+                } catch (err: any) {
+
+                  toast.error(
+                    err?.response?.data?.message ||
+                    "Gagal menolak ticket"
+                  );
+                }
+              }}
+              className="
+                px-3
+                py-2
+                rounded-xl
+                bg-red-600
+                text-white
+                text-sm
+                hover:bg-red-700
+              "
+            >
+              Ya, Reject
+            </button>
+
+          </div>
+
+        </div>
+
+      ), {
+        duration: 20000,
+      });
+
+    },
+  },
 
     /* ================= START ================= */
 
@@ -438,6 +594,10 @@ export default function TicketPage() {
 
                 <option value="approved">
                   Approved
+                </option>
+
+                <option value="rejected">
+                  Rejected
                 </option>
 
                 <option value="in_progress">
@@ -710,6 +870,18 @@ export default function TicketPage() {
         onClose={() =>
           setDetailId(null)
         }
+      />
+
+      <AddLogActivityModal
+        open={openLog}
+        ticket={selected}
+        onClose={() => {
+          setOpenLog(false);
+          setSelected(null);
+        }}
+        onSuccess={() => {
+          reload();
+        }}
       />
 
     </div>

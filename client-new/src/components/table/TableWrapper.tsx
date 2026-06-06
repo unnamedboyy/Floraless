@@ -66,7 +66,6 @@ export default function TableWrapper({
 
   setView = () => {},
 
-  /* 🔥 ADD */
   filterContent,
 
 }: Props) {
@@ -118,12 +117,16 @@ export default function TableWrapper({
 
         <div
           className="
-            bg-white
-            border
-            rounded-[10px]
-            p-6
+            h-12
+            px-5
+            rounded-2xl
+            bg-[#0F172A]
+            text-white
             text-sm
-            text-gray-500
+            font-semibold
+            hover:opacity-90
+            transition
+            shadow-sm
           "
         >
           Data tidak ditemukan

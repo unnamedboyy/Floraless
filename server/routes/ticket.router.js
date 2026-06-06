@@ -11,6 +11,7 @@ import {
   updateStatusTicket,
   getPaymentSummaryByTicket,
   getTicketFullById,
+  addTicketLog,
 } from "../controllers/ticket.controller.js";
 
 const router = express.Router();
@@ -82,6 +83,12 @@ router.patch(
   auth,
   role("admin", "pegawai"),
   updateStatusTicket
+);
+
+router.post(
+  "/:id/logs",
+  auth,
+  addTicketLog
 );
 
 export default router;

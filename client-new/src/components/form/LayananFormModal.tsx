@@ -8,21 +8,13 @@ import {
 import toast from "react-hot-toast";
 
 import {
-
   ImagePlus,
-
   X,
-
   Type,
-
   AlignLeft,
-
   Tag,
-
   Star,
-
   Wallet,
-
   UploadCloud,
 
 } from "lucide-react";
@@ -40,9 +32,7 @@ import BaseModal from "@/components/form/BaseModal";
 type Props = {
 
   open: boolean;
-
   onClose: () => void;
-
   onSubmit: (
     form: any
   ) => Promise<void>;
@@ -59,13 +49,9 @@ type Props = {
 export default function LayananFormModal({
 
   open,
-
   onClose,
-
   onSubmit,
-
   initialData,
-
   loading = false,
 
 }: Props) {
@@ -78,15 +64,10 @@ export default function LayananFormModal({
     useState({
 
       nama: "",
-
       deskripsi: "",
-
       harga: "",
-
       thumbnail: "",
-
       kategori: "",
-
       isFeatured: false,
     });
 
@@ -104,56 +85,33 @@ export default function LayananFormModal({
   ===================================================== */
 
   useEffect(() => {
+    if (!open) return;
 
     if (initialData) {
-
       setForm({
-
-        nama:
-          initialData.nama || "",
-
-        deskripsi:
-          initialData.deskripsi || "",
-
-        harga:
-          initialData.harga || "",
-
-        thumbnail:
-          initialData.thumbnail || "",
-
-        kategori:
-          initialData.kategori || "",
-
-        isFeatured:
-          initialData.isFeatured || false,
+        nama: initialData.nama || "",
+        deskripsi: initialData.deskripsi || "",
+        harga: initialData.harga || "",
+        thumbnail: initialData.thumbnail || "",
+        kategori: initialData.kategori || "",
+        isFeatured: initialData.isFeatured || false,
       });
 
-      setPreview(
-        initialData.thumbnail || ""
-      );
-
+      setPreview(initialData.thumbnail || "");
     } else {
-
       setForm({
-
         nama: "",
-
         deskripsi: "",
-
         harga: "",
-
         thumbnail: "",
-
         kategori: "",
-
         isFeatured: false,
       });
 
       setPreview("");
     }
-
-  }, [initialData]);
-
+  }, [open, initialData]);
+  
   /* =====================================================
      UPLOAD
   ===================================================== */
@@ -272,6 +230,7 @@ export default function LayananFormModal({
       try {
 
         await onSubmit(form);
+        onClose();
 
       } catch (err) {
 

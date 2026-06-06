@@ -1,3 +1,5 @@
+// tugas page
+
 "use client";
 
 import {
@@ -11,6 +13,7 @@ import {
   Eye,
   Play,
   CheckCircle2,
+  FileText,
 } from "lucide-react";
 
 import TableWrapper from "@/components/table/TableWrapper";
@@ -20,6 +23,9 @@ import { useTickets } from "@/hooks/useTickets";
 import {
   updateStatusTicket,
 } from "@/services/ticket.service";
+
+import AddLogActivityModal
+from "@/components/modal/AddLogActivityModal";
 
 /* =====================================================
    BADGE
@@ -70,6 +76,12 @@ export default function PegawaiTugasPage() {
     useState<string | null>(
       null
     );
+
+  const [openLog, setOpenLog] =
+    useState(false);
+
+  const [selected, setSelected] =
+    useState<any>(null);
 
   /* =====================================================
      DATA
@@ -255,6 +267,28 @@ export default function PegawaiTugasPage() {
 
       onClick: handleStatus,
     },
+
+    {
+    icon: (
+      <FileText size={17} />
+    ),
+
+    className: `
+      bg-indigo-100
+      text-indigo-700
+      hover:bg-indigo-200
+    `,
+
+    show: (row: any) =>
+      row.status !== "done",
+
+    onClick: (row: any) => {
+
+      setSelected(row);
+
+      setOpenLog(true);
+    },
+  },
   ];
 
   /* =====================================================
@@ -602,6 +636,18 @@ export default function PegawaiTugasPage() {
         onClose={() =>
           setDetailId(null)
         }
+      />
+
+      <AddLogActivityModal
+        open={openLog}
+        ticket={selected}
+        onClose={() => {
+          setOpenLog(false);
+          setSelected(null);
+        }}
+        onSuccess={() => {
+          reload();
+        }}
       />
     </div>
   );

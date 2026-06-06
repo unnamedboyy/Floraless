@@ -454,17 +454,21 @@ export default function PaymentUploadModal({
 
             >
 
-              <option value="DP1">
-                DP 1
-              </option>
+            <option value="DP1">
+              DP 1 (20%)
+            </option>
 
-              <option value="DP2">
-                DP 2
-              </option>
+            <option value="DP2">
+              DP 2 (30%)
+            </option>
 
-              <option value="PELUNASAN">
-                Pelunasan
-              </option>
+            <option value="PELUNASAN">
+              Pelunasan Akhir(50%)
+            </option>
+
+            <option value="LUNAS">
+              Bayar Sekali Lunas (100%)
+            </option>
 
             </SelectField>
 

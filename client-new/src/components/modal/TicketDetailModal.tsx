@@ -121,6 +121,50 @@ const statusConfig = {
   },
 };
 
+const getLogActionConfig = (
+  action: string
+) => {
+  const map: any = {
+    CREATE_TICKET: {
+      label: "Ticket Dibuat",
+      className:
+        "bg-blue-50 text-blue-700 border-blue-200",
+    },
+
+    ASSIGN_PIC: {
+      label: "Assign PIC",
+      className:
+        "bg-purple-50 text-purple-700 border-purple-200",
+    },
+
+    UPDATE_STATUS: {
+      label: "Update Status",
+      className:
+        "bg-yellow-50 text-yellow-700 border-yellow-200",
+    },
+
+    UPDATE_PROGRESS: {
+      label: "Update Progress",
+      className:
+        "bg-indigo-50 text-indigo-700 border-indigo-200",
+    },
+
+    CREATE_PAYMENT: {
+      label: "Pembayaran",
+      className:
+        "bg-green-50 text-green-700 border-green-200",
+    },
+  };
+
+  return (
+    map[action] || {
+      label: action,
+      className:
+        "bg-gray-50 text-gray-700 border-gray-200",
+    }
+  );
+};
+
 /* =====================================================
    COMPONENT
 ===================================================== */
@@ -1012,25 +1056,22 @@ export default function TicketDetailModal({
 
               {/* LOGS */}
               {
-                logs.length >
-                  0 && (
-
+                logs.length > 0 && (
                   <Section title="Activity Logs">
-
-                    <div className="
-                      space-y-5
-                    ">
+                    <div className="space-y-5">
 
                       {
-                        logs.map(
-                          (
-                            log: any
-                          ) => (
+                        logs.map((log: any) => {
+
+                          const action =
+                            getLogActionConfig(
+                              log.action
+                            );
+
+                          return (
 
                             <div
-                              key={
-                                log._id
-                              }
+                              key={log._id}
                               className="
                                 rounded-[28px]
                                 border
@@ -1046,62 +1087,112 @@ export default function TicketDetailModal({
                                 gap-4
                               ">
 
-                                <div className="
-                                  w-14
-                                  h-14
-                                  rounded-2xl
-                                  bg-white
-                                  border
-                                  border-gray-200
-                                  text-gray-500
-                                  flex
-                                  items-center
-                                  justify-center
-                                  shrink-0
-                                ">
-                                  <Activity
-                                    size={22}
-                                  />
+                                <div
+                                  className={`
+                                    w-14
+                                    h-14
+                                    rounded-2xl
+                                    border
+                                    flex
+                                    items-center
+                                    justify-center
+                                    shrink-0
+
+                                    ${
+                                      log.action ===
+                                      "UPDATE_PROGRESS"
+
+                                        ? `
+                                          bg-indigo-50
+                                          text-indigo-600
+                                          border-indigo-200
+                                        `
+
+                                        : `
+                                          bg-white
+                                          text-gray-500
+                                          border-gray-200
+                                        `
+                                    }
+                                  `}
+                                >
+
+                                  {
+                                    log.action ===
+                                    "UPDATE_PROGRESS"
+
+                                      ? (
+                                        <FileText
+                                          size={22}
+                                        />
+                                      )
+
+                                      : (
+                                        <Activity
+                                          size={22}
+                                        />
+                                      )
+                                  }
+
                                 </div>
 
                                 <div className="
                                   flex-1
+                                  space-y-3
                                 ">
 
-                                  <h4 className="
-                                    text-[20px]
-                                    font-bold
-                                    text-[#111827]
+                                  <div className="
+                                    flex
+                                    items-center
+                                    gap-3
+                                    flex-wrap
                                   ">
+
+                                    <span
+                                      className={`
+                                        px-3
+                                        py-1.5
+                                        rounded-xl
+                                        border
+                                        text-xs
+                                        font-semibold
+
+                                        ${action.className}
+                                      `}
+                                    >
+                                      {action.label}
+                                    </span>
 
                                     {
-                                      log.action ||
-                                      log.aksi ||
-                                      "-"
+                                      log.userId?.nama && (
+
+                                        <span className="
+                                          text-sm
+                                          text-gray-500
+                                        ">
+                                          oleh {log.userId.nama}
+                                        </span>
+
+                                      )
                                     }
 
-                                  </h4>
+                                  </div>
 
                                   <p className="
-                                    mt-2
                                     text-[15px]
                                     leading-7
-                                    text-gray-600
+                                    text-gray-700
                                   ">
-
                                     {
                                       log.description ||
                                       "-"
                                     }
-
                                   </p>
 
                                   <p className="
-                                    mt-4
                                     text-sm
                                     text-gray-400
                                   ">
-
                                     {
                                       log.createdAt
 
@@ -1113,7 +1204,6 @@ export default function TicketDetailModal({
 
                                         : "-"
                                     }
-
                                   </p>
 
                                 </div>
@@ -1121,8 +1211,9 @@ export default function TicketDetailModal({
                               </div>
 
                             </div>
-                          )
-                        )
+
+                          );
+                        })
                       }
 
                     </div>
