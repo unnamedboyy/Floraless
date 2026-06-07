@@ -5,7 +5,6 @@ import path from "path";
 import http from "http";
 
 import connectDB from "./config/db.js";
-
 import { initSocket } from "./socket/index.js";
 
 /* ================= ROUTES ================= */
@@ -66,28 +65,15 @@ app.use(
 /* ================= API ROUTES ================= */
 
 app.use("/api/auth", authRoutes);
-
 app.use("/api/tickets", ticketRoutes);
-
 app.use("/api/payments", paymentRoutes);
-
 app.use("/api/vouchers", voucherRoutes);
-
 app.use("/api/layanans", layananRoutes);
-
 app.use("/api/log", logRoutes);
-
 app.use("/api/cashback", cashbackRoutes);
-
 app.use("/api/reviews", reviewRoutes);
-
 app.use("/api/portfolio", portfolioRoutes);
-
-app.use(
-  "/api/portfolio-images",
-  fotoPortfolioRoutes
-);
-
+app.use("/api/portfolio-images", fotoPortfolioRoutes);
 app.use("/api/detail", detailRoutes);
 
 app.use("/api/jadwal", jadwalRoutes);
