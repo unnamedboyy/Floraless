@@ -10,7 +10,7 @@ import {
   jwtDecode,
 } from "jwt-decode";
 
-import Cookies from "js-cookie";
+import Cookies from "../../node_modules/@types/js-cookie";
 
 import {
   useRouter,
