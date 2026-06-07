@@ -142,14 +142,6 @@ export default function AdminPortfolioPage() {
 
         <div>
 
-          <div className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-xs font-semibold tracking-[0.2em] text-white">
-
-            <Sparkles size={14} />
-
-            FLORALESS ADMIN
-
-          </div>
-
           <h1 className="mt-5 text-4xl font-bold tracking-tight text-neutral-900">
 
             Portfolio Management

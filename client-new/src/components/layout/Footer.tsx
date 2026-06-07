@@ -117,46 +117,6 @@ export default function Footer() {
               engagement, birthday, dan berbagai acara spesial.
             </p>
 
-            {/* SOCIAL */}
-            <div
-              className="
-                mt-10
-                flex
-                items-center
-                gap-4
-              "
-            >
-
-              {["IG", "FB", "TT"].map((item) => (
-
-                <div
-                  key={item}
-                  className="
-                    flex
-                    h-11
-                    w-11
-                    items-center
-                    justify-center
-                    rounded-full
-                    border
-                    border-white/10
-                    bg-white/5
-                    text-xs
-                    font-medium
-                    text-white/70
-                    backdrop-blur
-                    transition
-                    hover:border-[#D4B36A]/40
-                    hover:text-white
-                  "
-                >
-                  {item}
-                </div>
-
-              ))}
-
-            </div>
-
           </div>
 
           {/* MENU */}
@@ -191,11 +151,11 @@ export default function Footer() {
                 },
                 {
                   name: "Galeri",
-                  href: "/galeri",
+                  href: "/gallery",
                 },
                 {
-                  name: "Paket",
-                  href: "/paket",
+                  name: "Layanan",
+                  href: "/layanan",
                 },
                 {
                   name: "Kontak",

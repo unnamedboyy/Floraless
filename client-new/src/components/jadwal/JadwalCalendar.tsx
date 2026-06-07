@@ -6,6 +6,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 
 import axios from "@/lib/axios";
 import { toast } from "sonner";
+import "@/styles/calendar.css";
 
 interface Props {
   data: any[];
@@ -37,11 +38,13 @@ export default function JadwalCalendar({
       // 🔥 HARUS UNIQUE
       id: `${j._id}-${index}`,
 
-      title:
-        j.title?.trim()
-          ? j.title
-          : j.ticketId?.layananId?.nama ||
-            "Event",
+    title:
+      `📷 ${
+      j.title?.trim()
+      ? j.title
+      : j.ticketId?.layananId?.nama ||
+      "Event"
+      }`,
 
       start: formattedDate,
 
@@ -107,7 +110,15 @@ export default function JadwalCalendar({
      RENDER
   ===================================================== */
   return (
-    <div className="bg-white rounded-2xl border p-4">
+
+  <div
+  className="
+  rounded-[15px]
+  bg-white
+  p-8
+  shadow-sm
+  "
+  >
 
       <FullCalendar
         plugins={[
@@ -130,9 +141,9 @@ export default function JadwalCalendar({
         eventDrop={handleDrop}
 
         headerToolbar={{
-          left: "title",
-          center: "",
-          right: "today prev,next"
+          left:"prev,next",
+          center:"title",
+          right:"today"
         }}
 
         buttonText={{

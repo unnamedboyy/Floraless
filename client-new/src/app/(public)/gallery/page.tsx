@@ -128,99 +128,38 @@ export default function GalleryPage() {
     ">
 
       {/* ================= HERO ================= */}
+      <section className="relative h-[520px] overflow-hidden">
 
-      <section className="
-        relative
-        h-[520px]
-        overflow-hidden
-      ">
+        <Image
+          src="/about.jpg"
+          alt="Gallery Floraless"
+          fill
+          priority
+          className="object-cover"
+        />
 
-        {/* PARALLAX IMAGE */}
+        <div className="absolute inset-0 bg-black/55" />
 
-        <div
-          className="
-            absolute
-            inset-0
-            scale-110
-          "
-          style={{
-            transform:
-              `translateY(${offset * 0.25}px)`
-          }}
-        >
-
-          <Image
-            src="/about.jpg"
-            alt="Gallery Floraless"
-            fill
-            priority
-            className="
-              object-cover
-            "
-          />
-
-        </div>
-
-        {/* OVERLAY */}
-
-        <div className="
-          absolute
-          inset-0
-          bg-black/55
-        " />
-
-        {/* CONTENT */}
-
-        <div className="
-          relative
-          z-10
-          flex
-          h-full
-          items-center
-          justify-center
-          px-6
-          text-center
-        ">
+        <div className="relative z-10 flex h-full items-center justify-center px-6 text-center">
 
           <div>
 
-            <p className="
-              mb-5
-              text-sm
-              font-medium
-              tracking-[0.35em]
-              text-[#D4B36A]
-            ">
-              FLORALESS GALLERY
+            <p className="text-sm tracking-[0.3em] text-[#C9AE63]">
+              GALLERY
             </p>
 
             <h1 className="
+              mt-5
               text-5xl
-              font-semibold
-              tracking-tight
+              font-bold
               text-white
               md:text-7xl
             ">
-              Decoration Portfolio
+              Koleksi Kami
             </h1>
 
-            <p className="
-              mx-auto
-              mt-8
-              max-w-2xl
-              text-lg
-              leading-[2]
-              text-white/80
-            ">
-              Koleksi dekorasi wedding,
-              engagement, gereja,
-              dan berbagai acara spesial
-              yang dirancang dengan detail,
-              elegan, dan mewah.
-            </p>
-
             <div className="
-              mt-8
+              mt-6
               flex
               items-center
               justify-center
@@ -229,21 +168,13 @@ export default function GalleryPage() {
               text-white/80
             ">
 
-              <Link
-                href="/"
-                className="
-                  transition
-                  hover:text-white
-                "
-              >
+              <Link href="/">
                 Home
               </Link>
 
               <span>/</span>
 
-              <span>
-                Gallery
-              </span>
+              <span>Gallery</span>
 
             </div>
 

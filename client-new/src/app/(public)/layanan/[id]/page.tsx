@@ -172,17 +172,26 @@ export default function DetailLayananPage() {
      HERO COVER
   ===================================================== */
 
-  const cover =
-    useMemo(() => {
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "";
 
-      return (
+const cover = useMemo(() => {
+  if (
+    layanan?.thumbnail &&
+    typeof layanan.thumbnail === "string"
+  ) {
+    if (
+      layanan.thumbnail.startsWith("http://") ||
+      layanan.thumbnail.startsWith("https://")
+    ) {
+      return layanan.thumbnail;
+    }
 
-        layanan?.thumbnail ||
+    return `${API_URL}${layanan.thumbnail}`;
+  }
 
-        "/service-default.jpg"
-      );
-
-    }, [layanan]);
+  return "/service-default.jpg";
+}, [layanan, API_URL]);
 
   /* =====================================================
      LOADING
@@ -242,16 +251,17 @@ export default function DetailLayananPage() {
           }}
         >
 
-          <Image
-            src={cover}
-            alt={layanan?.nama}
-            fill
-            priority
-            className="
-              object-cover
-              scale-105
-            "
-          />
+        <Image
+          src={cover}
+          alt={layanan?.nama || "service"}
+          fill
+          priority
+          unoptimized
+          className="
+            object-cover
+            scale-105
+          "
+        />
 
         </div>
 
@@ -315,22 +325,6 @@ export default function DetailLayananPage() {
               >
                 {layanan?.nama}
               </h1>
-
-              <p
-                className="
-                  mt-8
-                  max-w-3xl
-                  text-lg
-                  leading-relaxed
-                  text-white/75
-                "
-              >
-                {
-                  layanan?.deskripsi ||
-
-                  "Layanan dekorasi premium Floraless untuk menciptakan acara yang elegan dan berkesan."
-                }
-              </p>
 
             </div>
 
@@ -456,8 +450,9 @@ export default function DetailLayananPage() {
 
                   <Image
                     src={cover}
-                    alt={layanan?.nama}
+                    alt={layanan?.nama || "service"}
                     fill
+                    unoptimized
                     className="
                       object-cover
                     "
@@ -516,33 +511,6 @@ export default function DetailLayananPage() {
                           ).toLocaleString(
                             "id-ID"
                           )
-                        }
-                      </p>
-
-                    </div>
-
-                    <div>
-
-                      <p
-                        className="
-                          text-xs
-                          uppercase
-                          tracking-[0.2em]
-                          text-neutral-400
-                        "
-                      >
-                        Total Portfolio
-                      </p>
-
-                      <p
-                        className="
-                          mt-3
-                          text-5xl
-                          font-semibold
-                        "
-                      >
-                        {
-                          portfolio.length
                         }
                       </p>
 
@@ -706,23 +674,28 @@ export default function DetailLayananPage() {
                             "
                           >
 
-                            <Image
-                              src={
-                                item?.coverImage?.url ||
-
-                                item?.images?.[0]?.url ||
-
-                                "/service-default.jpg"
-                              }
-                              alt={item.title}
-                              fill
-                              className="
-                                object-cover
-                                transition
-                                duration-700
-                                group-hover:scale-110
-                              "
-                            />
+                          <Image
+                            src={
+                              item?.coverImage?.url
+                                ? item.coverImage.url.startsWith("http")
+                                  ? item.coverImage.url
+                                  : `${API_URL}${item.coverImage.url}`
+                                : item?.images?.[0]?.url
+                                ? item.images[0].url.startsWith("http")
+                                  ? item.images[0].url
+                                  : `${API_URL}${item.images[0].url}`
+                                : "/service-default.jpg"
+                            }
+                            alt={item.title}
+                            fill
+                            unoptimized
+                            className="
+                              object-cover
+                              transition
+                              duration-700
+                              group-hover:scale-110
+                            "
+                          />
 
                             {/* OVERLAY */}
                             <div
@@ -803,171 +776,7 @@ export default function DetailLayananPage() {
             }
 
           </div>
-
-          {/* =================================================
-             RELATED
-          ================================================= */}
-
-          {
-            related.length > 0 && (
-
-              <div
-                className="
-                  mt-28
-                "
-              >
-
-                <p
-                  className="
-                    text-sm
-                    tracking-[0.3em]
-                    text-[#C9AE63]
-                  "
-                >
-                  OTHER SERVICES
-                </p>
-
-                <h2
-                  className="
-                    mt-5
-                    text-4xl
-                    md:text-6xl
-                    font-semibold
-                    tracking-tight
-                    leading-tight
-                  "
-                >
-                  Layanan
-                  Lainnya
-                </h2>
-
-                <div
-                  className="
-                    mt-14
-                    grid
-                    gap-8
-                    md:grid-cols-2
-                    xl:grid-cols-3
-                  "
-                >
-
-                  {
-                    related.slice(0, 3).map(
-                      (item: any) => (
-
-                        <Link
-                          key={item._id}
-                          href={`/layanan/${item._id}`}
-                          className="
-                            group
-                            overflow-hidden
-                            rounded-[32px]
-                            border
-                            border-[#EFE7DA]
-                            bg-white
-                            transition-all
-                            duration-500
-                            hover:-translate-y-2
-                            hover:shadow-2xl
-                          "
-                        >
-
-                          {/* IMAGE */}
-                          <div
-                            className="
-                              relative
-                              h-[260px]
-                              overflow-hidden
-                            "
-                          >
-
-                            <Image
-                              src={
-                                item.thumbnail ||
-
-                                "/service-default.jpg"
-                              }
-                              alt={item.nama}
-                              fill
-                              className="
-                                object-cover
-                                transition
-                                duration-700
-                                group-hover:scale-110
-                              "
-                            />
-
-                            {/* OVERLAY */}
-                            <div
-                              className="
-                                absolute
-                                inset-0
-                                bg-gradient-to-t
-                                from-black/60
-                                via-black/10
-                                to-transparent
-                              "
-                            />
-
-                          </div>
-
-                          {/* CONTENT */}
-                          <div
-                            className="
-                              p-8
-                            "
-                          >
-
-                            <p
-                              className="
-                                text-xs
-                                tracking-[0.2em]
-                                text-[#C9AE63]
-                              "
-                            >
-                              SERVICE
-                            </p>
-
-                            <h3
-                              className="
-                                mt-5
-                                text-3xl
-                                font-semibold
-                              "
-                            >
-                              {item.nama}
-                            </h3>
-
-                            <p
-                              className="
-                                mt-5
-                                line-clamp-4
-                                leading-relaxed
-                                text-neutral-600
-                              "
-                            >
-                              {
-                                item.deskripsi ||
-
-                                "Layanan dekorasi premium Floraless."
-                              }
-                            </p>
-
-                          </div>
-
-                        </Link>
-                      )
-                    )
-                  }
-
-                </div>
-
-              </div>
-            )
-          }
-
         </div>
-
       </section>
 
     </main>

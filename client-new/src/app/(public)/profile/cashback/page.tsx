@@ -231,16 +231,19 @@ const fetchData =
 
     return (
 
-      <div className="
-        rounded-[2rem]
-        border
-        bg-white
-        p-10
-        text-center
-        text-gray-500
-      ">
+      <div
+        className="
+          rounded-[32px]
+          border
+          border-gray-200
+          bg-white
+          p-10
+          text-center
+          text-gray-500
+        "
+      >
 
-        Loading...
+        Loading cashback...
 
       </div>
     );
@@ -250,48 +253,166 @@ const fetchData =
 
     <>
 
-      <div className="
-        space-y-8
-      ">
+      <div
+        className="
+          space-y-8
+        "
+      >
 
         {/* ===================================================
            HEADER
         =================================================== */}
 
-        <div className="
-          rounded-[2rem]
-          border
-          bg-white
-          p-8
-          shadow-sm
-        ">
+        <div
+          className="
+            rounded-[32px]
+            border
+            border-gray-200
+            bg-white
+            p-10
+          "
+        >
 
-          <p className="
-            text-sm
-            uppercase
-            tracking-[0.3em]
-            text-[#C9AE63]
-          ">
+          <p
+            className="
+              text-sm
+              uppercase
+              tracking-[0.35em]
+              text-[#C9AE63]
+              font-medium
+            "
+          >
             Cashback
           </p>
 
-          <h1 className="
-            mt-3
-            text-4xl
-            font-bold
-          ">
+          <h1
+            className="
+              mt-4
+              text-5xl
+              font-bold
+              tracking-tight
+              text-[#111827]
+            "
+          >
             Cashback & Voucher
           </h1>
 
-          <p className="
-            mt-4
-            max-w-2xl
-            text-gray-600
-          ">
+          <p
+            className="
+              mt-5
+              max-w-3xl
+              text-lg
+              leading-8
+              text-gray-500
+            "
+          >
             Kelola cashback dan voucher
             yang Anda miliki dari transaksi
             Floraless.
           </p>
+
+          {/* =================================================
+             STATS
+          ================================================= */}
+
+          <div
+            className="
+              mt-14
+              grid
+              gap-8
+              md:grid-cols-3
+            "
+          >
+
+            <div>
+
+              <p
+                className="
+                  text-sm
+                  uppercase
+                  tracking-wider
+                  text-gray-500
+                "
+              >
+                Total Claim
+              </p>
+
+              <h2
+                className="
+                  mt-3
+                  text-4xl
+                  font-bold
+                  text-[#111827]
+                "
+              >
+                {claims.length}
+              </h2>
+
+            </div>
+
+            <div>
+
+              <p
+                className="
+                  text-sm
+                  uppercase
+                  tracking-wider
+                  text-gray-500
+                "
+              >
+                Disetujui
+              </p>
+
+              <h2
+                className="
+                  mt-3
+                  text-4xl
+                  font-bold
+                  text-[#111827]
+                "
+              >
+                {
+                  claims.filter(
+                    (item) =>
+                      item.status ===
+                      "approved"
+                  ).length
+                }
+              </h2>
+
+            </div>
+
+            <div>
+
+              <p
+                className="
+                  text-sm
+                  uppercase
+                  tracking-wider
+                  text-gray-500
+                "
+              >
+                Voucher Aktif
+              </p>
+
+              <h2
+                className="
+                  mt-3
+                  text-4xl
+                  font-bold
+                  text-[#111827]
+                "
+              >
+                {
+                  vouchers.filter(
+                    (v) => !v.isUsed
+                  ).length
+                }
+              </h2>
+
+            </div>
+
+          </div>
 
         </div>
 
@@ -302,50 +423,74 @@ const fetchData =
         <form
           onSubmit={handleClaim}
           className="
-            rounded-[2rem]
+            rounded-[32px]
             border
+            border-gray-200
             bg-white
-            p-8
-            shadow-sm
+            p-10
           "
         >
 
           <div>
 
-            <h2 className="
-              text-2xl
-              font-bold
-            ">
+            <p
+              className="
+                text-sm
+                uppercase
+                tracking-[0.35em]
+                text-[#C9AE63]
+                font-medium
+              "
+            >
+              Form
+            </p>
+
+            <h2
+              className="
+                mt-4
+                text-2xl
+                font-bold
+                tracking-tight
+                text-[#111827]
+              "
+            >
               Claim Cashback
             </h2>
 
-            <p className="
-              mt-2
-              text-gray-500
-            ">
+            <p
+              className="
+                mt-2
+                text-gray-500
+              "
+            >
               Masukkan data rekening untuk
               proses transfer cashback.
             </p>
 
           </div>
 
-          <div className="
-            mt-8
-            grid
-            gap-5
-            md:grid-cols-2
-          ">
+          <div
+            className="
+              mt-8
+              grid
+              gap-5
+              md:grid-cols-2
+            "
+          >
 
             {/* VOUCHER */}
 
             <div>
 
-              <label className="
-                mb-2
-                block
-                text-sm
-                font-medium
-              ">
+              <label
+                className="
+                  mb-2
+                  block
+                  text-sm
+                  font-medium
+                  text-[#111827]
+                "
+              >
                 Kode Voucher
               </label>
 
@@ -363,8 +508,13 @@ const fetchData =
                   w-full
                   rounded-2xl
                   border
+                  border-gray-200
                   px-5
                   outline-none
+                  text-[#111827]
+                  placeholder:text-gray-400
+                  focus:border-[#C9AE63]
+                  transition
                 "
               />
 
@@ -374,12 +524,15 @@ const fetchData =
 
             <div>
 
-              <label className="
-                mb-2
-                block
-                text-sm
-                font-medium
-              ">
+              <label
+                className="
+                  mb-2
+                  block
+                  text-sm
+                  font-medium
+                  text-[#111827]
+                "
+              >
                 Bank
               </label>
 
@@ -397,8 +550,13 @@ const fetchData =
                   w-full
                   rounded-2xl
                   border
+                  border-gray-200
                   px-5
                   outline-none
+                  text-[#111827]
+                  placeholder:text-gray-400
+                  focus:border-[#C9AE63]
+                  transition
                 "
               />
 
@@ -408,12 +566,15 @@ const fetchData =
 
             <div>
 
-              <label className="
-                mb-2
-                block
-                text-sm
-                font-medium
-              ">
+              <label
+                className="
+                  mb-2
+                  block
+                  text-sm
+                  font-medium
+                  text-[#111827]
+                "
+              >
                 Nomor Rekening
               </label>
 
@@ -431,8 +592,13 @@ const fetchData =
                   w-full
                   rounded-2xl
                   border
+                  border-gray-200
                   px-5
                   outline-none
+                  text-[#111827]
+                  placeholder:text-gray-400
+                  focus:border-[#C9AE63]
+                  transition
                 "
               />
 
@@ -442,12 +608,15 @@ const fetchData =
 
             <div>
 
-              <label className="
-                mb-2
-                block
-                text-sm
-                font-medium
-              ">
+              <label
+                className="
+                  mb-2
+                  block
+                  text-sm
+                  font-medium
+                  text-[#111827]
+                "
+              >
                 Nama Pemilik Rekening
               </label>
 
@@ -465,8 +634,13 @@ const fetchData =
                   w-full
                   rounded-2xl
                   border
+                  border-gray-200
                   px-5
                   outline-none
+                  text-[#111827]
+                  placeholder:text-gray-400
+                  focus:border-[#C9AE63]
+                  transition
                 "
               />
 
@@ -482,7 +656,7 @@ const fetchData =
               h-14
               w-full
               rounded-2xl
-              bg-black
+              bg-[#111827]
               text-lg
               font-semibold
               text-white
@@ -508,49 +682,86 @@ const fetchData =
            RIWAYAT CASHBACK
         ===================================================== */}
 
-        <div className="
-          rounded-[32px]
-          border
-          bg-white
-          p-8
-        ">
+        <div
+          className="
+            rounded-[32px]
+            border
+            border-gray-200
+            bg-white
+            p-10
+          "
+        >
 
-          <h2 className="
-            text-3xl
-            font-bold
-          ">
-            Riwayat Cashback
-          </h2>
+          <div
+            className="
+              pb-5
+              border-b
+              border-gray-300
+            "
+          >
 
-          <p className="
-            mt-2
-            text-gray-500
-          ">
-            Status cashback yang pernah Anda claim.
-          </p>
+            <h2
+              className="
+                text-2xl
+                font-bold
+                text-[#111827]
+              "
+            >
+              Riwayat Cashback
+            </h2>
+
+            <p
+              className="
+                mt-2
+                text-gray-500
+              "
+            >
+              Status cashback yang pernah Anda claim.
+            </p>
+
+          </div>
 
           {
             claims.length === 0 ? (
 
-              <div className="
-                mt-8
-                rounded-3xl
-                bg-gray-50
-                px-6
-                py-12
-                text-center
-                text-gray-500
-              ">
-                Belum ada cashback.
+              <div
+                className="
+                  py-24
+                  text-center
+                "
+              >
+
+                <h3
+                  className="
+                    text-3xl
+                    font-bold
+                    text-[#111827]
+                  "
+                >
+                  Belum Ada Cashback
+                </h3>
+
+                <p
+                  className="
+                    mt-4
+                    text-gray-500
+                  "
+                >
+                  Anda belum memiliki
+                  riwayat claim cashback.
+                </p>
+
               </div>
 
             ) : (
 
-              <div className="
-                mt-8
-                grid
-                gap-5
-              ">
+              <div
+                className="
+                  mt-8
+                  grid
+                  gap-5
+                "
+              >
 
                 {
                   claims.map(
@@ -561,36 +772,44 @@ const fetchData =
                         className="
                           rounded-[28px]
                           border
+                          border-gray-200
                           p-6
                         "
                       >
 
                         {/* HEADER */}
-                        <div className="
-                          flex
-                          flex-col
-                          gap-4
-                          md:flex-row
-                          md:items-center
-                          md:justify-between
-                        ">
+                        <div
+                          className="
+                            flex
+                            flex-col
+                            gap-4
+                            md:flex-row
+                            md:items-center
+                            md:justify-between
+                          "
+                        >
 
                           <div>
 
-                            <p className="
-                              text-xs
-                              uppercase
-                              tracking-widest
-                              text-gray-400
-                            ">
+                            <p
+                              className="
+                                text-xs
+                                uppercase
+                                tracking-widest
+                                text-gray-400
+                              "
+                            >
                               Voucher
                             </p>
 
-                            <h3 className="
-                              mt-2
-                              text-2xl
-                              font-bold
-                            ">
+                            <h3
+                              className="
+                                mt-2
+                                text-2xl
+                                font-bold
+                                text-[#111827]
+                              "
+                            >
                               {
                                 item.kode_voucher
                               }
@@ -638,30 +857,37 @@ const fetchData =
                         </div>
 
                         {/* BODY */}
-                        <div className="
-                          mt-6
-                          grid
-                          grid-cols-1
-                          gap-5
-                          md:grid-cols-3
-                        ">
+                        <div
+                          className="
+                            mt-6
+                            grid
+                            grid-cols-1
+                            gap-5
+                            md:grid-cols-3
+                          "
+                        >
 
                           <div>
 
-                            <p className="
-                              text-xs
-                              uppercase
-                              tracking-widest
-                              text-gray-400
-                            ">
+                            <p
+                              className="
+                                text-xs
+                                uppercase
+                                tracking-widest
+                                text-gray-400
+                              "
+                            >
                               Nominal
                             </p>
 
-                            <p className="
-                              mt-2
-                              text-lg
-                              font-semibold
-                            ">
+                            <p
+                              className="
+                                mt-2
+                                text-lg
+                                font-semibold
+                                text-[#111827]
+                              "
+                            >
                               Rp {
 
                                 (
@@ -676,20 +902,25 @@ const fetchData =
 
                           <div>
 
-                            <p className="
-                              text-xs
-                              uppercase
-                              tracking-widest
-                              text-gray-400
-                            ">
+                            <p
+                              className="
+                                text-xs
+                                uppercase
+                                tracking-widest
+                                text-gray-400
+                              "
+                            >
                               Bank
                             </p>
 
-                            <p className="
-                              mt-2
-                              text-lg
-                              font-semibold
-                            ">
+                            <p
+                              className="
+                                mt-2
+                                text-lg
+                                font-semibold
+                                text-[#111827]
+                              "
+                            >
                               {
                                 item.bank || "-"
                               }
@@ -699,20 +930,25 @@ const fetchData =
 
                           <div>
 
-                            <p className="
-                              text-xs
-                              uppercase
-                              tracking-widest
-                              text-gray-400
-                            ">
+                            <p
+                              className="
+                                text-xs
+                                uppercase
+                                tracking-widest
+                                text-gray-400
+                              "
+                            >
                               Tanggal
                             </p>
 
-                            <p className="
-                              mt-2
-                              text-lg
-                              font-semibold
-                            ">
+                            <p
+                              className="
+                                mt-2
+                                text-lg
+                                font-semibold
+                                text-[#111827]
+                              "
+                            >
 
                               {
                                 new Date(
@@ -729,9 +965,11 @@ const fetchData =
                         </div>
 
                         {/* FOOTER */}
-                        <div className="
-                          mt-6
-                        ">
+                        <div
+                          className="
+                            mt-6
+                          "
+                        >
 
                           <button
                             onClick={() =>
@@ -741,12 +979,14 @@ const fetchData =
                             }
                             className="
                               rounded-2xl
-                              bg-black
+                              bg-[#111827]
                               px-5
                               py-3
                               text-sm
                               font-medium
                               text-white
+                              transition
+                              hover:opacity-90
                             "
                           >
                             Lihat Detail
@@ -765,181 +1005,259 @@ const fetchData =
 
         </div>
 
-        {/* ===================================================
+        {/* =====================================================
            VOUCHER LIST
-        =================================================== */}
+        ===================================================== */}
 
-        <div className="
-          rounded-[2rem]
-          border
-          bg-white
-          p-8
-          shadow-sm
-        ">
+        <div
+          className="
+            rounded-[32px]
+            border
+            border-gray-200
+            bg-white
+            p-10
+          "
+        >
 
-          <h2 className="
-            text-2xl
-            font-bold
-          ">
-            Voucher Saya
-          </h2>
+          <div
+            className="
+              pb-5
+              border-b
+              border-gray-300
+            "
+          >
 
-          <p className="
-            mt-2
-            text-gray-500
-          ">
-            Daftar voucher cashback Anda.
-          </p>
+            <h2
+              className="
+                text-2xl
+                font-bold
+                text-[#111827]
+              "
+            >
+              Voucher Saya
+            </h2>
 
-          <div className="
-            mt-8
-            grid
-            gap-5
-            md:grid-cols-2
-          ">
+            <p
+              className="
+                mt-2
+                text-gray-500
+              "
+            >
+              Daftar voucher cashback Anda.
+            </p>
 
-            {
-              vouchers.map(
-                (voucher) => (
+          </div>
 
-                  <div
-                    key={voucher._id}
-                    className="
-                      overflow-hidden
-                      rounded-3xl
-                      border
-                    "
-                  >
+          {
+            vouchers.length === 0 ? (
 
-                    <div className="
-                      bg-black
-                      p-6
-                      text-white
-                    ">
+              <div
+                className="
+                  py-24
+                  text-center
+                "
+              >
 
-                      <p className="
-                        text-xs
-                        uppercase
-                        tracking-[0.3em]
-                        text-white/60
-                      ">
-                        Voucher Code
-                      </p>
+                <h3
+                  className="
+                    text-3xl
+                    font-bold
+                    text-[#111827]
+                  "
+                >
+                  Belum Ada Voucher
+                </h3>
 
-                      <h3 className="
-                        mt-3
-                        text-4xl
-                        font-bold
-                      ">
+                <p
+                  className="
+                    mt-4
+                    text-gray-500
+                  "
+                >
+                  Anda belum memiliki
+                  voucher cashback.
+                </p>
 
-                        {
-                          voucher.code
-                        }
+              </div>
 
-                      </h3>
+            ) : (
 
-                    </div>
+              <div
+                className="
+                  mt-8
+                  grid
+                  gap-5
+                  md:grid-cols-2
+                "
+              >
 
-                    <div className="
-                      p-6
-                    ">
+                {
+                  vouchers.map(
+                    (voucher) => (
 
-                      <div className="
-                        flex
-                        items-center
-                        justify-between
-                      ">
+                      <div
+                        key={voucher._id}
+                        className="
+                          overflow-hidden
+                          rounded-3xl
+                          border
+                          border-gray-200
+                        "
+                      >
 
-                        <div>
+                        <div
+                          className="
+                            bg-[#111827]
+                            p-6
+                            text-white
+                          "
+                        >
 
-                          <p className="
-                            text-sm
-                            text-gray-500
-                          ">
-                            Nominal
+                          <p
+                            className="
+                              text-xs
+                              uppercase
+                              tracking-[0.35em]
+                              text-white/60
+                              font-medium
+                            "
+                          >
+                            Voucher Code
                           </p>
 
-                          <p className="
-                            mt-2
-                            text-3xl
-                            font-bold
-                          ">
+                          <h3
+                            className="
+                              mt-3
+                              text-4xl
+                              font-bold
+                              tracking-tight
+                            "
+                          >
 
                             {
-                              formatRupiah(
-                                voucher.amount
-                              )
+                              voucher.code
                             }
 
-                          </p>
+                          </h3>
 
                         </div>
 
-                        <span className={`
-                          rounded-xl
-                          px-3
-                          py-1
-                          text-xs
-                          font-semibold
+                        <div
+                          className="
+                            p-6
+                          "
+                        >
 
-                          ${
-                            voucher.isUsed
+                          <div
+                            className="
+                              flex
+                              items-center
+                              justify-between
+                            "
+                          >
 
-                              ? `
-                                bg-red-100
-                                text-red-700
-                              `
+                            <div>
 
-                              : `
-                                bg-green-100
-                                text-green-700
-                              `
-                          }
-                        `}>
+                              <p
+                                className="
+                                  text-sm
+                                  uppercase
+                                  tracking-wider
+                                  text-gray-500
+                                "
+                              >
+                                Nominal
+                              </p>
 
-                          {
-                            voucher.isUsed
+                              <p
+                                className="
+                                  mt-2
+                                  text-3xl
+                                  font-bold
+                                  text-[#111827]
+                                "
+                              >
 
-                              ? "Used"
+                                {
+                                  formatRupiah(
+                                    voucher.amount
+                                  )
+                                }
 
-                              : "Active"
-                          }
+                              </p>
 
-                        </span>
+                            </div>
+
+                            <span className={`
+                              rounded-full
+                              px-4
+                              py-2
+                              text-xs
+                              font-semibold
+
+                              ${
+                                voucher.isUsed
+
+                                  ? `
+                                    bg-red-100
+                                    text-red-700
+                                  `
+
+                                  : `
+                                    bg-green-100
+                                    text-green-700
+                                  `
+                              }
+                            `}>
+
+                              {
+                                voucher.isUsed
+
+                                  ? "Used"
+
+                                  : "Active"
+                              }
+
+                            </span>
+
+                          </div>
+
+                          <div
+                            className="
+                              mt-6
+                              text-sm
+                              text-gray-500
+                            "
+                          >
+
+                            Expired:
+                            {" "}
+
+                            {
+                              voucher.expiredAt
+
+                                ? new Date(
+                                    voucher.expiredAt
+                                  ).toLocaleDateString(
+                                    "id-ID"
+                                  )
+
+                                : "-"
+                            }
+
+                          </div>
+
+                        </div>
 
                       </div>
+                    )
+                  )
+                }
 
-                      <div className="
-                        mt-6
-                        text-sm
-                        text-gray-500
-                      ">
+              </div>
 
-                        Expired:
-                        {" "}
-
-                        {
-                          voucher.expiredAt
-
-                            ? new Date(
-                                voucher.expiredAt
-                              ).toLocaleDateString(
-                                "id-ID"
-                              )
-
-                            : "-"
-                        }
-
-                      </div>
-
-                    </div>
-
-                  </div>
-                )
-              )
-            }
-
-          </div>
+            )
+          }
 
         </div>
 

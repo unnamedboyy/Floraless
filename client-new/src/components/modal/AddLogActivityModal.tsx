@@ -9,6 +9,7 @@ import {
   X,
   FileText,
   Loader2,
+  Activity,
 } from "lucide-react";
 
 import toast from "react-hot-toast";
@@ -30,6 +31,7 @@ export default function AddLogActivityModal({
   ticket,
   onSuccess,
 }: Props) {
+
   const [description, setDescription] =
     useState("");
 
@@ -37,9 +39,11 @@ export default function AddLogActivityModal({
     useState(false);
 
   useEffect(() => {
+
     if (open) {
       setDescription("");
     }
+
   }, [open]);
 
   if (!open) return null;
@@ -89,6 +93,7 @@ export default function AddLogActivityModal({
     };
 
   return (
+
     <div
       className="
         fixed inset-0 z-[999]
@@ -98,12 +103,13 @@ export default function AddLogActivityModal({
         p-4
       "
     >
+
       <div
         className="
           w-full
           max-w-2xl
-          bg-white
-          rounded-3xl
+          bg-[#FCFCFD]
+          rounded-[32px]
           shadow-2xl
           overflow-hidden
           animate-in
@@ -112,139 +118,192 @@ export default function AddLogActivityModal({
           duration-200
         "
       >
-        {/* HEADER */}
+
+        {/* =====================================================
+            HEADER
+        ===================================================== */}
+
         <div
           className="
-            flex
-            items-center
-            justify-between
-            px-6
-            py-5
+            shrink-0
+            px-10
+            py-7
             border-b
+            border-gray-200
+            bg-[#FCFCFD]
+            flex
+            items-start
+            justify-between
+            gap-5
           "
         >
-          <div className="flex items-center gap-3">
-            <div
-              className="
-                w-11 h-11
-                rounded-2xl
-                bg-indigo-100
-                flex items-center justify-center
-              "
-            >
-              <FileText
-                size={22}
-                className="
-                  text-indigo-600
-                "
-              />
-            </div>
 
-            <div>
+          <div className="space-y-3">
+
+            <div className="
+              flex
+              items-center
+              gap-4
+              flex-wrap
+            ">
+
+              <div className="
+                w-14 h-14
+                rounded-2xl
+                border
+                border-indigo-200
+                bg-indigo-50
+                text-indigo-600
+                flex
+                items-center
+                justify-center
+                shrink-0
+              ">
+                <Activity size={26} />
+              </div>
+
               <h2
                 className="
-                  text-lg
+                  text-[32px]
+                  leading-none
+                  tracking-tight
                   font-bold
+                  text-[#0F172A]
                 "
               >
                 Tambah Log Aktivitas
               </h2>
 
-              <p
-                className="
-                  text-sm
-                  text-gray-500
-                "
-              >
-                Catat progress pekerjaan
-                tanpa mengubah status
-                ticket
-              </p>
             </div>
+
+            <p
+              className="
+                text-[16px]
+                text-gray-500
+              "
+            >
+              Catat progress pekerjaan tanpa mengubah status ticket
+            </p>
+
           </div>
 
           <button
             onClick={onClose}
             className="
-              w-10 h-10
-              rounded-xl
-              hover:bg-gray-100
-              flex items-center justify-center
-              transition
+              w-14 h-14
+              rounded-2xl
+              border
+              border-gray-300
+              bg-white
+              flex
+              items-center
+              justify-center
+              text-gray-500
+              hover:bg-gray-50
+              hover:text-gray-700
+              transition-all
             "
           >
-            <X size={20} />
+            <X size={24} />
           </button>
+
         </div>
 
-        {/* CONTENT */}
+        {/* =====================================================
+            BODY
+        ===================================================== */}
+
         <div
           className="
-            p-6
+            px-10
+            py-8
             space-y-5
+            bg-[#FCFCFD]
           "
         >
+
           {/* INFO TICKET */}
+
           <div
             className="
-              bg-gray-50
-              border
               rounded-2xl
-              p-4
-            "
-          >
-            <p
-              className="
-                text-xs
-                text-gray-500
-                mb-1
-              "
-            >
-              Ticket
-            </p>
-
-            <p
-              className="
-                font-semibold
-                text-gray-800
-              "
-            >
-              {ticket?.pelangganId?.nama ||
-                "-"}
-            </p>
-
-            <p
-              className="
-                text-sm
-                text-gray-500
-                mt-1
-              "
-            >
-              {ticket?.layananId?.nama ||
-                "-"}
-            </p>
-          </div>
-
-          {/* FORM */}
-          <div
-            className="
-              bg-white
               border
-              rounded-2xl
+              border-gray-200
+              bg-[#FCFCFD]
               p-5
               space-y-3
             "
           >
-            <label
-              className="
-                block
-                text-sm
-                font-medium
-                text-gray-700
-              "
-            >
-              Progress Aktivitas
-            </label>
+
+            <div className="
+              flex
+              items-center
+              gap-2
+              text-gray-500
+            ">
+
+              <FileText size={18} />
+
+              <div className="
+                text-xs
+                font-semibold
+                uppercase
+                tracking-wider
+              ">
+                Ticket
+              </div>
+
+            </div>
+
+            <div className="
+              text-[15px]
+              font-semibold
+              text-[#111827]
+            ">
+              {ticket?.pelangganId?.nama || "-"}
+            </div>
+
+            <div className="
+              text-sm
+              text-gray-500
+            ">
+              {ticket?.layananId?.nama || "-"}
+            </div>
+
+          </div>
+
+          {/* FORM */}
+
+          <div
+            className="
+              rounded-2xl
+              border
+              border-gray-200
+              bg-white
+              p-5
+              space-y-3
+            "
+          >
+
+            <div className="
+              flex
+              items-center
+              gap-2
+              text-gray-500
+            ">
+
+              <FileText size={18} />
+
+              <div className="
+                text-xs
+                font-semibold
+                uppercase
+                tracking-wider
+              ">
+                Progress Aktivitas
+              </div>
+
+            </div>
 
             <textarea
               rows={6}
@@ -254,100 +313,136 @@ export default function AddLogActivityModal({
                   e.target.value
                 )
               }
-              placeholder="
-Contoh:
-
-• Survey lokasi telah selesai dilakukan
-
-• Dekorasi sedang dipersiapkan
-
-• Peralatan sudah dikirim ke lokasi
-
-• Menunggu konfirmasi pelanggan
-              "
+              placeholder="Contoh: Survey lokasi telah selesai dilakukan, Dekorasi sedang dipersiapkan, Peralatan sudah dikirim ke lokasi, Menunggu konfirmasi pelanggan"
               className="
                 w-full
                 rounded-2xl
                 border
+                border-gray-200
+                bg-[#FCFCFD]
                 px-4
                 py-3
-                text-sm
+                text-[15px]
+                text-[#111827]
                 resize-none
                 outline-none
-                focus:ring-2
-                focus:ring-indigo-500
-                focus:border-indigo-500
+                focus:border-indigo-300
+                focus:bg-white
+                transition-all
               "
             />
 
             <p
               className="
                 text-xs
+                font-semibold
+                uppercase
+                tracking-wider
                 text-gray-500
               "
             >
-              Log ini akan muncul pada
-              riwayat aktivitas ticket.
+              Log ini akan muncul pada riwayat aktivitas ticket.
             </p>
+
           </div>
+
         </div>
 
-        {/* FOOTER */}
+        {/* =====================================================
+            FOOTER
+        ===================================================== */}
+
         <div
           className="
+            shrink-0
+            px-10
+            py-5
             border-t
-            px-6
-            py-4
+            border-gray-200
+            bg-white/90
+            backdrop-blur-sm
             flex
-            justify-end
-            gap-3
+            items-center
+            justify-between
           "
         >
-          <button
-            onClick={onClose}
-            disabled={loading}
-            className="
-              px-5
-              py-2.5
-              rounded-xl
-              border
-              text-gray-700
-              hover:bg-gray-50
-              transition
-              disabled:opacity-50
-            "
-          >
-            Batal
-          </button>
 
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="
-              px-5
-              py-2.5
-              rounded-xl
-              bg-indigo-600
-              text-white
-              hover:bg-indigo-700
-              transition
-              disabled:opacity-50
-              flex
-              items-center
-              gap-2
-            "
-          >
-            {loading && (
-              <Loader2
-                size={16}
-                className="animate-spin"
-              />
-            )}
+          <p className="
+            text-sm
+            text-gray-500
+          ">
+            Aktivitas akan tercatat di riwayat ticket
+          </p>
 
-            Simpan Log
-          </button>
+          <div className="
+            flex
+            items-center
+            gap-3
+          ">
+
+            <button
+              onClick={onClose}
+              disabled={loading}
+              className="
+                h-12
+                px-6
+                rounded-2xl
+                border
+                border-gray-200
+                bg-white
+                flex
+                items-center
+                gap-2
+                text-sm
+                font-semibold
+                text-[#111827]
+                shadow-sm
+                hover:bg-gray-50
+                transition-all
+                disabled:opacity-50
+              "
+            >
+              Batal
+            </button>
+
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="
+                h-12
+                px-8
+                rounded-2xl
+                bg-[#111827]
+                text-white
+                font-medium
+                hover:bg-black
+                transition-all
+                disabled:opacity-50
+                flex
+                items-center
+                gap-2
+              "
+            >
+
+              {
+                loading && (
+                  <Loader2
+                    size={16}
+                    className="animate-spin"
+                  />
+                )
+              }
+
+              Simpan Log
+
+            </button>
+
+          </div>
+
         </div>
+
       </div>
+
     </div>
   );
 }

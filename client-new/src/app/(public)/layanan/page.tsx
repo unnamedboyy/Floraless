@@ -142,101 +142,55 @@ export default function LayananPage() {
     <main className="bg-white overflow-hidden">
 
       {/* HERO */}
-      <section
-        className="
-          relative
-          h-[520px]
-          overflow-hidden
-        "
-      >
+      <section className="relative h-[520px] overflow-hidden">
 
-        <div
-          className="
-            absolute
-            inset-0
-            scale-110
-          "
-          style={{
-            transform:
-              `translateY(${offset * 0.25}px)`,
-          }}
-        >
-
-          <Image
-            src="/hero.jpg"
-            alt="Layanan Floraless"
-            fill
-            priority
-            className="object-cover"
-          />
-
-        </div>
-
-        <div
-          className="
-            absolute
-            inset-0
-            bg-black/60
-          "
+        <Image
+          src="/about.jpg"
+          alt="Layanan Floraless"
+          fill
+          priority
+          className="object-cover"
         />
 
-        <div
-          className="
-            relative
-            z-10
-            flex
-            h-full
-            items-center
-            justify-center
-            px-6
-            text-center
-          "
-        >
+        <div className="absolute inset-0 bg-black/55" />
+
+        <div className="relative z-10 flex h-full items-center justify-center px-6 text-center">
 
           <div>
 
-            <p
-              className="
-                text-sm
-                tracking-[0.35em]
-                text-[#D4B36A]
-              "
-            >
-              FLORALESS SERVICES
+            <p className="text-sm tracking-[0.3em] text-[#C9AE63]">
+              PACKAGE & SERVICES
             </p>
 
-            <h1
-              className="
-                mt-6
-                text-5xl
-                md:text-7xl
-                font-semibold
-                tracking-tight
-                text-white
-              "
-            >
-              Layanan
-              <br />
-              Dekorasi Premium
+            <h1 className="
+              mt-5
+              text-5xl
+              font-bold
+              text-white
+              md:text-7xl
+            ">
+              Layanan Kami
             </h1>
 
-            <p
-              className="
-                mx-auto
-                mt-8
-                max-w-3xl
-                text-lg
-                leading-relaxed
-                text-white/75
-              "
-            >
-              Temukan berbagai layanan dekorasi
-              eksklusif Floraless untuk wedding,
-              engagement,
-              birthday,
-              corporate event,
-              dan berbagai acara spesial lainnya.
-            </p>
+            <div className="
+              mt-6
+              flex
+              items-center
+              justify-center
+              gap-3
+              text-sm
+              text-white/80
+            ">
+
+              <Link href="/">
+                Home
+              </Link>
+
+              <span>/</span>
+
+              <span>Layanan</span>
+
+            </div>
 
           </div>
 

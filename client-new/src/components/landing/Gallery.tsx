@@ -1,10 +1,10 @@
 import Image from "next/image";
 
 const imgs = [
-  { src: "/gal-1.jpg", title: "Elegant Bouquet" },
-  { src: "/gal-2.jpg", title: "Wedding Arrangement" },
-  { src: "/gal-3.jpg", title: "Luxury Floral Design" },
-  { src: "/gal-4.jpg", title: "Special Moments" },
+  { src: "/gal-1.jpg"},
+  { src: "/gal-2.jpg"},
+  { src: "/gal-3.jpg"},
+  { src: "/gal-4.jpg"},
 ];
 
 function Item({ img }: any) {
@@ -13,7 +13,7 @@ function Item({ img }: any) {
       {/* Image */}
       <Image
         src={img.src}
-        alt={img.title}
+        alt=""
         fill
         className="object-cover transition duration-700 ease-out group-hover:scale-110"
       />

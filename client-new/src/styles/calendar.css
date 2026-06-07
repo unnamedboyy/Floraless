@@ -1,0 +1,162 @@
+/* =========================
+   ROOT
+========================= */
+
+.fc {
+  font-family: inherit;
+  --fc-border-color: #ececec;
+  --fc-page-bg-color: #ffffff;
+  --fc-neutral-bg-color: #fafafa;
+  --fc-today-bg-color: #fff8ea;
+}
+
+/* =========================
+   TOOLBAR
+========================= */
+
+.fc-toolbar {
+  margin-bottom: 24px !important;
+}
+
+.fc-toolbar-title {
+  font-size: 32px !important;
+  font-weight: 700 !important;
+  letter-spacing: -.03em;
+  color: #111827;
+}
+
+/* =========================
+   BUTTON
+========================= */
+
+.fc .fc-button {
+  background: #111827 !important;
+  border: none !important;
+  border-radius: 999px !important;
+  padding: 8px 18px !important;
+  font-weight: 500 !important;
+  text-transform: capitalize !important;
+  box-shadow: none !important;
+}
+
+.fc .fc-button:hover {
+  opacity: .9;
+}
+
+.fc .fc-button-active {
+  background: #000 !important;
+}
+
+/* =========================
+   BORDER
+========================= */
+
+.fc-theme-standard td,
+.fc-theme-standard th {
+  border-color: #efefef !important;
+}
+
+.fc-scrollgrid {
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid #efefef !important;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.fc-col-header-cell {
+  background: #fafafa;
+  padding: 14px 0;
+}
+
+.fc-col-header-cell-cushion {
+  color: #555;
+  font-weight: 600;
+  text-decoration: none !important;
+}
+
+/* =========================
+   DAY
+========================= */
+
+.fc-daygrid-day-frame {
+  min-height: 120px;
+  transition: .2s;
+}
+
+.fc-daygrid-day:hover {
+  background: #fafafa;
+}
+
+.fc-day-today {
+  background: #fff9ec !important;
+}
+
+/* =========================
+   NUMBER
+========================= */
+
+.fc-daygrid-day-number {
+  color: #222;
+  font-weight: 600;
+  padding: 8px !important;
+  text-decoration: none !important;
+}
+
+/* =========================
+   EVENT
+========================= */
+
+.fc-event {
+  border: none !important;
+  border-radius: 999px !important;
+  padding: 3px 10px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.fc-event:hover {
+  transform: scale(1.03);
+}
+
+/* =========================
+   MORE
+========================= */
+
+.fc-daygrid-more-link {
+  color: #111827;
+  font-weight: 600;
+}
+
+/* =========================
+   SCROLL
+========================= */
+
+.fc-scroller {
+  overflow: hidden !important;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width:768px){
+
+  .fc-toolbar{
+    flex-direction:column;
+    gap:12px;
+  }
+
+  .fc-toolbar-title{
+    font-size:22px !important;
+  }
+
+  .fc-daygrid-day-frame{
+    min-height:80px;
+  }
+
+}

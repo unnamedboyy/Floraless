@@ -199,60 +199,108 @@ export default function TicketPage() {
      UPDATE STATUS
   ===================================================== */
 
-  const handleStatus =
-    async (row: any) => {
+  const handleStatus = async (row: any) => {
 
-      let nextStatus = "";
+    let nextStatus = "";
 
-      if (
-        row.status ===
-        "approved"
-      ) {
+    if (row.status === "approved") {
+      nextStatus = "in_progress";
+    }
 
-        nextStatus =
-          "in_progress";
-      }
+    if (row.status === "in_progress") {
+      nextStatus = "done";
+    }
 
-      if (
-        row.status ===
-        "in_progress"
-      ) {
+    if (!nextStatus) return;
 
-        nextStatus =
-          "done";
-      }
+    toast((t) => (
 
-      if (!nextStatus)
-        return;
+      <div className="w-[300px]">
 
-      try {
+        {/* TITLE */}
+        <p className="font-semibold text-sm">
+          Update Status?
+        </p>
 
-        await updateStatusTicket(
+        {/* DESC */}
+        <p className="text-sm text-gray-500 mt-1">
+          Status akan diubah menjadi{" "}
+          <span className="font-medium">
+            {nextStatus.replace("_", " ")}
+          </span>
+        </p>
 
-          row._id,
+        {/* ACTION */}
+        <div className="flex justify-end gap-2 mt-4">
 
-          nextStatus
-        );
+          <button
+            onClick={() =>
+              toast.dismiss(t.id)
+            }
+            className="
+              px-3
+              py-2
+              rounded-xl
+              border
+              text-sm
+              hover:bg-gray-50
+            "
+          >
+            Batal
+          </button>
 
-        toast.success(
-          "Status ticket berhasil diperbarui"
-        );
+          <button
+            onClick={async () => {
 
-        reload();
+              toast.dismiss(t.id);
 
-      } catch (err: any) {
+              try {
 
-        console.error(err);
+                await updateStatusTicket(
+                  row._id,
+                  nextStatus
+                );
 
-        toast.error(
+                toast.success(
+                  "Status ticket berhasil diperbarui"
+                );
 
-          err?.response?.data?.message ||
+                reload();
 
-          "Gagal update status"
-        );
-      }
-    };
+              } catch (err: any) {
 
+                console.error(err);
+
+                toast.error(
+                  err?.response?.data?.message ||
+                  "Gagal update status"
+                );
+              }
+
+            }}
+            className="
+              px-3
+              py-2
+              rounded-xl
+              bg-black
+              text-white
+              text-sm
+              hover:bg-gray-800
+            "
+          >
+            Update
+          </button>
+
+        </div>
+
+      </div>
+
+    ), {
+      duration: 10000,
+    });
+
+  };
+  
   /* =====================================================
      ACTIONS
   ===================================================== */

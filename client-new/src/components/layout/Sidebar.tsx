@@ -11,6 +11,58 @@ export default function Sidebar({ menu }: { menu: any[] }) {
   const { logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
 
+  const groups = [
+    {
+      title: "MAIN MENU",
+      items: [
+        menu.find((m) => m.label === "Dashboard"),
+      ].filter(Boolean),
+    },
+
+    {
+      title: "MASTER",
+      items: menu.filter((m) =>
+        [
+          "Pegawai",
+          "Pelanggan",
+          "Layanan",
+          "Jadwal",
+        ].includes(m.label)
+      ),
+    },
+
+    {
+      title: "TRANSACTION",
+      items: menu.filter((m) =>
+        [
+          "Ticket",
+          "Payment",
+          "Cashback",
+          "Voucher",
+        ].includes(m.label)
+      ),
+    },
+
+    {
+      title: "CONTENT",
+      items: menu.filter((m) =>
+        [
+          "Review",
+          "Portfolio",
+        ].includes(m.label)
+      ),
+    },
+
+    {
+      title: "REPORT",
+      items: menu.filter((m) =>
+        [
+          "Laporan",
+        ].includes(m.label)
+      ),
+    },
+  ];
+
   return (
     <div className="h-screen bg-[#f5f7fb] p-4">
       <div
@@ -39,40 +91,55 @@ export default function Sidebar({ menu }: { menu: any[] }) {
         </div>
 
         {/* MENU */}
-        <div className="flex-1 px-3 space-y-2">
-          {menu.map((item) => {
-            const active = pathname === item.path;
+        <div className="flex-1 overflow-y-auto px-3 py-2">
+          {groups.map((group) => (
+            <div key={group.title} className="mb-6">
 
-            return (
-              <Link
-                key={item.path}
-                href={item.path}
-                className={`group flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition
-                  
-                  ${
-                    active
-                      ? "bg-black text-white shadow-sm"
-                      : "text-gray-500 hover:bg-gray-100"
-                  }
-                `}
-              >
-                <span className="text-lg">{item.icon}</span>
+              {!collapsed && (
+                <>
+                  <p className="px-3 mb-2 text-[11px] uppercase tracking-[0.18em] font-semibold text-gray-400">
+                    {group.title}
+                  </p>
 
-                {!collapsed && (
-                  <span className="font-medium">
-                    {item.label}
-                  </span>
-                )}
+                  <div className="border-t border-gray-100 mb-2"></div>
+                </>
+              )}
 
-                {/* TOOLTIP */}
-                {collapsed && (
-                  <span className="absolute left-[80px] bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100">
-                    {item.label}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
+              <div className="space-y-2">
+                {group.items.map((item) => {
+                  const active = pathname === item.path;
+
+                  return (
+                    <Link
+                      key={item.path}
+                      href={item.path}
+                      className={`
+                        group flex items-center gap-3
+                        px-4 py-3 rounded-xl
+                        transition
+
+                        ${
+                          active
+                            ? "bg-black text-white shadow"
+                            : "text-gray-500 hover:bg-gray-100"
+                        }
+                      `}
+                    >
+                      <span className="text-lg">
+                        {item.icon}
+                      </span>
+
+                      {!collapsed && (
+                        <span className="font-medium">
+                          {item.label}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* FOOTER */}

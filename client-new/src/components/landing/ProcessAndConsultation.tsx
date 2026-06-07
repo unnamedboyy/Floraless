@@ -91,7 +91,7 @@ export default function ProcessAndConsultation() {
                   className={[
                     "w-full text-left rounded-2xl px-6 py-8 transition-all shadow-md",
                     isActive
-                      ? "bg-[#C9AE63] text-black"
+                      ? "bg-[#C9AE63] text-white"
                       : "bg-neutral-200 text-black hover:bg-neutral-300",
                   ].join(" ")}
                 >
