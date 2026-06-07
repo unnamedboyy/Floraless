@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
-import Cookies from "../../../node_modules/@types/js-cookie";
+import Cookies from "js-cookie";
 
 import { login } from "@/services/auth.service";
 
