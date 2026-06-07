@@ -25,8 +25,7 @@ export const uploadImage =
          BASE URL
       ========================= */
 
-      const baseUrl =
-            "http://localhost:5000";
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL;
         //  "http://127.0.0.1:5000";
         // `${req.protocol}://` +
         // `${req.get("host")}`;
