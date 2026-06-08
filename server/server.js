@@ -75,25 +75,17 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/portfolio", portfolioRoutes);
 app.use("/api/portfolio-images", fotoPortfolioRoutes);
 app.use("/api/detail", detailRoutes);
-
 app.use("/api/jadwal", jadwalRoutes);
-
 app.use("/api/dashboard", dashboardRoutes);
-
 app.use("/api/pegawai", pegawaiRouter);
-
 app.use("/api/pelanggan", pelangganRouter);
-
 app.use("/api/reports", reportRoutes);
-
 app.use("/api/upload", uploadRoutes);
 
 /* ================= ERROR HANDLER ================= */
-
 app.use(errorHandler);
 
 /* ================= START SERVER ================= */
-
 const startServer = async () => {
   try {
     await connectDB();

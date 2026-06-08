@@ -5,15 +5,10 @@ import axios from "axios";
 ===================================================== */
 
 const api = axios.create({
-
   baseURL: process.env.NEXT_PUBLIC_API_URL,
-
   timeout: 10000,
-
   headers: {
-
-    "Content-Type":
-      "application/json",
+    "Content-Type": "application/json",
   },
 });
 
@@ -22,8 +17,7 @@ const api = axios.create({
 ===================================================== */
 
 console.log(
-  "AXIOS BASE URL:",
-  api.defaults.baseURL
+  "AXIOS BASE URL:", api.defaults.baseURL
 );
 
 /* =====================================================
@@ -35,8 +29,7 @@ api.interceptors.request.use(
   (config) => {
 
     console.log(
-      "REQUEST URL:",
-      `${config.baseURL}${config.url}`
+      "REQUEST URL:", `${config.baseURL}${config.url}`
     );
 
     if (
