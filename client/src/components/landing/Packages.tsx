@@ -21,6 +21,9 @@ export default function Packages() {
   const [loading, setLoading] =
     useState(true);
 
+  const IMAGE_URL =
+    process.env.NEXT_PUBLIC_IMAGE_URL || "";
+
   useEffect(() => {
 
     const loadLayanan = async () => {
@@ -159,6 +162,16 @@ export default function Packages() {
               const points =
                 layanan.deskripsi?.split("\n") || [];
 
+              const imageUrl =
+                layanan.thumbnail
+                  ? layanan.thumbnail.startsWith("http")
+                    ? layanan.thumbnail
+                    : `${IMAGE_URL}${layanan.thumbnail}`
+                  : "/package-1.jpg";
+
+              console.log("thumbnail:", layanan.thumbnail);
+              console.log("imageUrl:", imageUrl);
+
               return (
 
                 <div
@@ -187,25 +200,22 @@ export default function Packages() {
                     "
                   >
 
-                    <Image
-                      src={
-                        layanan.thumbnail ||
-                        "/package-1.jpg"
-                      }
-                      alt={
-                        layanan.nama ||
-                        layanan.nama_layanan ||
-                        "package"
-                      }
-                      fill
-                      unoptimized
-                      className="
-                        object-cover
-                        transition-transform
-                        duration-700
-                        group-hover:scale-110
-                      "
-                    />
+                  <Image
+                    src={imageUrl}
+                    alt={
+                      layanan.nama ||
+                      layanan.nama_layanan ||
+                      "package"
+                    }
+                    fill
+                    unoptimized
+                    className="
+                      object-cover
+                      transition-transform
+                      duration-700
+                      group-hover:scale-110
+                    "
+                  />
 
                     {/* OVERLAY */}
                     <div
