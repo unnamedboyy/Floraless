@@ -251,7 +251,7 @@ export default function AdminPortfolioPage() {
 
             const coverImage =
               item.coverImage?.url
-                ? `${process.env.NEXT_PUBLIC_API_URL}${item.coverImage.url}`
+                ? `${process.env.NEXT_PUBLIC_IMAGE_URL}${item.coverImage.url}`
                 : "/placeholder.jpg";
 
             return (
@@ -317,9 +317,9 @@ export default function AdminPortfolioPage() {
 
                   <div className="mt-7 flex items-center justify-between border-t border-neutral-100 pt-5">
 
-                    <div className="text-sm text-neutral-500">
-                      {item.images?.length || 0} Images
-                    </div>
+                  <div className="text-sm text-neutral-500">
+                    {item.photos?.length || 0} Images
+                  </div>
 
                     <div className="flex gap-3">
 
