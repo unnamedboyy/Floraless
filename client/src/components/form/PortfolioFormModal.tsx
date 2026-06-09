@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+// import Image from "next/image";
 
 import {
   useEffect,
@@ -159,6 +159,11 @@ function SortableImageCard({
     transition,
   };
 
+  const imageUrl =
+    getImageUrl(img)
+      ? `${process.env.NEXT_PUBLIC_IMAGE_URL}${getImageUrl(img)}`
+      : "/placeholder.jpg";
+
   return (
 
     <div
@@ -188,20 +193,14 @@ function SortableImageCard({
 
       "
     >
-
-      <Image
-
-        src={`${process.env.NEXT_PUBLIC_API_URL}${getImageUrl(img)}`}
-
-        alt=""
-
-        fill
-
-        unoptimized
-
-        className="
-          object-cover
-        "
+      <img
+          src={imageUrl}
+          alt=""
+          className="
+              h-full
+              w-full
+              object-cover
+          "
       />
 
       {/* COVER */}
@@ -456,18 +455,15 @@ function NewImageCard({
 
     ">
 
-      <Image
-
+    <img
         src={img}
-
         alt="preview"
-
-        fill
-
         className="
-          object-cover
+            h-full
+            w-full
+            object-cover
         "
-      />
+    />
 
       <div className="
 
