@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import path from "path";
+import fs from "fs";
 import http from "http";
 
 import connectDB from "./config/db.js";
@@ -53,13 +54,17 @@ app.use(
 
 app.use(express.json());
 
+if (!fs.existsSync("/data/uploads")) {
+  fs.mkdirSync("/data/uploads", {
+    recursive: true,
+  });
+}
+
 /* ================= STATIC ================= */
 
 app.use(
   "/uploads",
-  express.static(
-    path.join(process.cwd(), "uploads")
-  )
+  express.static("/data/uploads")
 );
 
 /* ================= API ROUTES ================= */
@@ -102,7 +107,5 @@ const startServer = async () => {
     console.error("SERVER ERROR:", err);
   }
 };
-
-startServer();
 
 startServer();

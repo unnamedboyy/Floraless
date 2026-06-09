@@ -326,14 +326,6 @@ export default function PortfolioDetailPage({
           max-w-5xl
         ">
 
-          <p className="
-            text-lg
-            leading-[2.1]
-            text-neutral-600
-          ">
-            {portfolio.excerpt}
-          </p>
-
           <div className="
             mt-10
             flex
@@ -386,66 +378,7 @@ export default function PortfolioDetailPage({
         </div>
 
       </section>
-
-      {/* ================= REVIEW ================= */}
-
-      {
-        portfolio.review && (
-
-          <section className="
-            px-6
-            pb-24
-          ">
-
-            <div className="
-              mx-auto
-              max-w-4xl
-            ">
-
-              <div className="
-                rounded-[32px]
-                bg-[#faf7f2]
-                p-10
-              ">
-
-                <p className="
-                  text-sm
-                  tracking-[0.3em]
-                  text-[#D4B36A]
-                ">
-                  CUSTOMER REVIEW
-                </p>
-
-                {
-                  portfolio.rating && (
-
-                    <div className="
-                      mt-5
-                      text-3xl
-                    ">
-                      {"⭐".repeat(
-                        portfolio.rating
-                      )}
-                    </div>
-                  )
-                }
-
-                <p className="
-                  mt-8
-                  text-2xl
-                  leading-[2]
-                  text-neutral-700
-                ">
-                  “{portfolio.review}”
-                </p>
-
-              </div>
-
-            </div>
-
-          </section>
-        )
-      }
+z
 
       {/* ================= GALLERY ================= */}
 
@@ -517,19 +450,37 @@ export default function PortfolioDetailPage({
                     "
                   >
 
-                    <Image
-                      src={`${process.env.NEXT_PUBLIC_API_URL}${photo.url}`}
-                      alt={portfolio.title}
-                      fill
-                      unoptimized
-                      className="
-                        object-cover
-                        transition
-                        duration-700
-                        group-hover:scale-110
-                      "
-                    />
-
+                  <div
+                    className="
+                      relative
+                      h-full
+                      w-full
+                      bg-gray-300
+                    "
+                  >
+                    {photo?.url ? (
+                      <Image
+                        src={`${process.env.NEXT_PUBLIC_API_URL}${photo.url}`}
+                        alt={portfolio.title}
+                        fill
+                        unoptimized
+                        className="
+                          object-cover
+                          transition
+                          duration-700
+                          group-hover:scale-110
+                        "
+                      />
+                    ) : (
+                      <div
+                        className="
+                          absolute
+                          inset-0
+                          bg-gray-300
+                        "
+                      />
+                    )}
+                  </div>
                   </button>
                 )
               )
@@ -609,14 +560,17 @@ export default function PortfolioDetailPage({
                           overflow-hidden
                         ">
 
+                        <div
+                          className="
+                            relative
+                            h-full
+                            w-full
+                            bg-gray-300
+                          "
+                        >
+                        {item.coverImage?.url ? (
                           <Image
-                            src={
-                              item.coverImage?.url
-
-                                ? `${process.env.NEXT_PUBLIC_API_URL}${item.coverImage.url}`
-
-                                : "/placeholder.jpg"
-                            }
+                            src={`${process.env.NEXT_PUBLIC_API_URL}${item.coverImage.url}`}
                             alt={item.title}
                             fill
                             unoptimized
@@ -627,7 +581,17 @@ export default function PortfolioDetailPage({
                               group-hover:scale-110
                             "
                           />
-
+                        ) : (
+                          <div
+                            className="
+                              absolute
+                              inset-0
+                              bg-gray-300
+                            "
+                          />
+                        )}
+                      </div>
+                      
                         </div>
 
                         <div className="
