@@ -243,14 +243,11 @@ export default function PortfolioDetailPage({
           }}
         >
 
-        <Image
-          src={imageUrl}
-          alt={portfolio.title}
-          fill
-          priority
-          unoptimized
-          className="object-cover"
-        />
+          <img
+            src={imageUrl}
+            alt={portfolio.title}
+            className="w-full h-full object-cover"
+          />
         </div>
 
         <div className="
