@@ -156,6 +156,7 @@ export default function Packages() {
 
             {layananList.map((layanan) => {
 
+              console.log("LAYANAN =", layanan);
               const points =
                 layanan.deskripsi?.split("\n") || [];
 
@@ -197,11 +198,7 @@ export default function Packages() {
                     
                   <img
                     src={imageUrl}
-                    alt={
-                      layanan.nama ||
-                      layanan.nama_layanan ||
-                      "package"
-                    }
+                    alt={ layanan.nama || "package"}
                     className="
                       h-full
                       w-full
