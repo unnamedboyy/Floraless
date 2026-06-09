@@ -9,3 +9,6 @@ npm run dev
 # frontend
 cd client
 npm run dev
+
+#cek gambar
+find /data/uploads -type f
