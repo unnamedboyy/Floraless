@@ -254,7 +254,7 @@ export default function PortfolioDetailPage({
             src={
               coverImage?.url
 
-                ? `${process.env.NEXT_PUBLIC_API_URL}${coverImage.url}`
+                ? `${process.env.NEXT_PUBLIC_IMAGE_URL}${coverImage.url}`
 
                 : "/placeholder.jpg"
             }
@@ -460,7 +460,7 @@ z
                   >
                     {photo?.url ? (
                       <Image
-                        src={`${process.env.NEXT_PUBLIC_API_URL}${photo.url}`}
+                        src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${photo.url}`}
                         alt={portfolio.title}
                         fill
                         unoptimized
@@ -570,7 +570,7 @@ z
                         >
                         {item.coverImage?.url ? (
                           <Image
-                            src={`${process.env.NEXT_PUBLIC_API_URL}${item.coverImage.url}`}
+                            src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${item.coverImage.url}`}
                             alt={item.title}
                             fill
                             unoptimized
@@ -669,7 +669,7 @@ z
         slides={
           photos.map((img) => ({
             src:
-              `${process.env.NEXT_PUBLIC_API_URL}${img.url}`,
+              `${process.env.NEXT_PUBLIC_IMAGE_URL}${img.url}`,
           }))
         }
         plugins={[

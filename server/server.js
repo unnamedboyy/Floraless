@@ -62,10 +62,7 @@ if (!fs.existsSync("/data/uploads")) {
 
 /* ================= STATIC ================= */
 
-app.use(
-  "/uploads",
-  express.static("/data/uploads")
-);
+app.use("/uploads",express.static("/data/uploads"));
 
 /* ================= API ROUTES ================= */
 
