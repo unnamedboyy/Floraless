@@ -21,9 +21,6 @@ export default function Packages() {
   const [loading, setLoading] =
     useState(true);
 
-  const IMAGE_URL =
-    process.env.NEXT_PUBLIC_IMAGE_URL || "";
-
   useEffect(() => {
 
     const loadLayanan = async () => {
@@ -164,10 +161,8 @@ export default function Packages() {
 
               const imageUrl =
                 layanan.thumbnail
-                  ? layanan.thumbnail.startsWith("http")
-                    ? layanan.thumbnail
-                    : `${IMAGE_URL}${layanan.thumbnail}`
-                  : "/package-1.jpg";
+                  ? `${process.env.NEXT_PUBLIC_IMAGE_URL}${layanan.thumbnail}`
+                  : "/placeholder.jpg";
 
               console.log("thumbnail:", layanan.thumbnail);
               console.log("imageUrl:", imageUrl);
@@ -199,22 +194,23 @@ export default function Packages() {
                       overflow-hidden
                     "
                   >
-                    <img
-                      src={imageUrl}
-                      alt={
-                        layanan.nama ||
-                        layanan.nama_layanan ||
-                        "package"
-                      }
-                      className="
-                        h-full
-                        w-full
-                        object-cover
-                        transition-transform
-                        duration-700
-                        group-hover:scale-110
-                      "
-                    />
+                    
+                  <img
+                    src={imageUrl}
+                    alt={
+                      layanan.nama ||
+                      layanan.nama_layanan ||
+                      "package"
+                    }
+                    className="
+                      h-full
+                      w-full
+                      object-cover
+                      transition-transform
+                      duration-700
+                      group-hover:scale-110
+                    "
+                  />
 
                     {/* OVERLAY */}
                     <div
@@ -229,7 +225,119 @@ export default function Packages() {
                     />
 
                     {/* CONTENT */}
-                    ...
+                    <div
+                      className="
+                        absolute
+                        inset-0
+                        flex
+                        flex-col
+                        justify-end
+                        p-7
+                        text-white
+                      "
+                    >
+
+                      <h3
+                        className="
+                          text-2xl
+                          font-bold
+                        "
+                      >
+                        {layanan.nama ||
+                          layanan.nama_layanan}
+                      </h3>
+
+                      {points[0] && (
+
+                        <p
+                          className="
+                            mt-3
+                            text-sm
+                            leading-relaxed
+                            text-white/80
+                          "
+                        >
+                          {points[0]}
+                        </p>
+
+                      )}
+
+                      {/* TAGS */}
+                      <div
+                        className="
+                          mt-5
+                          flex
+                          flex-wrap
+                          gap-2
+                        "
+                      >
+
+                        {points
+                          .slice(1, 5)
+                          .map((p, i) => (
+
+                          <span
+                            key={i}
+                            className="
+                              rounded-full
+                              border
+                              border-white/10
+                              bg-white/10
+                              px-3
+                              py-1
+                              text-xs
+                              backdrop-blur
+                            "
+                          >
+                            {p}
+                          </span>
+
+                        ))}
+
+                      </div>
+
+                      {/* PRICE */}
+                      {layanan.harga && (
+
+                        <p
+                          className="
+                            mt-6
+                            text-3xl
+                            font-bold
+                            text-[#C9AE63]
+                          "
+                        >
+                          Rp{" "}
+                          {layanan.harga.toLocaleString(
+                            "id-ID"
+                          )}
+                        </p>
+
+                      )}
+
+                      {/* BUTTON */}
+                      <a
+                        href="/register"
+                        className="
+                          mt-7
+                          inline-flex
+                          items-center
+                          justify-center
+                          rounded-full
+                          bg-white
+                          px-6
+                          py-3
+                          text-sm
+                          font-semibold
+                          text-black
+                          transition
+                          hover:bg-neutral-200
+                        "
+                      >
+                        Booking Sekarang
+                      </a>
+
+                    </div>
                   </div>
 
                 </div>
