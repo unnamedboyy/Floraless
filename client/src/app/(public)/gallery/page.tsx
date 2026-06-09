@@ -322,24 +322,32 @@ export default function GalleryPage() {
                             overflow-hidden
                           ">
 
-                            <Image
-                              src={
-                                item.coverImage?.url
+                            {item.coverImage?.url ? (
 
-                                  ? `${process.env.NEXT_PUBLIC_IMAGE_URL}${item.coverImage.url}`
+                              <img
+                                src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${item.coverImage.url}`}
+                                alt={item.title}
+                                className="
+                                  h-full
+                                  w-full
+                                  object-cover
+                                  transition
+                                  duration-700
+                                  group-hover:scale-110
+                                "
+                              />
 
-                                  : "/placeholder.jpg"
-                              }
-                              alt={item.title}
-                              fill
-                              unoptimized
-                              className="
-                                object-cover
-                                transition
-                                duration-700
-                                group-hover:scale-110
-                              "
-                            />
+                            ) : (
+
+                              <div
+                                className="
+                                  h-full
+                                  w-full
+                                  bg-gray-300
+                                "
+                              />
+
+                            )}
 
                             {/* OVERLAY */}
 
