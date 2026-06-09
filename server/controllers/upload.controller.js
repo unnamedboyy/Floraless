@@ -43,7 +43,7 @@ export const uploadImage = async (req, res, next) => {
        FILE URL
     ========================= */
 
-    const fileUrl = `${baseUrl}/uploads/${folder}/${req.file.filename}`;
+    const fileUrl = `/uploads/${folder}/${req.file.filename}`;
 
     /* =========================
        RESPONSE
