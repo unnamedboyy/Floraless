@@ -97,7 +97,11 @@ export default function LayananFormModal({
         isFeatured: initialData.isFeatured || false,
       });
 
-      setPreview(initialData.thumbnail || "");
+      setPreview(
+        initialData.thumbnail
+          ? `${process.env.NEXT_PUBLIC_IMAGE_URL}${initialData.thumbnail}`
+          : ""
+      );
     } else {
       setForm({
         nama: "",
@@ -241,6 +245,17 @@ export default function LayananFormModal({
   /* =====================================================
      UI
   ===================================================== */
+
+  const previewUrl =
+    preview
+      ? (
+          preview.startsWith("blob:")
+            ? preview
+            : preview.startsWith("http")
+              ? preview
+              : `${process.env.NEXT_PUBLIC_IMAGE_URL}${preview}`
+        )
+      : "";
 
   return (
 
@@ -416,7 +431,7 @@ export default function LayananFormModal({
 
                     <img
 
-                      src={preview}
+                      src={previewUrl}
 
                       alt="preview"
 
