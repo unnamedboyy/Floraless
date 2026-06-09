@@ -44,9 +44,9 @@ export const uploadImage =
          FILE URL
       ========================= */
 
-      const fileUrl =
+      // const fileUrl =
 
-        `${baseUrl}/uploads/${folder}/${req.file.filename}`;
+      //   `${baseUrl}/uploads/${folder}/${req.file.filename}`;
 
       /* =========================
          RESPONSE
