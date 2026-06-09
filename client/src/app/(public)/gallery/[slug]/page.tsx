@@ -26,15 +26,10 @@ import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
 
 type RelatedItem = {
-
   _id: string;
-
   title: string;
-
   slug: string;
-
   excerpt: string;
-
   layananIds?: {
     _id: string;
     nama: string;
@@ -48,23 +43,14 @@ type RelatedItem = {
 type PortfolioData = {
 
   portfolio: {
-
     _id: string;
-
     title: string;
-
     slug: string;
-
     excerpt: string;
-
     content: string;
-
     createdAt: string;
-
     review?: string;
-
     rating?: number;
-
     layananIds?: {
       _id: string;
       nama: string;
@@ -72,22 +58,20 @@ type PortfolioData = {
   };
 
   photos: {
-
     _id: string;
-
     url: string;
-
     caption?: string;
-
     isCover?: boolean;
 
   }[];
 
   coverImage?: {
-
     url: string;
   };
+  
 };
+
+
 
 export default function PortfolioDetailPage({
   params,
@@ -223,6 +207,13 @@ export default function PortfolioDetailPage({
     coverImage,
   } = data;
 
+  const imageUrl =
+    coverImage?.url
+      ? `${process.env.NEXT_PUBLIC_IMAGE_URL}${coverImage.url}`
+      : "/placeholder.jpg";
+
+  console.log("IMAGE URL =", imageUrl);
+
   return (
 
     <div className="
@@ -250,23 +241,14 @@ export default function PortfolioDetailPage({
           }}
         >
 
-          <Image
-            src={
-              coverImage?.url
-
-                ? `${process.env.NEXT_PUBLIC_IMAGE_URL}${coverImage.url}`
-
-                : "/placeholder.jpg"
-            }
-            alt={portfolio.title}
-            fill
-            priority
-            unoptimized
-            className="
-              object-cover
-            "
-          />
-
+        <Image
+          src={imageUrl}
+          alt={portfolio.title}
+          fill
+          priority
+          unoptimized
+          className="object-cover"
+        />
         </div>
 
         <div className="
@@ -378,7 +360,7 @@ export default function PortfolioDetailPage({
         </div>
 
       </section>
-z
+
 
       {/* ================= GALLERY ================= */}
 
