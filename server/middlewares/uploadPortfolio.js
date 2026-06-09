@@ -3,176 +3,147 @@ import path from "path";
 import fs from "fs";
 import sharp from "sharp";
 
-const uploadPath =
-  "uploads/portfolio";
+/* =====================================================
+   UPLOAD PATH (RAILWAY VOLUME)
+===================================================== */
 
-if (
-  !fs.existsSync(uploadPath)
-) {
+const uploadPath = path.join(
+  "/data",
+  "uploads",
+  "portfolio"
+);
 
+/* =====================================================
+   CREATE DIRECTORY
+===================================================== */
+
+if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, {
     recursive: true,
   });
 }
 
-/* ================= MEMORY STORAGE ================= */
+/* =====================================================
+   MEMORY STORAGE
+===================================================== */
 
-const storage =
-  multer.memoryStorage();
+const storage = multer.memoryStorage();
 
-/* ================= FILTER ================= */
+/* =====================================================
+   FILTER
+===================================================== */
 
-const fileFilter =
-  (req, file, cb) => {
+const fileFilter = (req, file, cb) => {
+  const allowed = [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/jpg",
+  ];
 
-    const allowed = [
+  if (allowed.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(
+      new Error("File harus berupa gambar"),
+      false
+    );
+  }
+};
 
-      "image/jpeg",
-      "image/png",
-      "image/webp",
+/* =====================================================
+   MULTER
+===================================================== */
 
-    ];
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 20 * 1024 * 1024,
+  },
+});
 
-    if (
-      allowed.includes(
-        file.mimetype
-      )
-    ) {
+/* =====================================================
+   PROCESS IMAGE
+===================================================== */
 
-      cb(null, true);
-
-    } else {
-
-      cb(
-        new Error(
-          "File harus berupa gambar"
-        )
-      );
+export const processPortfolioImages = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    if (!req.files) {
+      return next();
     }
-  };
 
-/* ================= MULTER ================= */
+    console.log("UPLOAD PATH:", uploadPath);
 
-const upload =
-  multer({
+    /* ================= THUMBNAIL ================= */
 
-    storage,
+    if (req.files.thumbnail) {
+      const file = req.files.thumbnail[0];
 
-    fileFilter,
+      const filename =
+        `${Date.now()}-${Math.round(
+          Math.random() * 1e9
+        )}.webp`;
 
-    limits: {
+      const outputPath = path.join(
+        uploadPath,
+        filename
+      );
 
-      fileSize:
-        20 * 1024 * 1024,
+      await sharp(file.buffer)
+        .resize({
+          width: 1400,
+          withoutEnlargement: true,
+        })
+        .webp({
+          quality: 82,
+        })
+        .toFile(outputPath);
 
-    },
+      file.filename = filename;
+    }
 
-  });
+    /* ================= GALLERY ================= */
 
-/* ================= PROCESS IMAGE ================= */
-
-export const processPortfolioImages =
-  async (
-    req,
-    res,
-    next
-  ) => {
-
-    try {
-
-      if (!req.files) {
-
-        return next();
-      }
-
-      /* ================= THUMBNAIL ================= */
-
-      if (
-        req.files.thumbnail
-      ) {
-
-        const file =
-          req.files.thumbnail[0];
-
+    if (req.files.gallery) {
+      for (const file of req.files.gallery) {
         const filename =
           `${Date.now()}-${Math.round(
             Math.random() * 1e9
           )}.webp`;
 
-        const outputPath =
-          path.join(
-            uploadPath,
-            filename
-          );
+        const outputPath = path.join(
+          uploadPath,
+          filename
+        );
 
-        await sharp(
-          file.buffer
-        )
-
-        .resize({
-          width: 1400,
-          withoutEnlargement: true,
-        })
-
-        .webp({
-          quality: 82,
-        })
-
-        .toFile(outputPath);
-
-        file.filename =
-          filename;
-      }
-
-      /* ================= GALLERY ================= */
-
-      if (
-        req.files.gallery
-      ) {
-
-        for (
-          const file of req.files.gallery
-        ) {
-
-          const filename =
-            `${Date.now()}-${Math.round(
-              Math.random() * 1e9
-            )}.webp`;
-
-          const outputPath =
-            path.join(
-              uploadPath,
-              filename
-            );
-
-          await sharp(
-            file.buffer
-          )
-
+        await sharp(file.buffer)
           .resize({
             width: 1800,
             withoutEnlargement: true,
           })
-
           .webp({
             quality: 85,
           })
-
           .toFile(outputPath);
 
-          file.filename =
-            filename;
-        }
+        file.filename = filename;
       }
-
-      next();
-
-    } catch (err) {
-
-      next(err);
     }
-  };
 
-/* ================= EXPORT ================= */
+    next();
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+};
+
+/* =====================================================
+   EXPORT
+===================================================== */
 
 export default upload;
