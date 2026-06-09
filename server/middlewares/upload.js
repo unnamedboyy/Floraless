@@ -6,126 +6,87 @@ import fs from "fs";
    STORAGE
 ===================================================== */
 
-const storage =
-  multer.diskStorage({
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    /* =========================
+       GET FOLDER
+    ========================= */
 
-    destination:
-      (req, file, cb) => {
+    const folder = req.params.folder || "misc";
 
-        /* =========================
-           GET FOLDER
-        ========================= */
+    /* =========================
+       CREATE PATH (RAILWAY VOLUME)
+    ========================= */
 
-        const folder =
+    const uploadPath = path.join(
+      "/data",
+      "uploads",
+      folder
+    );
 
-          req.params.folder ||
+    /* =========================
+       CREATE DIRECTORY
+    ========================= */
 
-          "misc";
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, {
+        recursive: true,
+      });
+    }
 
-        /* =========================
-           CREATE PATH
-        ========================= */
+    console.log(
+      "UPLOAD PATH:",
+      uploadPath
+    );
 
-        const uploadPath =
+    cb(null, uploadPath);
+  },
 
-          `uploads/${folder}`;
+  filename: (req, file, cb) => {
+    const uniqueName =
+      Date.now() +
+      "-" +
+      Math.round(Math.random() * 1e9) +
+      path.extname(file.originalname);
 
-        /* =========================
-           CREATE DIRECTORY
-        ========================= */
-
-        if (
-          !fs.existsSync(uploadPath)
-        ) {
-
-          fs.mkdirSync(
-            uploadPath,
-            {
-              recursive: true,
-            }
-          );
-        }
-
-        cb(
-          null,
-          uploadPath
-        );
-      },
-
-    filename:
-      (req, file, cb) => {
-
-        const uniqueName =
-
-          Date.now() +
-
-          "-" +
-
-          Math.round(
-            Math.random() * 1e9
-          ) +
-
-          path.extname(
-            file.originalname
-          );
-
-        cb(
-          null,
-          uniqueName
-        );
-      },
-  });
+    cb(null, uniqueName);
+  },
+});
 
 /* =====================================================
    FILTER
 ===================================================== */
 
-const fileFilter =
-  (req, file, cb) => {
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/jpg",
+  ];
 
-    const allowedTypes = [
-
-      "image/jpeg",
-      "image/png",
-      "image/webp",
-      "image/jpg",
-    ];
-
-    if (
-      allowedTypes.includes(
-        file.mimetype
-      )
-    ) {
-
-      cb(null, true);
-
-    } else {
-
-      cb(
-        new Error(
-          "Format file tidak didukung"
-        ),
-        false
-      );
-    }
-  };
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(
+      new Error(
+        "Format file tidak didukung"
+      ),
+      false
+    );
+  }
+};
 
 /* =====================================================
    MULTER
 ===================================================== */
 
-const upload =
-  multer({
-
-    storage,
-
-    fileFilter,
-
-    limits: {
-
-      fileSize:
-        20 * 1024 * 1024,
-    },
-  });
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 20 * 1024 * 1024, // 20 MB
+  },
+});
 
 export default upload;
