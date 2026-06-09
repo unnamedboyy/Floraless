@@ -326,7 +326,7 @@ export default function GalleryPage() {
                               src={
                                 item.coverImage?.url
 
-                                  ? `${process.env.NEXT_PUBLIC_API_URL}${item.coverImage.url}`
+                                  ? `${process.env.NEXT_PUBLIC_IMAGE_URL}${item.coverImage.url}`
 
                                   : "/placeholder.jpg"
                               }
