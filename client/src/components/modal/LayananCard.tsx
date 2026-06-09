@@ -8,26 +8,20 @@ export default function LayananCard({
 }: {
   layanan: any;
 }) {
-  // Ambil base URL backend dari env
-  const API_URL =
-    process.env.NEXT_PUBLIC_API_URL || "";
+  const IMAGE_URL =
+    process.env.NEXT_PUBLIC_IMAGE_URL || "";
 
-  // Generate image URL yang aman
-  let imageUrl = "/service-default.jpg";
+  let imageUrl: string | null = null;
 
   if (
     layanan?.thumbnail &&
     typeof layanan.thumbnail === "string" &&
     layanan.thumbnail.trim() !== ""
   ) {
-    if (
-      layanan.thumbnail.startsWith("http://") ||
-      layanan.thumbnail.startsWith("https://")
-    ) {
-      imageUrl = layanan.thumbnail;
-    } else {
-      imageUrl = `${API_URL}${layanan.thumbnail}`;
-    }
+    imageUrl =
+      layanan.thumbnail.startsWith("http")
+        ? layanan.thumbnail
+        : `${IMAGE_URL}${layanan.thumbnail}`;
   }
 
   return (
@@ -56,20 +50,33 @@ export default function LayananCard({
           overflow-hidden
         "
       >
-        <Image
-          src={imageUrl}
-          alt={layanan?.nama || "Layanan"}
-          fill
-          unoptimized
-          sizes="(max-width:768px) 100vw, 33vw"
-          className="
-            object-cover
-            object-center
-            transition-all
-            duration-700
-            group-hover:scale-105
-          "
-        />
+        {imageUrl ? (
+
+          <img
+            src={imageUrl}
+            alt={layanan?.nama || "Layanan"}
+            className="
+              h-full
+              w-full
+              object-cover
+              object-center
+              transition-all
+              duration-700
+              group-hover:scale-105
+            "
+          />
+
+        ) : (
+
+          <div
+            className="
+              h-full
+              w-full
+              bg-gray-300
+            "
+          />
+
+        )}
 
         {/* OVERLAY */}
         <div
