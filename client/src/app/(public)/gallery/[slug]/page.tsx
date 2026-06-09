@@ -213,6 +213,8 @@ export default function PortfolioDetailPage({
       : "/placeholder.jpg";
 
   console.log("IMAGE URL =", imageUrl);
+  console.log("coverImage =", coverImage);
+  console.log("coverImage.url =", coverImage?.url);
 
   return (
 
