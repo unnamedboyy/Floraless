@@ -369,10 +369,10 @@ export default function CashbackDetailModal({
 
       if (
         file.size >
-        5 * 1024 * 1024
+        20 * 1024 * 1024
       ) {
         toast.error(
-          "Ukuran maksimal 5MB"
+          "Ukuran maksimal 20MB"
         );
         return;
       }

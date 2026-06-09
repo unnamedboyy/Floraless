@@ -314,11 +314,11 @@ export default function Testimonials() {
                   col-span-full
                   rounded-3xl
                   border
-                  border-white/10
+                  border-[#0C0908]/10
                   bg-white/5
                   p-10
                   text-center
-                  text-white/50
+                  text-[#0C0908]/50
                 "
               >
                 Belum ada review tersedia.
