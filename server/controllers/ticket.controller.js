@@ -237,6 +237,14 @@ export const getTickets = async (req, res, next) => {
 
     }
 
+    let tickets = await Ticket.find(filter)
+      .populate("pelangganId", "nama no_telp")
+      .populate("layananId", "nama harga")
+      .populate("pegawaiId", "nama")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(Number(limit));
+
     const skip =
       (page - 1) * limit;
 
