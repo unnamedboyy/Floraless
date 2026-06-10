@@ -79,11 +79,8 @@ export default function TicketPage() {
     useState({
 
       page: 1,
-
       limit: 10,
-
       status: "",
-
       search: "",
     });
 
@@ -91,9 +88,6 @@ export default function TicketPage() {
     useState<"list" | "grid">(
       "list"
     );
-
-  const [searchInput, setSearchInput] =
-    useState("");
 
   const [selected, setSelected] =
     useState<any>(null);
@@ -122,30 +116,6 @@ export default function TicketPage() {
     reload,
 
   } = useTickets(query);
-
-  /* =====================================================
-     DEBOUNCE SEARCH
-  ===================================================== */
-
-  useEffect(() => {
-
-    const t = setTimeout(() => {
-
-      setQuery((q) => ({
-
-        ...q,
-
-        search: searchInput,
-
-        page: 1,
-      }));
-
-    }, 400);
-
-    return () =>
-      clearTimeout(t);
-
-  }, [searchInput]);
 
   /* =====================================================
      APPROVE
@@ -582,13 +552,10 @@ export default function TicketPage() {
       <TableWrapper
 
         /* ================= VIEW ================= */
-
         view={view}
-
         setView={setView}
 
         /* ================= FILTER ================= */
-
         filterContent={
 
           <div className="
@@ -722,17 +689,10 @@ export default function TicketPage() {
             <button
 
               onClick={() => {
-
-                setSearchInput("");
-
                 setQuery({
-
                   page: 1,
-
                   limit: 10,
-
                   status: "",
-
                   search: "",
                 });
               }}
@@ -755,11 +715,8 @@ export default function TicketPage() {
         }
 
         data={data}
-
         total={total}
-
         query={query}
-
         setQuery={setQuery}
 
         /* ================= COLUMNS ================= */
