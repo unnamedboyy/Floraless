@@ -560,17 +560,40 @@ export default function BookingForm() {
 
         <Section title="Referensi Dekorasi">
 
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleUploadReferensi}
-            className="w-full"
-            px-8
-            py-8
-            md:px-12
-            border-b
-            border-neutral-200
-          />
+          <div
+            className="
+              rounded-2xl
+              border
+              border-neutral-200
+              bg-white
+              px-5
+              py-5
+              transition
+              hover:border-neutral-400
+            "
+          >
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleUploadReferensi}
+              className="
+                w-full
+                text-sm
+                text-neutral-600
+                file:mr-4
+                file:rounded-xl
+                file:border-0
+                file:bg-[#0F172A]
+                file:px-4
+                file:py-2
+                file:text-sm
+                file:font-medium
+                file:text-white
+                file:cursor-pointer
+                cursor-pointer
+              "
+            />
+          </div>
 
           {form.referensi && (
 

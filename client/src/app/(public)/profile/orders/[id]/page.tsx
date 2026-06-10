@@ -218,6 +218,17 @@ export default function OrderDetailPage() {
   const review =
     data?.review;
 
+  const referensiImage =
+  detail?.referensi
+    ? (
+        detail.referensi.startsWith("blob:")
+          ? detail.referensi
+          : detail.referensi.startsWith("http")
+            ? detail.referensi
+            : `${process.env.NEXT_PUBLIC_IMAGE_URL}${detail.referensi}`
+      )
+    : "";
+
   return (
 
     <>
@@ -528,31 +539,25 @@ export default function OrderDetailPage() {
                     text-sm
                     text-gray-500
                   ">
-                    Referensi
+                    Referensi Dekorasi
                   </p>
 
                   {detail?.referensi && (
 
                     <div className="mt-8">
 
-                      <p className="
-                        text-sm
-                        text-gray-500
-                      ">
-                        Referensi Dekorasi
-                      </p>
-
-                      <img
-                        src={detail.referensi}
-                        alt="Referensi Dekorasi"
-                        className="
-                          mt-3
-                          w-full
-                          max-w-md
-                          rounded-2xl
-                          border
-                        "
-                      />
+                  <img
+                    src={referensiImage}
+                    alt="Referensi Dekorasi"
+                    className="
+                      mt-3
+                      w-full
+                      max-w-md
+                      rounded-2xl
+                      border
+                      object-cover
+                    "
+                  />
 
                     </div>
 
