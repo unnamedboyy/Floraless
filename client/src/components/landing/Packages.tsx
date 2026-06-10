@@ -257,8 +257,7 @@ export default function Packages() {
                             text-sm
                             leading-relaxed
                             text-white/80
-                            line-clamp-1
-                            
+                            line-clamp-1                          
                           "
                         >
                           {points[0]}
@@ -267,7 +266,7 @@ export default function Packages() {
                       )}
 
                       {/* TAGS */}
-                      <div
+                      {/* <div
                         className="
                           mt-5
                           flex
@@ -298,7 +297,7 @@ export default function Packages() {
 
                         ))}
 
-                      </div>
+                      </div> */}
 
                       {/* PRICE */}
                       {layanan.harga && (
