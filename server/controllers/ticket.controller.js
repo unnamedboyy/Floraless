@@ -180,7 +180,6 @@ export const getTickets = async (req, res, next) => {
       limit = 10,
       status,
       tanggal,
-      search,
     } = req.query;
 
     let filter = {};
@@ -237,41 +236,29 @@ export const getTickets = async (req, res, next) => {
 
     }
 
-    let tickets = await Ticket.find(filter)
-      .populate("pelangganId", "nama no_telp")
-      .populate("layananId", "nama harga")
-      .populate("pegawaiId", "nama")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(Number(limit));
-
     const skip =
       (page - 1) * limit;
 
-    if (search) {
+    let tickets =
+      await Ticket.find(filter)
+        .populate(
+          "pelangganId",
+          "nama no_telp"
+        )
+        .populate(
+          "layananId",
+          "nama harga"
+        )
+        .populate(
+          "pegawaiId",
+          "nama"
+        )
+        .sort({
+          createdAt: -1,
+        })
+        .skip(skip)
+        .limit(Number(limit));
 
-      const keyword = search.toLowerCase();
-
-      tickets = tickets.filter((t) => {
-
-        const pelanggan =
-          t.pelangganId?.nama?.toLowerCase() || "";
-
-        const layanan =
-          t.layananId?.nama?.toLowerCase() || "";
-
-        const pegawai =
-          t.pegawaiId?.nama?.toLowerCase() || "";
-
-        return (
-          pelanggan.includes(keyword) ||
-          layanan.includes(keyword) ||
-          pegawai.includes(keyword)
-        );
-
-      });
-
-    }
     /* ================= FILTER TANGGAL ================= */
 
     if (tanggal) {
@@ -335,7 +322,10 @@ export const getTickets = async (req, res, next) => {
 
     /* ================= TOTAL ================= */
 
-    const total = tickets.length;
+    const total =
+      await Ticket.countDocuments(
+        filter
+      );
 
     res.json({
 
