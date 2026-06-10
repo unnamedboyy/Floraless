@@ -65,10 +65,16 @@ export default function PelangganPage() {
 
       reload();
 
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
 
-      toast.error("Gagal menyimpan data");
+      console.log(err.response?.status);
+      console.log(err.response?.data);
+
+      toast.error(
+        err?.response?.data?.message ||
+        "Gagal menyimpan data"
+      );
     }
   };
 
