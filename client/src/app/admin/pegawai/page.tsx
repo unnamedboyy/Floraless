@@ -156,13 +156,13 @@ const handleDelete =
                   row._id
                 );
 
-                await reload();
-
                 toast.success(
                   row.isActive
                     ? "Berhasil dinonaktifkan"
                     : "Berhasil diaktifkan"
                 );
+
+                await reload();
 
               } catch (err) {
 
