@@ -112,45 +112,18 @@ export default function DetailUserModal({
                 Detail
               </h2>
 
-              <div
-                className={`
-                  h-12
-                  px-5
-                  rounded-2xl
-                  flex
-                  items-center
-                  justify-center
-                  text-[15px]
-                  font-semibold
+              <h2
+                className="
+                  text-[44px]
+                  leading-none
+                  tracking-tight
+                  font-bold
+                  text-[#C9AE63]
                   capitalize
-                  border
-                  shadow-sm
-
-                  ${
-                    data.userId?.role ===
-                    "pegawai"
-
-                      ? `
-                        bg-slate-100
-                        border-slate-200
-                        text-slate-700
-                      `
-
-                      : `
-                        bg-neutral-100
-                        border-neutral-200
-                        text-neutral-700
-                      `
-                  }
-                `}
+                "
               >
-
-                {
-                  data.userId?.role ||
-                  "user"
-                }
-
-              </div>
+                {data.userId?.role || "user"}
+              </h2>
 
             </div>
 

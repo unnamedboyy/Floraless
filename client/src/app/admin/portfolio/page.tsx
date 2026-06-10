@@ -362,10 +362,6 @@ export default function AdminPortfolioPage() {
 
                   <div className="mt-7 flex items-center justify-between border-t border-neutral-100 pt-5">
 
-                  <div className="text-sm text-neutral-500">
-                    {item.photos?.length || 0} Images
-                  </div>
-
                     <div className="flex gap-3">
 
                       <button
@@ -423,17 +419,17 @@ export default function AdminPortfolioPage() {
         </div>
       )}
 
-            <PortfolioFormModal
-        open={open}
-        onClose={closeModal}
-        loading={saving}
-        initialData={selected}
-        onSubmit={
-          selected
-            ? handleUpdate
-            : handleCreate
-        }
-      />
+        <PortfolioFormModal
+          open={open}
+          onClose={closeModal}
+          loading={saving}
+          initialData={selected}
+          onSubmit={
+            selected
+              ? handleUpdate
+              : handleCreate
+          }
+        />
     </div>
   );
 }
