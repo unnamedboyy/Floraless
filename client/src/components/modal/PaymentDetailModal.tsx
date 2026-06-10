@@ -734,6 +734,17 @@ export default function PaymentDetailModal({
                       p.status as keyof typeof statusConfig
                     ];
 
+                  const buktiBayarUrl =
+                      p.bukti_bayar
+                        ? (
+                          p.bukti_bayar.startsWith("blob:")
+                          ? p.bukti_bayar
+                          : p.bukti_bayar.startsWith("http")
+                          ? p.bukti_bayar
+                          : `${process.env.NEXT_PUBLIC_IMAGE_URL}${p.bukti_bayar}`
+                          )
+                       : "";
+
                   return (
 
                     <div
@@ -942,7 +953,7 @@ export default function PaymentDetailModal({
                                 </div>
 
                                 <img
-                                  src={`${process.env.NEXT_PUBLIC_API_URL}${p.bukti_bayar}`}
+                                  src={buktiBayarUrl}
                                   alt="Bukti Pembayaran"
                                   className="
                                     w-full
