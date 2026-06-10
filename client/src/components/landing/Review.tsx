@@ -141,7 +141,20 @@ export default function Testimonials() {
             "
           >
 
-            {reviews.map((review) => (
+            {reviews.map((review) => {
+
+              const profileImageUrl =
+                review.pelangganId?.profile
+                  ? (
+                      review.pelangganId.profile.startsWith("blob:")
+                        ? review.pelangganId.profile
+                        : review.pelangganId.profile.startsWith("http")
+                          ? review.pelangganId.profile
+                          : `${process.env.NEXT_PUBLIC_IMAGE_URL}${review.pelangganId.profile}`
+                    )
+                  : "/images/default-avatar.png";
+
+              return (
 
               <div
                 key={review._id}
@@ -184,15 +197,17 @@ export default function Testimonials() {
                         flex-shrink-0
                       "
                     >
-                      <Image
-                        src={
-                          review.pelangganId?.profile || "/images/default-avatar.png"
+                      <img
+                        src={profileImageUrl}
+                        alt={
+                          review.pelangganId?.nama ||
+                          "Pelanggan"
                         }
-                        alt={review.pelangganId?.nama || "Pelanggan"}
-                        width={64}
-                        height={64}
-                        unoptimized
-                        className="h-full w-full object-cover"
+                        className="
+                          h-full
+                          w-full
+                          object-cover
+                        "
                       />
                     </div>
 
@@ -303,7 +318,8 @@ export default function Testimonials() {
 
               </div>
 
-            ))}
+            );
+          })}
 
             {/* EMPTY */}
 

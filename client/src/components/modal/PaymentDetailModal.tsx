@@ -757,7 +757,6 @@ export default function PaymentDetailModal({
                         border-gray-200
                         bg-[#FCFCFD]
                         p-8
-                        text-center
 
                         ${
                           p._id ===
