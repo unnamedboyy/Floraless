@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+// import Image from "next/image";
 import Link from "next/link";
 import {
   useEffect,
@@ -172,8 +172,8 @@ export default function DetailLayananPage() {
      HERO COVER
   ===================================================== */
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "";
+const IMAGE_URL =
+  process.env.NEXT_PUBLIC_IMAGE_URL || "";
 
 const cover = useMemo(() => {
   if (
@@ -187,11 +187,11 @@ const cover = useMemo(() => {
       return layanan.thumbnail;
     }
 
-    return `${API_URL}${layanan.thumbnail}`;
+    return `${IMAGE_URL}${layanan.thumbnail}`;
   }
 
   return "/service-default.jpg";
-}, [layanan, API_URL]);
+}, [layanan, IMAGE_URL]);
 
   /* =====================================================
      LOADING
@@ -251,13 +251,12 @@ const cover = useMemo(() => {
           }}
         >
 
-        <Image
+        <img
           src={cover}
           alt={layanan?.nama || "service"}
-          fill
-          priority
-          unoptimized
           className="
+            h-full
+            w-full
             object-cover
             scale-105
           "
@@ -448,15 +447,15 @@ const cover = useMemo(() => {
                   "
                 >
 
-                  <Image
-                    src={cover}
-                    alt={layanan?.nama || "service"}
-                    fill
-                    unoptimized
-                    className="
-                      object-cover
-                    "
-                  />
+                <img
+                  src={cover}
+                  alt={layanan?.nama || "service"}
+                  className="
+                    h-full
+                    w-full
+                    object-cover
+                  "
+                />
 
                 </div>
 
@@ -645,8 +644,20 @@ const cover = useMemo(() => {
                 >
 
                   {
-                    portfolio.map(
-                      (item: any) => (
+                    portfolio.map((item:any)=>{
+
+                      const imagePath =
+                        item?.coverImage?.url ||
+                        item?.images?.[0]?.url;
+
+                      const imageUrl =
+                        imagePath
+                          ? imagePath.startsWith("http")
+                            ? imagePath
+                            : `${process.env.NEXT_PUBLIC_IMAGE_URL}${imagePath}`
+                          : "/service-default.jpg";
+
+                      return (
 
                         <Link
                           key={item._id}
@@ -674,22 +685,12 @@ const cover = useMemo(() => {
                             "
                           >
 
-                          <Image
-                            src={
-                              item?.coverImage?.url
-                                ? item.coverImage.url.startsWith("http")
-                                  ? item.coverImage.url
-                                  : `${API_URL}${item.coverImage.url}`
-                                : item?.images?.[0]?.url
-                                ? item.images[0].url.startsWith("http")
-                                  ? item.images[0].url
-                                  : `${API_URL}${item.images[0].url}`
-                                : "/service-default.jpg"
-                            }
+                          <img
+                            src={imageUrl}
                             alt={item.title}
-                            fill
-                            unoptimized
                             className="
+                              h-full
+                              w-full
                               object-cover
                               transition
                               duration-700
@@ -768,7 +769,7 @@ const cover = useMemo(() => {
 
                         </Link>
                       )
-                    )
+                    })
                   }
 
                 </div>
