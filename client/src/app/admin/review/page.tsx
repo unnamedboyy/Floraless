@@ -170,25 +170,25 @@ export default function ReviewPage() {
 
             {/* DELETE */}
             <button
-              onClick={() => {
+              onClick={async () => {
 
-                toast.dismiss(t.id);
+                try {
 
-                remove(row._id);
+                  await remove(row._id);
 
-                toast.success(
-                  "Review berhasil dihapus"
-                );
+                  toast.success(
+                    "Review berhasil dihapus"
+                  );
+
+                } catch {
+
+                  toast.error(
+                    "Gagal menghapus review"
+                  );
+
+                }
+
               }}
-              className="
-                px-3
-                py-2
-                rounded-xl
-                bg-red-500
-                text-white
-                text-sm
-                hover:bg-red-600
-              "
             >
               Hapus
             </button>
@@ -500,16 +500,83 @@ export default function ReviewPage() {
               hover:bg-blue-200
             `,
 
-            onClick: (row) => {
+          onClick: (row) => {
 
-              toggle(row._id);
+            toast((t) => (
 
-              toast.success(
-                row.isActive
-                  ? "Review dinonaktifkan"
-                  : "Review diaktifkan"
-              );
-            },
+              <div className="w-[300px]">
+
+                <p className="font-semibold text-sm">
+                  {row.isActive
+                    ? "Nonaktifkan Review?"
+                    : "Aktifkan Review?"}
+                </p>
+
+                <p className="text-sm text-gray-500 mt-1">
+                  Status review akan diubah.
+                </p>
+
+                <div className="flex justify-end gap-2 mt-4">
+
+                  <button
+                    onClick={() => toast.dismiss(t.id)}
+                    className="
+                      px-3
+                      py-2
+                      rounded-xl
+                      border
+                      text-sm
+                    "
+                  >
+                    Batal
+                  </button>
+
+                  <button
+                    onClick={async () => {
+
+                      toast.dismiss(t.id);
+
+                      try {
+
+                        await toggle(row._id);
+
+                        toast.success(
+                          row.isActive
+                            ? "Review berhasil dinonaktifkan"
+                            : "Review berhasil diaktifkan"
+                        );
+
+                      } catch {
+
+                        toast.error(
+                          "Gagal mengubah status review"
+                        );
+
+                      }
+
+                    }}
+                    className="
+                      px-3
+                      py-2
+                      rounded-xl
+                      bg-blue-500
+                      text-white
+                      text-sm
+                    "
+                  >
+                    Ya
+                  </button>
+
+                </div>
+
+              </div>
+
+            ), {
+              duration: 10000,
+            });
+
+          },
+          
           },
 
           {

@@ -108,7 +108,7 @@ export default function DetailLayananModal({
               Detail{" "}
 
               <span className="
-                text-violet-600
+                text-[#C9AE63]
               ">
                 layanan
               </span>

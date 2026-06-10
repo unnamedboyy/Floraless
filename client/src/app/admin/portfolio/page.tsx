@@ -14,6 +14,8 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import toast from "react-hot-toast";
+
 import PortfolioFormModal from "@/components/form/PortfolioFormModal";
 
 import {
@@ -58,7 +60,7 @@ export default function AdminPortfolioPage() {
 
       await createPortfolio(formData);
 
-      alert("Portfolio berhasil dibuat");
+      toast.success("Portfolio berhasil dibuat");
 
       closeModal();
 
@@ -66,7 +68,7 @@ export default function AdminPortfolioPage() {
     } catch (err: any) {
       console.error(err);
 
-      alert(
+      toast.error(
         err?.response?.data?.message ??
           "Gagal membuat portfolio"
       );
@@ -80,7 +82,7 @@ export default function AdminPortfolioPage() {
   ) => {
     try {
       if (!selected?._id) {
-        alert("Portfolio ID tidak ditemukan");
+        toast.error("Portfolio ID tidak ditemukan");
         return;
       }
 
@@ -91,7 +93,7 @@ export default function AdminPortfolioPage() {
         formData
       );
 
-      alert("Portfolio berhasil diupdate");
+      toast.success("Portfolio berhasil diupdate");
 
       closeModal();
 
@@ -99,10 +101,10 @@ export default function AdminPortfolioPage() {
     } catch (err: any) {
       console.error(err);
 
-      alert(
-        err?.response?.data?.message ??
-          "Gagal update portfolio"
-      );
+        toast.error(
+          err?.response?.data?.message ??
+            "Gagal update portfolio"
+        );
     } finally {
       setSaving(false);
     }
@@ -111,26 +113,69 @@ export default function AdminPortfolioPage() {
   const handleDelete = async (
     id: string
   ) => {
-    const confirmDelete = confirm(
-      "Hapus portfolio ini?"
-    );
+    toast((t) => (
+      <div className="w-[300px]">
 
-    if (!confirmDelete) return;
+        <p className="font-semibold text-sm">
+          Hapus Portfolio?
+        </p>
 
-    try {
-      await deletePortfolio(id);
+        <p className="text-sm text-gray-500 mt-1">
+          Data portfolio tidak dapat dikembalikan
+        </p>
 
-      alert("Portfolio berhasil dihapus");
+        <div className="flex justify-end gap-2 mt-4">
 
-      refresh();
-    } catch (err: any) {
-      console.error(err);
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="
+              px-3
+              py-2
+              rounded-xl
+              border
+              text-sm
+            "
+          >
+            Batal
+          </button>
 
-      alert(
-        err?.response?.data?.message ??
-          "Gagal menghapus portfolio"
-      );
-    }
+          <button
+            onClick={async () => {
+              toast.dismiss(t.id);
+
+              try {
+                await deletePortfolio(id);
+
+                toast.success(
+                  "Portfolio berhasil dihapus"
+                );
+
+                refresh();
+              } catch (err: any) {
+                console.error(err);
+
+                toast.error(
+                  err?.response?.data?.message ??
+                    "Gagal menghapus portfolio"
+                );
+              }
+            }}
+            className="
+              px-3
+              py-2
+              rounded-xl
+              bg-red-500
+              text-white
+              text-sm
+            "
+          >
+            Hapus
+          </button>
+
+        </div>
+
+      </div>
+    ));
   };
 
   return (
@@ -343,7 +388,7 @@ export default function AdminPortfolioPage() {
                           } catch (err) {
                             console.error(err);
 
-                            alert(
+                            toast.error(
                               "Gagal mengambil detail portfolio"
                             );
                           }

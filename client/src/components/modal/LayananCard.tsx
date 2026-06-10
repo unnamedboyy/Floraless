@@ -140,7 +140,7 @@ export default function LayananCard({
           {layanan?.nama || layanan?.nama_layanan}
         </h3>
 
-        <p
+        {/* <p
           className="
             mt-4
             line-clamp-4
@@ -150,7 +150,7 @@ export default function LayananCard({
         >
           {layanan?.deskripsi ||
             "Layanan dekorasi premium Floraless."}
-        </p>
+        </p> */}
 
         {/* PRICE */}
         <div

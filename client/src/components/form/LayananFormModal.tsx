@@ -307,7 +307,7 @@ export default function LayananFormModal({
                     Edit{" "}
 
                     <span className="
-                      text-[#64748B]
+                      text-[#C9AE63]
                     ">
                       layanan
                     </span>
@@ -319,7 +319,7 @@ export default function LayananFormModal({
                     Tambah{" "}
 
                     <span className="
-                      text-[#64748B]
+                      text-[#C9AE63]
                     ">
                       layanan
                     </span>
