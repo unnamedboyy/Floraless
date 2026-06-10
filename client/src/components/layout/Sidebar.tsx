@@ -39,6 +39,7 @@ export default function Sidebar({ menu }: { menu: any[] }) {
           "Payment",
           "Cashback",
           "Voucher",
+          "Tugas",
         ].includes(m.label)
       ),
     },
