@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-import Image from "next/image";
+// import Image from "next/image";
 
 import {
   User,
@@ -61,20 +61,20 @@ export default function ProfileSidebar() {
       href: "/profile/orders",
       icon: <ShoppingBag size={18} />,
     },
-
-    {
-      label: "Cashback",
-      href: "/profile/cashback",
-      icon: <Gift size={18} />,
-    },
+    
   ];
 
   if (!mounted) return null;
 
   const avatar =
-    profile?.profile &&
-    profile.profile !== ""
-      ? profile.profile
+    profile?.profile
+      ? (
+          profile.profile.startsWith("blob:")
+            ? profile.profile
+            : profile.profile.startsWith("http")
+              ? profile.profile
+              : `${process.env.NEXT_PUBLIC_IMAGE_URL}${profile.profile}`
+        )
       : "/images/profile-default.png";
 
   return (
@@ -110,25 +110,23 @@ export default function ProfileSidebar() {
           <div
             className="
               relative
-
               h-20
               w-20
-
               overflow-hidden
-
               rounded-full
-
               border
               border-gray-200
             "
           >
 
-            <Image
+            <img
               src={avatar}
               alt="Profile"
-              fill
-              unoptimized
-              className="object-cover"
+              className="
+                h-full
+                w-full
+                object-cover
+              "
             />
 
           </div>
