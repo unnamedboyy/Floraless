@@ -109,15 +109,19 @@ const handleDelete =
 
       <div className="w-[300px]">
 
-        {/* TITLE */}
-        <p className="font-semibold text-sm">
-          Hapus Pegawai?
-        </p>
+      {/* TITLE */}
+      <p className="font-semibold text-sm">
+        {row.isActive
+          ? "Nonaktifkan Pegawai?"
+          : "Aktifkan Pegawai?"}
+      </p>
 
-        {/* DESC */}
-        <p className="text-sm text-gray-500 mt-1">
-          Data pegawai tidak dapat dikembalikan
-        </p>
+      {/* DESC */}
+      <p className="text-sm text-gray-500 mt-1">
+        {row.isActive
+          ? "Pegawai akan dinonaktifkan dan tidak dapat login ke sistem."
+          : "Pegawai akan diaktifkan kembali dan dapat login ke sistem."}
+      </p>
 
         {/* ACTION */}
         <div className="flex justify-end gap-2 mt-4">
@@ -179,17 +183,20 @@ const handleDelete =
                 );
               }
             }}
-            className="
+            className={`
               px-3
               py-2
               rounded-xl
-              bg-red-500
               text-white
               text-sm
-              hover:bg-red-600
-            "
+              ${
+                row.isActive
+                  ? "bg-red-500 hover:bg-red-600"
+                  : "bg-green-500 hover:bg-green-600"
+              }
+            `}
           >
-            Hapus
+            {row.isActive ? "Nonaktifkan" : "Aktifkan"}
           </button>
 
         </div>

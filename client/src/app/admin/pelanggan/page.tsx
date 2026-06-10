@@ -86,13 +86,19 @@ export default function PelangganPage() {
 
         <div className="w-[300px]">
 
-          <p className="font-semibold text-sm">
-            Hapus Pelanggan?
-          </p>
+        {/* TITLE */}
+        <p className="font-semibold text-sm">
+          {row.isActive
+            ? "Nonaktifkan Pelanggan?"
+            : "Aktifkan Pelanggan?"}
+        </p>
 
-          <p className="text-sm text-gray-500 mt-1">
-            Data pelanggan tidak dapat dikembalikan
-          </p>
+        {/* DESC */}
+        <p className="text-sm text-gray-500 mt-1">
+          {row.isActive
+            ? "Pelanggan akan dinonaktifkan dan tidak dapat login ke sistem."
+            : "Pelanggan akan diaktifkan kembali dan dapat login ke sistem."}
+        </p>
 
           <div className="flex justify-end gap-2 mt-4">
 
@@ -100,15 +106,20 @@ export default function PelangganPage() {
               onClick={() =>
                 toast.dismiss(t.id)
               }
-              className="
+              className={`
                 px-3
                 py-2
                 rounded-xl
-                border
+                text-white
                 text-sm
-              "
+                ${
+                  row.isActive
+                    ? "bg-red-500 hover:bg-red-600"
+                    : "bg-green-500 hover:bg-green-600"
+                }
+              `}
             >
-              Batal
+              {row.isActive ? "Nonaktifkan" : "Aktifkan"}
             </button>
 
             <button
