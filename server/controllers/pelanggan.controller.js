@@ -20,7 +20,6 @@ export const getPelanggan = async (req, res, next) => {
       req.query;
 
     const filter = {
-      isActive: true,
       nama: { $regex: search, $options: "i" },
     };
 

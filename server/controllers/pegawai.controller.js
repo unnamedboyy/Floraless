@@ -19,7 +19,7 @@ export const createPegawaiProfile = async (
 export const getPegawai = async ( req, res, next) => {
   try {
     const { page = 1, limit = 10, search = "" } = req.query;
-    const filter = { isActive: true, nama: { $regex: search, $options: "i" }};
+    const filter = { nama: { $regex: search, $options: "i" }};
     const skip = (page - 1) * limit;
 
     const data = await Pegawai.find(filter)
