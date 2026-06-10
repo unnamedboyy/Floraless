@@ -10,8 +10,17 @@ import sharp from "sharp";
    DIRECTORY
 ========================================================= */
 
-const uploadPath =
-  "uploads/payment";
+const uploadPath = path.join(
+  "/data",
+  "uploads",
+  "payment"
+);
+
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, {
+    recursive: true,
+  });
+}
 
 if (
   !fs.existsSync(uploadPath)
