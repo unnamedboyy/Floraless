@@ -86,11 +86,11 @@ export default function PelangganPage() {
         <div className="w-[300px]">
 
           <p className="font-semibold text-sm">
-            Hapus Pegawai?
+            Hapus Pelanggan?
           </p>
 
           <p className="text-sm text-gray-500 mt-1">
-            Data pegawai tidak dapat dikembalikan
+            Data pelanggan tidak dapat dikembalikan
           </p>
 
           <div className="flex justify-end gap-2 mt-4">
@@ -118,12 +118,12 @@ export default function PelangganPage() {
                 try {
 
                   await softDeleteUser(
-                    "pegawai",
+                    "pelanggan",
                     row._id
                   );
 
                   toast.success(
-                    "Pegawai berhasil dihapus"
+                    "Pelanggan berhasil dihapus"
                   );
 
                   reload();
@@ -133,7 +133,7 @@ export default function PelangganPage() {
                   console.error(err);
 
                   toast.error(
-                    "Gagal menghapus pegawai"
+                    "Gagal menghapus pelanggan"
                   );
                 }
               }}
