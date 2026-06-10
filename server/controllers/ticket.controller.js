@@ -180,6 +180,7 @@ export const getTickets = async (req, res, next) => {
       limit = 10,
       status,
       tanggal,
+      search,
     } = req.query;
 
     let filter = {};
@@ -239,26 +240,30 @@ export const getTickets = async (req, res, next) => {
     const skip =
       (page - 1) * limit;
 
-    let tickets =
-      await Ticket.find(filter)
-        .populate(
-          "pelangganId",
-          "nama no_telp"
-        )
-        .populate(
-          "layananId",
-          "nama harga"
-        )
-        .populate(
-          "pegawaiId",
-          "nama"
-        )
-        .sort({
-          createdAt: -1,
-        })
-        .skip(skip)
-        .limit(Number(limit));
+    if (search) {
 
+      const keyword = search.toLowerCase();
+
+      tickets = tickets.filter((t) => {
+
+        const pelanggan =
+          t.pelangganId?.nama?.toLowerCase() || "";
+
+        const layanan =
+          t.layananId?.nama?.toLowerCase() || "";
+
+        const pegawai =
+          t.pegawaiId?.nama?.toLowerCase() || "";
+
+        return (
+          pelanggan.includes(keyword) ||
+          layanan.includes(keyword) ||
+          pegawai.includes(keyword)
+        );
+
+      });
+
+    }
     /* ================= FILTER TANGGAL ================= */
 
     if (tanggal) {
@@ -322,10 +327,7 @@ export const getTickets = async (req, res, next) => {
 
     /* ================= TOTAL ================= */
 
-    const total =
-      await Ticket.countDocuments(
-        filter
-      );
+    const total = tickets.length;
 
     res.json({
 
