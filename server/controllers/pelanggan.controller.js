@@ -183,18 +183,23 @@ export const deletePelanggan = async (req, res, next) => {
       });
     }
 
-    pelanggan.isActive = false;
+    // Toggle status
+    pelanggan.isActive = !pelanggan.isActive;
 
     await pelanggan.save();
 
     await User.findByIdAndUpdate(
       pelanggan.userId,
-      { isActive: false }
+      {
+        isActive: pelanggan.isActive,
+      }
     );
 
     res.json({
       success: true,
-      message: "Pelanggan berhasil dinonaktifkan",
+      message: pelanggan.isActive
+        ? "Pelanggan berhasil diaktifkan"
+        : "Pelanggan berhasil dinonaktifkan",
     });
 
   } catch (err) {

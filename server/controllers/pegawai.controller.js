@@ -174,7 +174,7 @@ export const updatePegawai = async (req, res, next) => {
 
 /* ================= DELETE ================= */
 
-export const deletePegawai = async ( req, res, next) => {
+export const deletePegawai = async (req, res, next) => {
   try {
     const pegawai =
       await Pegawai.findById(req.params.id);
@@ -186,18 +186,23 @@ export const deletePegawai = async ( req, res, next) => {
       });
     }
 
-    pegawai.isActive = false;
+    // Toggle status
+    pegawai.isActive = !pegawai.isActive;
 
     await pegawai.save();
 
     await User.findByIdAndUpdate(
       pegawai.userId,
-      { isActive: false }
+      {
+        isActive: pegawai.isActive,
+      }
     );
 
     res.json({
       success: true,
-      message: "Pegawai berhasil dinonaktifkan",
+      message: pegawai.isActive
+        ? "Pegawai berhasil diaktifkan"
+        : "Pegawai berhasil dinonaktifkan",
     });
 
   } catch (err) {

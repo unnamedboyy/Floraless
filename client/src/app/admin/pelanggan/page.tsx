@@ -11,6 +11,7 @@ import {
   Eye,
   Pencil,
   Trash2,
+  RotateCcw,
 } from "lucide-react";
 
 import {
@@ -123,7 +124,9 @@ export default function PelangganPage() {
                   );
 
                   toast.success(
-                    "Pelanggan berhasil dihapus"
+                    row.isActive
+                      ? "Berhasil dinonaktifkan"
+                      : "Berhasil diaktifkan"
                   );
 
                   reload();
@@ -380,10 +383,28 @@ export default function PelangganPage() {
               <Trash2 size={17} />
             ),
 
+            show: (row) => row.isActive,
+
             className: `
               bg-red-100
               text-red-700
               hover:bg-red-200
+            `,
+
+            onClick: handleDelete,
+          },
+
+          {
+            icon: (
+              <RotateCcw size={17} />
+            ),
+
+            show: (row) => !row.isActive,
+
+            className: `
+              bg-green-100
+              text-green-700
+              hover:bg-green-200
             `,
 
             onClick: handleDelete,
