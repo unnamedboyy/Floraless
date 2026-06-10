@@ -455,10 +455,7 @@ export const updateUser = async (req, res, next) => {
 
 export const deleteUser = async (req, res, next) => {
   try {
-    const {
-      role,
-      id,
-    } = req.params;
+    const { role, id } = req.params;
 
     const Model = getModelByRole(role);
 
@@ -471,20 +468,23 @@ export const deleteUser = async (req, res, next) => {
       };
     }
 
-    data.isActive = false;
+    // Toggle status
+    data.isActive = !data.isActive;
 
     await data.save();
 
     await User.findByIdAndUpdate(
       data.userId,
       {
-        isActive: false,
+        isActive: data.isActive,
       }
     );
 
     res.json({
       success: true,
-      message: "User berhasil dinonaktifkan",
+      message: data.isActive
+        ? "User berhasil diaktifkan"
+        : "User berhasil dinonaktifkan",
     });
 
   } catch (err) {

@@ -79,98 +79,112 @@ export default function PelangganPage() {
     }
   };
 
-  const handleDelete =
-    async (row: any) => {
+const handleDelete =
+  async (row: any) => {
 
-      toast((t) => (
+    toast((t) => (
 
-        <div className="w-[300px]">
+      <div className="w-[300px]">
 
-        {/* TITLE */}
-        <p className="font-semibold text-sm">
-          {row.isActive
-            ? "Nonaktifkan Pelanggan?"
-            : "Aktifkan Pelanggan?"}
-        </p>
+      {/* TITLE */}
+      <p className="font-semibold text-sm">
+        {row.isActive
+          ? "Nonaktifkan Pelanggan?"
+          : "Aktifkan Pelanggan?"}
+      </p>
 
-        {/* DESC */}
-        <p className="text-sm text-gray-500 mt-1">
-          {row.isActive
-            ? "Pelanggan akan dinonaktifkan dan tidak dapat login ke sistem."
-            : "Pelanggan akan diaktifkan kembali dan dapat login ke sistem."}
-        </p>
+      {/* DESC */}
+      <p className="text-sm text-gray-500 mt-1">
+        {row.isActive
+          ? "Pelanggan akan dinonaktifkan dan tidak dapat login ke sistem."
+          : "Pelanggan akan diaktifkan kembali dan dapat login ke sistem."}
+      </p>
 
-          <div className="flex justify-end gap-2 mt-4">
+        {/* ACTION */}
+        <div className="flex justify-end gap-2 mt-4">
 
-            <button
-              onClick={() =>
-                toast.dismiss(t.id)
-              }
-              className={`
-                px-3
-                py-2
-                rounded-xl
-                text-white
-                text-sm
-                ${
+          {/* CANCEL */}
+          <button
+            onClick={() =>
+              toast.dismiss(t.id)
+            }
+            className="
+              px-3
+              py-2
+              rounded-xl
+              border
+              text-sm
+              hover:bg-gray-50
+            "
+          >
+            Batal
+          </button>
+
+          {/* DELETE */}
+          <button
+            onClick={async () => {
+
+              toast.dismiss(t.id);
+
+              try {
+
+                await softDeleteUser(
+                  "pelanggan",
+                  row._id
+                );
+
+                toast.success(
                   row.isActive
-                    ? "bg-red-500 hover:bg-red-600"
-                    : "bg-green-500 hover:bg-green-600"
-                }
-              `}
-            >
-              {row.isActive ? "Nonaktifkan" : "Aktifkan"}
-            </button>
+                    ? "Berhasil dinonaktifkan"
+                    : "Berhasil diaktifkan"
+                );
 
-            <button
-              onClick={async () => {
+                await reload();
 
-                toast.dismiss(t.id);
+              } catch (err) {
 
-                try {
+                console.error(
+                  "ERROR RESPONSE:",
+                  (err as any)
+                    .response?.data
+                );
 
-                  await softDeleteUser(
-                    "pelanggan",
-                    row._id
-                  );
+                console.error(err);
 
-                  toast.success(
-                    row.isActive
-                      ? "Berhasil dinonaktifkan"
-                      : "Berhasil diaktifkan"
-                  );
+                toast.error(
+                  (err as any)
+                    .response?.data
+                    ?.message ||
 
-                  await reload();
-
-                } catch (err) {
-
-                  console.error(err);
-
-                  toast.error(
-                    "Gagal menghapus pelanggan"
-                  );
-                }
-              }}
-              className="
-                px-3
-                py-2
-                rounded-xl
-                bg-red-500
-                text-white
-                text-sm
-              "
-            >
-              Hapus
-            </button>
-
-          </div>
+                  "Gagal menghapus data"
+                );
+              }
+            }}
+            className={`
+              px-3
+              py-2
+              rounded-xl
+              text-white
+              text-sm
+              ${
+                row.isActive
+                  ? "bg-red-500 hover:bg-red-600"
+                  : "bg-green-500 hover:bg-green-600"
+              }
+            `}
+          >
+            {row.isActive ? "Nonaktifkan" : "Aktifkan"}
+          </button>
 
         </div>
 
-      ), {
-        duration: 10000,
-      });
-    };
+      </div>
+
+    ), {
+      duration: 10000,
+    });
+  };
+
     
   const getStatusBadge = (
     status: boolean
