@@ -752,12 +752,12 @@ export default function PaymentDetailModal({
                         p._id
                       }
                       className={`
-                        rounded-[28px]
+                        rounded-[24px]
                         border
-                        p-6
-                        bg-white
-                        shadow-sm
-                        transition-all
+                        border-gray-200
+                        bg-[#FCFCFD]
+                        p-8
+                        text-center
 
                         ${
                           p._id ===
