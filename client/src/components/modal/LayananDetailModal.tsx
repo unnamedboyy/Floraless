@@ -228,14 +228,17 @@ export default function DetailLayananModal({
         ">
 
           {
-
             data.thumbnail
 
               ? (
 
                 <img
 
-                  src={data.thumbnail}
+                  src={
+                    data.thumbnail.startsWith("http")
+                      ? data.thumbnail
+                      : `${process.env.NEXT_PUBLIC_IMAGE_URL}${data.thumbnail}`
+                  }
 
                   alt={data.nama}
 
