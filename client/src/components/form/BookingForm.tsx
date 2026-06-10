@@ -251,6 +251,17 @@ export default function BookingForm() {
      UI
   ===================================================== */
 
+  const referensiImage =
+  form.referensi
+    ? (
+        form.referensi.startsWith("blob:")
+          ? form.referensi
+          : form.referensi.startsWith("http")
+            ? form.referensi
+            : `${process.env.NEXT_PUBLIC_IMAGE_URL}${form.referensi}`
+      )
+    : "";
+
   return (
 
     <form
@@ -331,9 +342,7 @@ export default function BookingForm() {
 
             text-neutral-500
             text-sm
-
             mt-3
-
             max-w-2xl
 
           ">
@@ -556,22 +565,27 @@ export default function BookingForm() {
             accept="image/*"
             onChange={handleUploadReferensi}
             className="w-full"
+            px-8
+            py-8
+            md:px-12
+            border-b
+            border-neutral-200
           />
 
           {form.referensi && (
 
             <div className="mt-4">
 
-              <img
-                src={form.referensi}
-                alt="Referensi"
-                className="
-                  w-full
-                  max-w-md
-                  rounded-2xl
-                  border
-                "
-              />
+            <img
+              src={referensiImage}
+              alt="Referensi"
+              className="
+                w-full
+                max-w-md
+                rounded-2xl
+                border
+              "
+            />
 
             </div>
 
@@ -973,11 +987,8 @@ function SelectField({
 ========================================================= */
 
 function TextareaField({
-
   label,
-
   icon,
-
   ...props
 
 }: any) {
