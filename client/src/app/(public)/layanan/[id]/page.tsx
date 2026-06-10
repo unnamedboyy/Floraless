@@ -402,13 +402,32 @@ const cover = useMemo(() => {
                 "
               >
 
-                <p>
-                  {
-                    layanan?.deskripsi ||
+              <div className="text-gray-600 leading-8">
+                {(layanan?.deskripsi ??
+                  "Floraless menghadirkan layanan dekorasi eksklusif dengan sentuhan modern dan elegan.")
+                  .split("\n")
+                  .map((line: string, index: number) => {
+                    const text = line.trim();
 
-                    "Floraless menghadirkan layanan dekorasi eksklusif dengan sentuhan modern dan elegan."
-                  }
-                </p>
+                    if (!text) return null;
+
+                    if (text.startsWith("- ") || text.startsWith("• ")) {
+                      return (
+                        <ul key={index} className="list-disc pl-6">
+                          <li>
+                            {text.replace(/^[-•]\s*/, "")}
+                          </li>
+                        </ul>
+                      );
+                    }
+
+                    return (
+                      <p key={index} className="mb-2">
+                        {text}
+                      </p>
+                    );
+                  })}
+              </div>
 
                 <p>
                   Tim Floraless membantu
