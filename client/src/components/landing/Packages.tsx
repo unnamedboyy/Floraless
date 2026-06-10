@@ -160,6 +160,11 @@ export default function Packages() {
               const points =
                 layanan.deskripsi?.split("\n") || [];
 
+              console.log(
+                "BASE IMAGE:",
+                process.env.NEXT_PUBLIC_IMAGE_URL
+              );
+
               const imageUrl =
                 layanan.thumbnail
                   ? `${process.env.NEXT_PUBLIC_IMAGE_URL}${layanan.thumbnail}`
@@ -252,6 +257,8 @@ export default function Packages() {
                             text-sm
                             leading-relaxed
                             text-white/80
+                            line-clamp-1
+                            
                           "
                         >
                           {points[0]}
