@@ -168,6 +168,7 @@ export default function AssignPICModal({
 
   const layanan =
     ticket?.layananId;
+    
 
   /* =====================================================
      RENDER
@@ -734,35 +735,48 @@ export default function AssignPICModal({
               <div className="
                 rounded-[28px]
                 border
-                border-black
-                bg-white
+                border-gray-200
+                bg-[#FCFCFD]
                 p-6
-                shadow-sm
+                space-y-5
               ">
 
-                {
-                  pegawai
-                    .filter(
-                      (p) =>
-                        p._id ===
-                        selected
-                    )
-                    .map(
-                      (p) => (
+              {
+                pegawai
+                  .filter(
+                    (p) =>
+                      p._id ===
+                      selected
+                  )
+                  .map((p) => {
 
+                    const profileImageUrl =
+                      p.profile
+                        ? (
+                            p.profile.startsWith("blob:")
+                              ? p.profile
+                              : p.profile.startsWith("http")
+                                ? p.profile
+                                : `${process.env.NEXT_PUBLIC_IMAGE_URL}${p.profile}`
+                          )
+                        : "";
+
+                    return (
+
+                      <div
+                        key={
+                          p._id
+                        }
+                        className="
+                          flex
+                          items-start
+                          gap-5
+                        "
+                      >
+
+                        {/* AVATAR */}
                         <div
-                          key={
-                            p._id
-                          }
                           className="
-                            flex
-                            items-start
-                            gap-5
-                          "
-                        >
-
-                          {/* AVATAR */}
-                          <div className="
                             w-24
                             h-24
                             rounded-[32px]
@@ -773,66 +787,73 @@ export default function AssignPICModal({
                             justify-center
                             shrink-0
                             overflow-hidden
-                          ">
+                          "
+                        >
 
-                            {
-                              p.profile ? (
+                          {
+                            profileImageUrl ? (
 
-                                <img
-                                  src={
-                                    p.profile
-                                  }
-                                  alt={
-                                    p.nama
-                                  }
-                                  className="
-                                    w-full
-                                    h-full
-                                    object-cover
-                                  "
-                                />
+                              <img
+                                src={
+                                  profileImageUrl
+                                }
+                                alt={
+                                  p.nama
+                                }
+                                className="
+                                  w-full
+                                  h-full
+                                  object-cover
+                                "
+                              />
 
-                              ) : (
+                            ) : (
 
-                                <User2
-                                  size={
-                                    40
-                                  }
-                                />
-                              )
-                            }
+                              <User2
+                                size={40}
+                              />
 
-                          </div>
+                            )
+                          }
 
-                          {/* CONTENT */}
-                          <div className="
+                        </div>
+
+                        {/* CONTENT */}
+                        <div
+                          className="
                             flex-1
                             min-w-0
-                          ">
+                          "
+                        >
 
-                            <div className="
+                          <div
+                            className="
                               flex
                               items-center
                               gap-3
                               flex-wrap
-                            ">
+                            "
+                          >
 
-                              <h3 className="
+                            <h3
+                              className="
                                 text-[30px]
                                 leading-tight
                                 font-bold
                                 text-[#111827]
                                 break-words
-                              ">
+                              "
+                            >
 
-                                {
-                                  p.nama ||
-                                  "-"
-                                }
+                              {
+                                p.nama ||
+                                "-"
+                              }
 
-                              </h3>
+                            </h3>
 
-                              <div className="
+                            <div
+                              className="
                                 px-4
                                 py-2
                                 rounded-2xl
@@ -842,39 +863,45 @@ export default function AssignPICModal({
                                 text-emerald-700
                                 text-sm
                                 font-medium
-                              ">
+                              "
+                            >
 
-                                Selected PIC
-
-                              </div>
+                              Selected PIC
 
                             </div>
 
-                            <p className="
+                          </div>
+
+                          <p
+                            className="
                               mt-3
                               text-gray-500
                               break-words
-                            ">
+                            "
+                          >
 
-                              {
-                                p.email ||
-                                "-"
-                              }
+                            {
+                              p.email ||
+                              "-"
+                            }
 
-                            </p>
+                          </p>
 
-                            <div className="
+                          <div
+                            className="
                               mt-5
                               flex
                               items-center
                               gap-3
                               flex-wrap
-                            ">
+                            "
+                          >
 
-                              {
-                                p.no_telp && (
+                            {
+                              p.no_telp && (
 
-                                  <div className="
+                                <div
+                                  className="
                                     px-4
                                     py-2
                                     rounded-2xl
@@ -884,17 +911,20 @@ export default function AssignPICModal({
                                     text-slate-700
                                     text-sm
                                     font-medium
-                                  ">
+                                  "
+                                >
 
-                                    {
-                                      p.no_telp
-                                    }
+                                  {
+                                    p.no_telp
+                                  }
 
-                                  </div>
-                                )
-                              }
+                                </div>
 
-                              <div className="
+                              )
+                            }
+
+                            <div
+                              className="
                                 px-4
                                 py-2
                                 rounded-2xl
@@ -904,20 +934,22 @@ export default function AssignPICModal({
                                 text-neutral-700
                                 text-sm
                                 font-medium
-                              ">
+                              "
+                            >
 
-                                Pegawai
-
-                              </div>
+                              Pegawai
 
                             </div>
 
                           </div>
 
                         </div>
-                      )
-                    )
-                }
+
+                      </div>
+
+                    );
+                  })
+              }
 
               </div>
             )
@@ -1033,6 +1065,7 @@ function Section({
   title: string;
   children: React.ReactNode;
 }) {
+  
 
   return (
 
@@ -1130,6 +1163,7 @@ function MiniSummary({
   value: string;
 }) {
 
+  
   return (
 
     <div className="
