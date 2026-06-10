@@ -357,6 +357,17 @@ export default function UserFormModal({
      RENDER
   ===================================================== */
 
+  const profileImageUrl =
+  form.profile
+    ? (
+        form.profile.startsWith("blob:")
+          ? form.profile
+          : form.profile.startsWith("http")
+            ? form.profile
+            : `${process.env.NEXT_PUBLIC_IMAGE_URL}${form.profile}`
+      )
+    : "";
+
   return (
 
     <BaseModal
@@ -508,19 +519,19 @@ export default function UserFormModal({
             bg-gray-100
           ">
 
-            {form.profile ? (
+              {profileImageUrl ? (
 
-              <img
-                src={form.profile}
-                alt="profile"
-                className="
-                  w-full
-                  h-full
-                  object-cover
-                "
-              />
+                <img
+                  src={profileImageUrl}
+                  alt="profile"
+                  className="
+                    w-full
+                    h-full
+                    object-cover
+                  "
+                />
 
-            ) : (
+              ) : (
 
               <div className="
                 w-full

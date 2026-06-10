@@ -38,6 +38,17 @@ export default function DetailUserModal({
 
   if (!open || !data) return null;
 
+  const profileImageUrl =
+  data?.profile
+    ? (
+        data.profile.startsWith("blob:")
+          ? data.profile
+          : data.profile.startsWith("http")
+            ? data.profile
+            : `${process.env.NEXT_PUBLIC_IMAGE_URL}${data.profile}`
+      )
+    : "";
+
   /* =====================================================
      BADGE
   ===================================================== */
@@ -193,19 +204,19 @@ export default function DetailUserModal({
             bg-gray-100
           ">
 
-            {data.profile ? (
+          {profileImageUrl ? (
 
-              <img
-                src={data.profile}
-                alt="profile"
-                className="
-                  w-full
-                  h-full
-                  object-cover
-                "
-              />
+            <img
+              src={profileImageUrl}
+              alt="profile"
+              className="
+                w-full
+                h-full
+                object-cover
+              "
+            />
 
-            ) : (
+          ) : (
 
               <div className="
                 w-full h-full
