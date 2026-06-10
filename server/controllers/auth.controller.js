@@ -302,7 +302,6 @@ export const getUsersByRole = async (req, res, next) => {
     const Model = getModelByRole(role);
 
     const filter = {
-      isActive: true,
       nama: {
         $regex: search,
         $options: "i",
