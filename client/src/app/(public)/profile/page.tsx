@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+// import Image from "next/image";
 
 import {
   useEffect,
@@ -154,9 +154,16 @@ export default function ProfilePage() {
       }
     };
 
-  const avatar =
-    form.profile ||
-    "/images/profile-default.png";
+const avatar =
+  form.profile
+    ? (
+        form.profile.startsWith("blob:")
+          ? form.profile
+          : form.profile.startsWith("http")
+            ? form.profile
+            : `${process.env.NEXT_PUBLIC_IMAGE_URL}${form.profile}`
+      )
+    : "/images/profile-default.png";
 
   return (
 
@@ -214,13 +221,14 @@ export default function ProfilePage() {
           border-[#EFE7DA]
         ">
 
-          <Image
+          <img
             src={avatar}
             alt="Profile"
-            fill
-            sizes="144px"
-            unoptimized
-            className="object-cover"
+            className="
+              h-full
+              w-full
+              object-cover
+            "
           />
 
         </div>
