@@ -61,7 +61,7 @@ export default function ProfileSidebar() {
       href: "/profile/orders",
       icon: <ShoppingBag size={18} />,
     },
-    
+
   ];
 
   if (!mounted) return null;
@@ -107,7 +107,7 @@ export default function ProfileSidebar() {
           "
         >
 
-          <div
+          {/* <div
             className="
               relative
               h-20
@@ -129,7 +129,7 @@ export default function ProfileSidebar() {
               "
             />
 
-          </div>
+          </div> */}
 
           <div>
 

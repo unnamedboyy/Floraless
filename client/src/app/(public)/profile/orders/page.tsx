@@ -75,7 +75,12 @@ export default function OrdersPage() {
          HEADER
       ===================================================== */}
 
-      <div>
+      <div
+        className="
+          pb-5
+          border-b
+          border-gray-300
+        ">
 
         <p
           className="
@@ -113,7 +118,7 @@ export default function OrdersPage() {
           Lihat seluruh riwayat pemesanan,
           progress pengerjaan dekorasi,
           pembayaran, serta perkembangan
-          acara Anda dalam satu tempat.
+          acara Anda dalam satu halaman.
         </p>
 
       </div>
@@ -122,7 +127,7 @@ export default function OrdersPage() {
          STATS
       ===================================================== */}
 
-      <div
+      {/* <div
         className="
           mt-14
           grid
@@ -222,7 +227,7 @@ export default function OrdersPage() {
 
         </div>
 
-      </div>
+      </div> */}
 
       {/* =====================================================
          LIST SECTION
@@ -234,7 +239,7 @@ export default function OrdersPage() {
         "
       >
 
-        <div
+        {/* <div
           className="
             pb-5
             border-b
@@ -262,7 +267,7 @@ export default function OrdersPage() {
             pernah Anda buat.
           </p>
 
-        </div>
+        </div> */}
 
         {/* ===============================================
            LOADING
