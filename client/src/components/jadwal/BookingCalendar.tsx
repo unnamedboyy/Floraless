@@ -81,7 +81,7 @@ const events =
 
         <h2 className="
           mt-3
-          text-3xl
+          text-[42px]
           font-semibold
           tracking-tight
         ">

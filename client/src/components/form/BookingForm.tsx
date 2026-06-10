@@ -309,11 +309,8 @@ export default function BookingForm() {
 
               text-[42px]
               leading-none
-
               font-bold
-
               tracking-tight
-
               text-[#0F172A]
 
             ">
@@ -321,39 +318,12 @@ export default function BookingForm() {
               Booking{" "}
 
               <span className="
-                text-[#64748B]
+                text-[#C9AE63]
               ">
                 acara
               </span>
 
             </h2>
-
-            <div className="
-
-              h-10
-              px-4
-
-              rounded-2xl
-
-              bg-amber-50
-
-              border
-              border-amber-200
-
-              text-amber-700
-
-              inline-flex
-              items-center
-              justify-center
-
-              text-sm
-              font-semibold
-
-            ">
-
-              Floraless
-
-            </div>
 
           </div>
 
@@ -525,8 +495,6 @@ export default function BookingForm() {
 
           <TextareaField
 
-            label="Alamat / Lokasi"
-
             icon={
               <MapPin
                 size={18}
@@ -557,8 +525,6 @@ export default function BookingForm() {
         <Section title="Catatan Tambahan">
 
           <TextareaField
-
-            label="Informasi Tambahan"
 
             icon={
               <FileText
