@@ -8,8 +8,9 @@ import {
 import api
 from "@/lib/axios";
 
-import CashbackHistoryDetailModal
-from "@/components/modal/CashbackHistoryDetailModal";
+import CashbackHistoryDetailModal from "@/components/modal/CashbackHistoryDetailModal";
+import toast from "react-hot-toast";
+
 
 const formatRupiah = (
   num: number
@@ -148,68 +149,132 @@ const fetchData =
 
         if (!voucherCode) {
 
-          return alert(
+          toast.error(
             "Kode voucher wajib diisi"
           );
         }
 
         if (!bank) {
 
-          return alert(
+          toast.error(
             "Bank wajib diisi"
           );
         }
 
         if (!nomorRekening) {
 
-          return alert(
+          toast.error(
             "Nomor rekening wajib diisi"
           );
         }
 
         if (!namaRekening) {
 
-          return alert(
+          toast.error(
             "Nama rekening wajib diisi"
           );
         }
 
-        setSubmitLoading(true);
+          toast((t) => (
 
-        await api.post(
-          "/cashback/claim",
-          {
+            <div className="w-[300px]">
 
-            voucherCode,
+              <p className="font-semibold text-sm">
+                Claim Cashback?
+              </p>
 
-            bank,
+              <p className="text-sm text-gray-500 mt-1">
+                Pastikan data rekening yang Anda masukkan sudah benar.
+              </p>
 
-            nomor_rekening:
-              nomorRekening,
+              <div className="flex justify-end gap-2 mt-4">
 
-            nama_rekening:
-              namaRekening,
-          }
-        );
+                <button
+                  onClick={() => toast.dismiss(t.id)}
+                  className="
+                    px-3
+                    py-2
+                    rounded-xl
+                    border
+                    text-sm
+                  "
+                >
+                  Batal
+                </button>
 
-        alert(
-          "Claim cashback berhasil dikirim"
-        );
+                <button
+                  onClick={async () => {
 
-        /* RESET */
+                    toast.dismiss(t.id);
 
-        setVoucherCode("");
-        setBank("");
-        setNomorRekening("");
-        setNamaRekening("");
+                    try {
 
-        fetchData();
+                      setSubmitLoading(true);
+
+                      await api.post(
+                        "/cashback/claim",
+                        {
+                          voucherCode,
+                          bank,
+                          nomor_rekening:
+                            nomorRekening,
+                          nama_rekening:
+                            namaRekening,
+                        }
+                      );
+
+                      toast.success(
+                        "Claim cashback berhasil dikirim"
+                      );
+
+                      setVoucherCode("");
+                      setBank("");
+                      setNomorRekening("");
+                      setNamaRekening("");
+
+                      fetchData();
+
+                    } catch (err: any) {
+
+                      toast.error(
+                        err?.response?.data?.message ??
+                        "Gagal claim cashback"
+                      );
+
+                    } finally {
+
+                      setSubmitLoading(false);
+
+                    }
+
+                  }}
+                  className="
+                    px-3
+                    py-2
+                    rounded-xl
+                    bg-black
+                    text-white
+                    text-sm
+                  "
+                >
+                  Claim
+                </button>
+
+              </div>
+
+            </div>
+
+          ), {
+            duration: 10000,
+          });
+
+          return;
 
       } catch (err: any) {
 
         console.error(err);
 
-        alert(
+        toast.error(
 
           err?.response?.data
             ?.message ||
