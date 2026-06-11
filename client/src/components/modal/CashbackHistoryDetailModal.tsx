@@ -44,6 +44,13 @@ export default function CashbackHistoryDetailModal({
 
   if (!open || !data) return null;
 
+  const imageUrl =
+  data?.bukti_tf
+
+    ? `${process.env.NEXT_PUBLIC_IMAGE_URL}${data.bukti_tf}`
+
+    : "";
+
   /* =====================================================
      STATUS CONFIG
   ===================================================== */
@@ -398,8 +405,9 @@ export default function CashbackHistoryDetailModal({
                 </p>
 
                 <a
-                  href={data.bukti_tf}
+                  href={imageUrl}
                   target="_blank"
+                  rel="noreferrer"
                   className="
                     h-12
                     px-5
@@ -432,7 +440,7 @@ export default function CashbackHistoryDetailModal({
                 bg-gray-50
               ">
                 <img
-                  src={data.bukti_tf}
+                  src={imageUrl}
                   alt="Bukti Transfer"
                   className="w-full object-cover"
                 />
