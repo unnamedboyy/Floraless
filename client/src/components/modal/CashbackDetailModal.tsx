@@ -198,9 +198,6 @@ export default function CashbackDetailModal({
         <div className="w-[320px]">
           <p className="font-semibold text-sm">Reject Cashback?</p>
           <p className="text-sm text-gray-500 mt-1">Cashback akan ditolak.</p>
-          <div className="mt-3 rounded-xl bg-red-50 border border-red-100 p-3 text-sm text-red-600">
-            {alasan}
-          </div>
           <div className="flex justify-end gap-2 mt-4">
             <button
               onClick={() => toast.dismiss(t.id)}
