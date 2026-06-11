@@ -593,33 +593,33 @@ export default function JadwalPage() {
                   key: "lokasi",
                 },
 
-                {
-                  label: "Status",
+                // {
+                //   label: "Status",
 
-                  key: "status",
+                //   key: "status",
 
-                  render: (row: any) => (
+                //   render: (row: any) => (
 
-                    <div className={`
-                      h-9
-                      px-4
-                      rounded-2xl
-                      inline-flex
-                      items-center
-                      justify-center
-                      text-xs
-                      font-semibold
-                      border
-                      ${getStatusBadge(
-                        row.status
-                      )}
-                    `}>
+                //     <div className={`
+                //       h-9
+                //       px-4
+                //       rounded-2xl
+                //       inline-flex
+                //       items-center
+                //       justify-center
+                //       text-xs
+                //       font-semibold
+                //       border
+                //       ${getStatusBadge(
+                //         row.status
+                //       )}
+                //     `}>
 
-                      {row.status}
+                //       {row.status}
 
-                    </div>
-                  ),
-                },
+                //     </div>
+                //   ),
+                // },
 
               ]}
 
