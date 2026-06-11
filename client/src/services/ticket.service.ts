@@ -113,3 +113,16 @@ export const addTicketLog =
 
     return res.data;
   };
+
+  export const exportInvoice = async (id: string) => {
+  const res = await api.get(
+    `/reports/invoice/${id}`,
+    {
+      responseType: "blob",
+    }
+  );
+
+  const url = window.URL.createObjectURL(res.data);
+
+  window.open(url);
+};

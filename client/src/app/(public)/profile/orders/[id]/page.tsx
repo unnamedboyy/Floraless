@@ -22,7 +22,7 @@ import {
   Star
 } from "lucide-react";
 
-import { getTicketFull } from "@/services/ticket.service";
+import { getTicketFull, exportInvoice } from "@/services/ticket.service";
 import toast from "react-hot-toast";
 import { reviewService } from "@/services/review.service";
 import PaymentUploadForm from "@/components/form/PaymentUploadForm";
@@ -370,6 +370,23 @@ export default function OrderDetailPage() {
               flex-wrap
               gap-3
             ">
+
+              <button
+                onClick={() => exportInvoice(ticket._id)}
+                className="
+                  rounded-full
+                  bg-[#111827]
+                  px-6
+                  py-3
+                  text-sm
+                  font-semibold
+                  text-white
+                  transition
+                  hover:opacity-90
+                "
+              >
+                Download Invoice
+              </button>
 
               <Link
                 href="/profile/orders"

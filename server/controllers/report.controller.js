@@ -74,6 +74,24 @@ export const exportInvoice =
       }
 
       /* =====================================================
+        AUTHORIZATION
+      ===================================================== */
+
+      if (
+        req.user.role === "pelanggan" &&
+        ticket.pelangganId?._id.toString() !== req.user.id
+      ) {
+
+        return res.status(403)
+          .json({
+
+            message:
+              "Tidak memiliki akses",
+
+          });
+      }
+
+      /* =====================================================
          DETAIL
       ===================================================== */
 
@@ -258,8 +276,13 @@ export const exportInvoice =
 
       const browser =
         await puppeteer.launch({
-
           headless: true,
+          args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+          ],
+
         });
 
       const page =
@@ -760,6 +783,13 @@ export const exportFinancialReport =
         await puppeteer.launch({
 
           headless: true,
+          args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+
+          ],
+
         });
 
       const page =
