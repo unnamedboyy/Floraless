@@ -518,22 +518,6 @@ td {
         }
         </div>
 
-        <div
-        style="
-            font-size: 11px;
-            color: #6B7280;
-            line-height: 1.7;
-        "
-        >
-        ${
-            ticket
-            .layananId
-            ?.deskripsi ||
-
-            "Layanan dekorasi dan floral premium FLORALESS."
-        }
-        </div>
-
     </div>
 
     <!-- PAYMENT RECEIVER -->
