@@ -62,6 +62,12 @@ export default function ProfileSidebar() {
       icon: <ShoppingBag size={18} />,
     },
 
+    {
+      label: "Cashback Saya",
+      href: "/profile/cashback",
+      icon: <Gift size={18} />,
+    },
+
   ];
 
   if (!mounted) return null;

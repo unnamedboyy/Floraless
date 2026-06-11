@@ -698,34 +698,6 @@ td {
 
         </div>
 
-        <div class="summary-row">
-
-          <div>
-            Total Dibayar
-          </div>
-
-          <div>
-            ${formatRupiah(
-              totalPaid
-            )}
-          </div>
-
-        </div>
-
-        <div class="summary-row total">
-
-          <div>
-            Sisa Pembayaran
-          </div>
-
-          <div>
-            ${formatRupiah(
-              remaining
-            )}
-          </div>
-
-        </div>
-
       </div>
 
     </div>

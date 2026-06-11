@@ -51,9 +51,10 @@ export const exportInvoice =
           ticketId
         )
 
-        .populate(
-          "pelangganId"
-        )
+        .populate({
+          path: "pelangganId",
+          select: "nama no_telp userId",
+        })
 
         .populate(
           "layananId"
@@ -72,6 +73,7 @@ export const exportInvoice =
               "Ticket tidak ditemukan",
           });
       }
+      
 
       /* =====================================================
         AUTHORIZATION
@@ -79,7 +81,7 @@ export const exportInvoice =
 
       if (
         req.user.role === "pelanggan" &&
-        ticket.pelangganId?._id.toString() !== req.user.id
+        ticket.pelangganId?.userId?.toString() !== req.user.id
       ) {
 
         return res.status(403)
