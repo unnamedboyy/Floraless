@@ -20,6 +20,12 @@ export const useDashboard = (
         params: query,
       });
 
+      // DEBUG: log semua keys dari response agar mudah trace field
+      if (process.env.NODE_ENV === "development") {
+        console.log("[useDashboard] keys:", Object.keys(res.data || {}));
+        console.log("[useDashboard] data:", res.data);
+      }
+
       setData(res.data);
     } catch (err) {
       console.error("DASHBOARD ERROR:", err);
@@ -30,5 +36,5 @@ export const useDashboard = (
     fetchData();
   }, [role, JSON.stringify(query)]);
 
-  return { data };
+  return { data, refetch: fetchData };
 };
