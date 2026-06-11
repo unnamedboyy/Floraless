@@ -6,69 +6,72 @@ import {
   CheckCircle2,
   XCircle,
   ExternalLink,
+  Wallet,
+  Landmark,
+  User2,
+  Ticket,
+  Calendar,
+  FileText,
+  BadgeCheck,
 } from "lucide-react";
 
+/* =====================================================
+   TYPES
+===================================================== */
+
 type Props = {
-
   open: boolean;
-
   data: any;
-
   onClose: () => void;
 };
 
+/* =====================================================
+   HELPERS
+===================================================== */
+
+const formatRupiah = (num: number) =>
+  "Rp " + (num || 0).toLocaleString("id-ID");
+
+/* =====================================================
+   COMPONENT
+===================================================== */
+
 export default function CashbackHistoryDetailModal({
-
   open,
-
   data,
-
   onClose,
-
 }: Props) {
 
-  if (!open || !data)
-    return null;
+  if (!open || !data) return null;
+
+  /* =====================================================
+     STATUS CONFIG
+  ===================================================== */
 
   const statusConfig = {
-
     pending: {
-
       label: "Pending",
-
-      icon:
-        <Clock3 size={15} />,
-
+      icon: <Clock3 size={16} />,
       className: `
-        bg-yellow-100
-        text-yellow-700
-        border-yellow-200
+        bg-gray-100
+        text-gray-700
+        border-gray-200
       `,
     },
-
     approved: {
-
       label: "Approved",
-
-      icon:
-        <CheckCircle2 size={15} />,
-
+      icon: <BadgeCheck size={16} />,
       className: `
-        bg-green-100
-        text-green-700
-        border-green-200
+        bg-emerald-50
+        text-emerald-700
+        border-emerald-200
       `,
     },
-
     rejected: {
-
       label: "Rejected",
-
-      icon:
-        <XCircle size={15} />,
-
+      icon: <XCircle size={16} />,
       className: `
-        bg-red-100
+        bg-red-50
         text-red-700
         border-red-200
       `,
@@ -78,7 +81,11 @@ export default function CashbackHistoryDetailModal({
   const status =
     statusConfig[
       data.status as keyof typeof statusConfig
-    ];
+    ] || statusConfig.pending;
+
+  /* =====================================================
+     RENDER
+  ===================================================== */
 
   return (
 
@@ -97,10 +104,7 @@ export default function CashbackHistoryDetailModal({
       {/* BACKDROP */}
       <div
         onClick={onClose}
-        className="
-          absolute
-          inset-0
-        "
+        className="absolute inset-0"
       />
 
       {/* MODAL */}
@@ -109,244 +113,340 @@ export default function CashbackHistoryDetailModal({
         z-10
         w-full
         max-w-4xl
+        max-h-[92vh]
         overflow-hidden
         rounded-[32px]
         border
+        border-gray-200
         bg-white
         shadow-2xl
+        flex
+        flex-col
       ">
 
-        {/* HEADER */}
+        {/* =====================================================
+            HEADER
+        ===================================================== */}
+
         <div className="
-          sticky
-          top-0
-          z-20
-          flex
-          items-center
-          justify-between
+          shrink-0
+          px-10
+          py-7
           border-b
-          bg-white
-          px-6
-          py-5
+          border-gray-200
+          bg-[#FCFCFD]
         ">
 
-          <div>
+          <div className="
+            flex
+            items-start
+            justify-between
+            gap-5
+          ">
 
-            <h2 className="
-              text-2xl
-              font-bold
-            ">
-              Detail Cashback
-            </h2>
+            <div className="space-y-3">
 
-            <p className="
-              mt-1
-              text-sm
-              text-gray-500
-            ">
-              Informasi claim cashback Anda
-            </p>
+              <div className="
+                flex
+                items-center
+                gap-4
+                flex-wrap
+              ">
+
+                <h2 className="
+                  text-[44px]
+                  leading-none
+                  tracking-tight
+                  font-bold
+                  text-[#0F172A]
+                ">
+                  Cashback
+                </h2>
+
+                <div className={`
+                  h-12
+                  px-5
+                  rounded-2xl
+                  flex
+                  items-center
+                  gap-2
+                  text-[15px]
+                  font-semibold
+                  border
+                  shadow-sm
+                  ${status.className}
+                `}>
+                  {status.icon}
+                  {status.label}
+                </div>
+
+              </div>
+
+              <p className="
+                text-[16px]
+                text-gray-500
+              ">
+                Informasi claim cashback Anda
+              </p>
+
+            </div>
+
+            <button
+              onClick={onClose}
+              className="
+                w-14 h-14
+                rounded-2xl
+                border
+                border-gray-300
+                bg-white
+                flex
+                items-center
+                justify-center
+                text-gray-500
+                hover:bg-gray-50
+                hover:text-gray-700
+                transition-all
+              "
+            >
+              <X size={24} />
+            </button>
 
           </div>
 
-          <button
-            onClick={onClose}
-            className="
-              flex
-              h-11
-              w-11
-              items-center
-              justify-center
-              rounded-full
-              border
-              hover:bg-gray-100
-            "
-          >
-            <X size={20} />
-          </button>
-
         </div>
 
-        {/* CONTENT */}
+        {/* =====================================================
+            BODY
+        ===================================================== */}
+
         <div className="
-          max-h-[85vh]
+          flex-1
           overflow-y-auto
-          px-6
-          py-6
+          px-10
+          py-8
+          space-y-7
+          bg-[#FCFCFD]
         ">
 
-          {/* STATUS */}
+          {/* HERO */}
           <div className="
-            mb-6
+            rounded-[28px]
+            border
+            border-gray-200
+            bg-white
+            p-8
+            shadow-sm
           ">
 
-            <div className={`
-              inline-flex
-              items-center
-              gap-2
-              rounded-full
-              border
-              px-4
-              py-2
-              text-sm
-              font-semibold
+            <div className="
+              flex
+              items-start
+              gap-5
+            ">
 
-              ${status.className}
-            `}>
+              <div className="
+                w-24
+                h-24
+                rounded-[32px]
+                bg-emerald-50
+                text-emerald-600
+                flex
+                items-center
+                justify-center
+                shrink-0
+              ">
+                <Wallet size={42} />
+              </div>
 
-              {status.icon}
+              <div className="space-y-4">
 
-              {status.label}
+                <div>
+
+                  <h3 className="
+                    text-[38px]
+                    leading-tight
+                    font-bold
+                    text-[#0F172A]
+                  ">
+                    {formatRupiah(data.amount || 0)}
+                  </h3>
+
+                  <p className="
+                    mt-2
+                    text-gray-500
+                  ">
+                    Nominal cashback Anda
+                  </p>
+
+                </div>
+
+                <div className="
+                  flex
+                  items-center
+                  gap-3
+                  flex-wrap
+                ">
+
+                  <div className="
+                    px-4
+                    py-2
+                    rounded-2xl
+                    bg-slate-100
+                    border
+                    border-slate-200
+                    text-slate-700
+                    text-sm
+                    font-medium
+                  ">
+                    Voucher: {data.kode_voucher || "-"}
+                  </div>
+
+                  <div className="
+                    px-4
+                    py-2
+                    rounded-2xl
+                    bg-neutral-100
+                    border
+                    border-neutral-200
+                    text-neutral-700
+                    text-sm
+                    font-medium
+                  ">
+                    {new Date(data.createdAt).toLocaleString("id-ID")}
+                  </div>
+
+                </div>
+
+              </div>
 
             </div>
 
           </div>
 
-          {/* GRID */}
-          <div className="
-            grid
-            grid-cols-1
-            gap-5
-            md:grid-cols-2
-          ">
+          {/* INFORMASI CASHBACK */}
+          <Section title="Informasi Cashback">
 
-            <InfoCard
-              title="Kode Voucher"
-              value={
-                data.kode_voucher || "-"
-              }
-            />
+            <div className="
+              grid
+              grid-cols-1
+              md:grid-cols-2
+              gap-5
+            ">
 
-            <InfoCard
-              title="Nominal Cashback"
-              value={`Rp ${(
-                data.amount || 0
-              ).toLocaleString(
-                "id-ID"
-              )}`}
-            />
+              <Field
+                icon={<Ticket size={18} />}
+                label="Kode Voucher"
+                value={data.kode_voucher}
+              />
 
-            <InfoCard
-              title="Bank"
-              value={
-                data.bank || "-"
-              }
-            />
+              <Field
+                icon={<Wallet size={18} />}
+                label="Nominal Cashback"
+                value={formatRupiah(data.amount || 0)}
+              />
 
-            <InfoCard
-              title="Nomor Rekening"
-              value={
-                data.nomor_rekening || "-"
-              }
-            />
+              <Field
+                icon={<Landmark size={18} />}
+                label="Bank"
+                value={data.bank}
+              />
 
-            <InfoCard
-              title="Nama Rekening"
-              value={
-                data.nama_rekening || "-"
-              }
-            />
+              <Field
+                icon={<Wallet size={18} />}
+                label="Nomor Rekening"
+                value={data.nomor_rekening}
+              />
 
-            <InfoCard
-              title="Tanggal Claim"
-              value={
-                new Date(
+              <Field
+                icon={<User2 size={18} />}
+                label="Nama Rekening"
+                value={data.nama_rekening}
+              />
+
+              <Field
+                icon={<Calendar size={18} />}
+                label="Tanggal Claim"
+                value={
                   data.createdAt
-                ).toLocaleString(
-                  "id-ID"
-                )
-              }
-            />
+                    ? new Date(data.createdAt).toLocaleString("id-ID")
+                    : "-"
+                }
+              />
 
-          </div>
+            </div>
 
-          {/* BUKTI TF */}
-          {
-            data.bukti_tf && (
+          </Section>
+
+          {/* BUKTI TRANSFER */}
+          {data.bukti_tf && (
+
+            <Section title="Bukti Transfer">
 
               <div className="
-                mt-6
-                rounded-[28px]
-                border
-                p-6
+                flex
+                items-start
+                justify-between
+                gap-4
+                flex-wrap
               ">
 
-                <div className="
-                  flex
-                  items-center
-                  justify-between
-                  gap-4
-                  flex-wrap
+                <p className="
+                  text-[15px]
+                  text-gray-500
                 ">
+                  Bukti transfer cashback
+                </p>
 
-                  <div>
+                <a
+                  href={data.bukti_tf}
+                  target="_blank"
+                  className="
+                    h-12
+                    px-5
+                    rounded-2xl
+                    border
+                    border-gray-200
+                    bg-white
+                    flex
+                    items-center
+                    gap-2
+                    text-sm
+                    font-semibold
+                    text-[#111827]
+                    shadow-sm
+                    hover:bg-gray-50
+                    transition-all
+                  "
+                >
+                  <ExternalLink size={16} />
+                  Open Image
+                </a>
 
-                    <h3 className="
-                      text-xl
-                      font-bold
-                    ">
-                      Bukti Transfer
-                    </h3>
+              </div>
 
-                    <p className="
-                      mt-1
-                      text-sm
-                      text-gray-500
-                    ">
-                      Bukti transfer cashback
-                    </p>
-
-                  </div>
-
-                  <a
-                    href={data.bukti_tf}
-                    target="_blank"
-                    className="
-                      inline-flex
-                      items-center
-                      gap-2
-                      rounded-2xl
-                      border
-                      px-4
-                      py-2
-                      text-sm
-                      font-medium
-                      hover:bg-gray-100
-                    "
-                  >
-
-                    <ExternalLink size={16} />
-
-                    Open Image
-
-                  </a>
-
-                </div>
-
+              <div className="
+                rounded-[28px]
+                overflow-hidden
+                border
+                border-gray-200
+                bg-gray-50
+              ">
                 <img
                   src={data.bukti_tf}
                   alt="Bukti Transfer"
-                  className="
-                    mt-5
-                    w-full
-                    rounded-3xl
-                    border
-                  "
+                  className="w-full object-cover"
                 />
-
               </div>
-            )
-          }
 
-          {/* REJECT */}
-          {
-            data.status ===
-            "rejected" &&
+            </Section>
+          )}
 
-            data.alasan && (
+          {/* ALASAN PENOLAKAN */}
+          {data.status === "rejected" && data.alasan && (
+
+            <Section title="Alasan Penolakan">
 
               <div className="
-                mt-6
                 rounded-[28px]
                 border
                 border-red-200
@@ -354,25 +454,91 @@ export default function CashbackHistoryDetailModal({
                 p-6
               ">
 
-                <h3 className="
-                  text-xl
-                  font-bold
-                  text-red-700
+                <div className="
+                  flex
+                  items-start
+                  gap-4
                 ">
-                  Alasan Penolakan
-                </h3>
 
-                <p className="
-                  mt-3
-                  leading-relaxed
-                  text-red-600
-                ">
-                  {data.alasan}
-                </p>
+                  <div className="
+                    w-14
+                    h-14
+                    rounded-2xl
+                    bg-white
+                    text-red-600
+                    flex
+                    items-center
+                    justify-center
+                    shrink-0
+                  ">
+                    <FileText size={24} />
+                  </div>
+
+                  <div>
+
+                    <h4 className="
+                      text-[22px]
+                      font-bold
+                      text-red-700
+                    ">
+                      Cashback Ditolak
+                    </h4>
+
+                    <p className="
+                      mt-3
+                      leading-7
+                      text-red-600
+                    ">
+                      {data.alasan}
+                    </p>
+
+                  </div>
+
+                </div>
 
               </div>
-            )
-          }
+
+            </Section>
+          )}
+
+        </div>
+
+        {/* =====================================================
+            FOOTER
+        ===================================================== */}
+
+        <div className="
+          shrink-0
+          px-10
+          py-5
+          border-t
+          border-gray-200
+          bg-white/90
+          backdrop-blur-sm
+          flex
+          items-center
+          justify-between
+        ">
+
+          <p className="text-sm text-gray-500">
+            Detail informasi cashback Anda
+          </p>
+
+          <button
+            onClick={onClose}
+            className="
+              h-12
+              px-8
+              rounded-2xl
+              bg-[#111827]
+              text-white
+              font-medium
+              hover:bg-black
+              transition-all
+            "
+          >
+            Tutup
+          </button>
 
         </div>
 
@@ -383,48 +549,84 @@ export default function CashbackHistoryDetailModal({
 }
 
 /* =====================================================
-   INFO CARD
+   SECTION
 ===================================================== */
 
-function InfoCard({
-
+function Section({
   title,
-
-  value,
-
+  children,
 }: {
-
   title: string;
-
-  value: string;
+  children: React.ReactNode;
 }) {
-
   return (
-
     <div className="
-      rounded-[28px]
+      rounded-[24px]
       border
-      p-6
+      border-gray-200
+      bg-white
+      p-7
+      space-y-6
+      shadow-sm
     ">
-
-      <p className="
-        text-sm
-        uppercase
-        tracking-widest
-        text-gray-400
+      <h3 className="
+        text-[28px]
+        font-semibold
+        text-[#111827]
       ">
         {title}
-      </p>
+      </h3>
+      {children}
+    </div>
+  );
+}
 
-      <p className="
-        mt-3
-        text-2xl
-        font-bold
+/* =====================================================
+   FIELD
+===================================================== */
+
+function Field({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value?: any;
+  icon?: React.ReactNode;
+}) {
+  return (
+    <div className="
+      rounded-2xl
+      border
+      border-gray-200
+      bg-[#FCFCFD]
+      p-5
+      space-y-3
+    ">
+      <div className="
+        flex
+        items-center
+        gap-2
+        text-gray-500
+      ">
+        {icon}
+        <div className="
+          text-xs
+          font-semibold
+          uppercase
+          tracking-wider
+        ">
+          {label}
+        </div>
+      </div>
+      <div className="
+        text-[15px]
+        font-semibold
+        text-[#111827]
         break-words
       ">
-        {value}
-      </p>
-
+        {value || "-"}
+      </div>
     </div>
   );
 }
