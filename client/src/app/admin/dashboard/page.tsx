@@ -371,7 +371,7 @@ export default function AdminDashboardPage() {
              GRAFIK PESANAN PER BULAN — PB-093
           ========================================= */}
 
-          <div className="rounded-[32px] bg-white p-6 shadow-sm">
+          {/* <div className="rounded-[32px] bg-white p-6 shadow-sm">
 
             <div className="mb-6 flex items-center justify-between">
               <div>
@@ -400,7 +400,7 @@ export default function AdminDashboardPage() {
               </BarChart>
             </ResponsiveContainer>
 
-          </div>
+          </div> */}
 
           {/* =========================================
              GRAFIK PENDAPATAN PER BULAN — PB-094
