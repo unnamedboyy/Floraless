@@ -289,69 +289,77 @@ export default function UserFormModal({
   };
 
   /* =====================================================
-     SUBMIT
+    HELPERS
   ===================================================== */
 
-  const handleSubmit =
-    async () => {
+  const isValidEmail = (v: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
-      try {
+  const isValidPhone = (v: string) =>
+    /^(\+62|62|0)8[1-9][0-9]{6,10}$/.test(v);
 
-        setLoading(true);
+  /* =====================================================
+    SUBMIT
+  ===================================================== */
 
-        const payload: any = {
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
 
-          username:
-            form.username,
+      /* ================= VALIDASI WAJIB ================= */
 
-          nama:
-            form.nama,
-
-          email:
-            form.email,
-
-          no_telp:
-            form.no_telp,
-
-          alamat:
-            form.alamat,
-
-          profile:
-            form.profile,
-
-          jenis_kelamin:
-            form.jenis_kelamin,
-
-          tanggal_lahir:
-            form.tanggal_lahir,
-
-          tanggal_masuk:
-            form.tanggal_masuk,
-
-          bio:
-            form.bio,
-
-          role,
-        };
-
-        if (!initialData) {
-
-          payload.password =
-            form.password;
-        }
-
-        await onSubmit(payload);
-
-      } catch (err) {
-
-        console.error(err);
-
-      } finally {
-
-        setLoading(false);
-
+      if (!form.nama || !form.username || !form.email || !form.no_telp) {
+        toast.error("Semua field wajib diisi");
+        return;
       }
-    };
+
+      if (!initialData && !form.password) {
+        toast.error("Semua field wajib diisi");
+        return;
+      }
+
+      /* ================= VALIDASI FORMAT ================= */
+
+      if (!isValidEmail(form.email)) {
+        toast.error("Format email tidak valid (contoh: nama@email.com)");
+        return;
+      }
+
+      if (!isValidPhone(form.no_telp)) {
+        toast.error(
+          "Format nomor telepon tidak valid (contoh: 08123456789 atau +628123456789)"
+        );
+        return;
+      }
+
+      /* ================= SUBMIT ================= */
+
+      const payload: any = {
+        username: form.username,
+        nama: form.nama,
+        email: form.email,
+        no_telp: form.no_telp,
+        alamat: form.alamat,
+        profile: form.profile,
+        jenis_kelamin: form.jenis_kelamin,
+        tanggal_lahir: form.tanggal_lahir,
+        tanggal_masuk: form.tanggal_masuk,
+        bio: form.bio,
+        role,
+      };
+
+      if (!initialData) {
+        payload.password = form.password;
+      }
+
+      await onSubmit(payload);
+
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   /* =====================================================
      RENDER
@@ -755,7 +763,7 @@ export default function UserFormModal({
         </Section>
 
         {/* PERSONAL */}
-        <Section title="Informasi Lainnya">
+        <Section title="Informasi Lainnya (Opsional)">
 
           <div className="
             grid

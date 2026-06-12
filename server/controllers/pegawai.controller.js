@@ -45,7 +45,7 @@ export const getPegawai = async ( req, res, next) => {
 
 /* ================= CREATE ================= */
 
-export const createPegawai = async ( req, res, next) => {
+export const createPegawai = async (req, res, next) => {
   try {
     const {
       username,
@@ -61,10 +61,9 @@ export const createPegawai = async ( req, res, next) => {
       bio,
     } = req.body;
 
-    const existing = await User.findOne({
-      username,
-    });
+    /* ================= CEK USERNAME ================= */
 
+    const existing = await User.findOne({ username });
     if (existing) {
       return res.status(400).json({
         success: false,
@@ -72,10 +71,45 @@ export const createPegawai = async ( req, res, next) => {
       });
     }
 
-    const hash = await bcrypt.hash(
-      password,
-      10
-    );
+    /* ================= VALIDASI FORMAT ================= */
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: "Format email tidak valid (contoh: nama@email.com)",
+      });
+    }
+
+    const phoneRegex = /^(\+62|62|0)8[1-9][0-9]{6,10}$/;
+    if (!phoneRegex.test(no_telp)) {
+      return res.status(400).json({
+        success: false,
+        message: "Format nomor telepon tidak valid (contoh: 08123456789 atau +628123456789)",
+      });
+    }
+
+    /* ================= CEK DUPLIKASI ================= */
+
+    const existingEmail = await Pegawai.findOne({ email });
+    if (existingEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "Email sudah terdaftar, silakan gunakan email lain",
+      });
+    }
+
+    const existingPhone = await Pegawai.findOne({ no_telp });
+    if (existingPhone) {
+      return res.status(400).json({
+        success: false,
+        message: "Nomor telepon sudah terdaftar, silakan gunakan nomor lain",
+      });
+    }
+
+    /* ================= CREATE ================= */
+
+    const hash = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       username,
@@ -84,19 +118,18 @@ export const createPegawai = async ( req, res, next) => {
       isActive: true,
     });
 
-    const pegawai =
-      await createPegawaiProfile({
-        userId: user._id,
-        nama,
-        email,
-        no_telp,
-        profile,
-        alamat,
-        jenis_kelamin,
-        tanggal_lahir,
-        tanggal_masuk,
-        bio,
-      });
+    const pegawai = await createPegawaiProfile({
+      userId: user._id,
+      nama,
+      email,
+      no_telp,
+      profile,
+      alamat,
+      jenis_kelamin,
+      tanggal_lahir,
+      tanggal_masuk,
+      bio,
+    });
 
     res.json({
       success: true,
