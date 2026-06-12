@@ -4,28 +4,30 @@ import { useState } from "react";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
-
 import { register } from "@/services/auth.service";
 
-export default function RegisterForm() {
+/* =========================================================
+   HELPERS
+========================================================= */
 
+const isValidEmail = (v: string) =>
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
+const isValidPhone = (v: string) =>
+  /^(\+62|62|0)8[1-9][0-9]{6,10}$/.test(v);
+
+export default function RegisterForm() {
   const router = useRouter();
 
-  const [showPassword, setShowPassword] =
-    useState(false);
-
-  const [loading, setLoading] =
-    useState(false);
-
-  const [error, setError] =
-    useState("");
-
-  const [success, setSuccess] =
-    useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const [form, setForm] = useState({
     nama: "",
     username: "",
+    email: "",
     no_telp: "",
     password: "",
   });
@@ -35,9 +37,7 @@ export default function RegisterForm() {
   ========================================================= */
 
   const handleRegister = async () => {
-
     try {
-
       setLoading(true);
       setError("");
       setSuccess("");
@@ -47,14 +47,23 @@ export default function RegisterForm() {
       if (
         !form.nama ||
         !form.username ||
+        !form.email ||
         !form.no_telp ||
         !form.password
       ) {
+        setError("Semua field wajib diisi");
+        return;
+      }
 
+      if (!isValidEmail(form.email)) {
+        setError("Format email tidak valid (contoh: nama@email.com)");
+        return;
+      }
+
+      if (!isValidPhone(form.no_telp)) {
         setError(
-          "Semua field wajib diisi"
+          "Format nomor telepon tidak valid (contoh: 08123456789 atau +628123456789)"
         );
-
         return;
       }
 
@@ -65,367 +74,152 @@ export default function RegisterForm() {
         role: "pelanggan",
       });
 
-      console.log(
-        "REGISTER RESPONSE:",
-        res
-      );
+      console.log("REGISTER RESPONSE:", res);
 
-      setSuccess(
-        "Register berhasil, redirect ke login..."
-      );
+      setSuccess("Register berhasil, mengarahkan ke halaman login...");
 
       /* ================= REDIRECT ================= */
 
       setTimeout(() => {
-
         router.push("/login");
-
       }, 1500);
-
     } catch (err: any) {
-
       console.error(err);
-
       setError(
         err?.response?.data?.message ||
-        err?.message ||
-        "Register gagal"
+          err?.message ||
+          "Register gagal, silakan coba lagi"
       );
-
     } finally {
-
       setLoading(false);
-
     }
-
   };
+
+  /* =========================================================
+     INPUT CLASS
+  ========================================================= */
+
+  const inputClass = `
+    w-full rounded-2xl border border-white/10
+    bg-white/10 px-4 py-3 text-white
+    placeholder:text-white/50 outline-none transition
+    focus:border-white/30 focus:bg-white/15
+  `;
 
   return (
     <div className="space-y-5">
 
-      {/* =====================================================
-          TITLE
-      ===================================================== */}
+      {/* TITLE */}
       <div>
-
-        <h2
-          className="
-            text-4xl
-            font-bold
-            text-white
-          "
-        >
-          Sign Up
-        </h2>
-
-        <p
-          className="
-            mt-3
-            text-white/70
-          "
-        >
-          Buat akun pelanggan Floraless
-        </p>
-
+        <h2 className="text-4xl font-bold text-white">Sign Up</h2>
+        <p className="mt-3 text-white/70">Buat akun pelanggan Floraless</p>
       </div>
 
-      {/* =====================================================
-          NAMA
-      ===================================================== */}
+      {/* NAMA */}
       <div className="space-y-2">
-
-        <label
-          className="
-            text-sm
-            font-medium
-            text-white
-          "
-        >
-          Nama Lengkap
-        </label>
-
+        <label className="text-sm font-medium text-white">Nama Lengkap</label>
         <input
           type="text"
           placeholder="Masukkan nama lengkap"
           value={form.nama}
-          onChange={(e) =>
-            setForm({
-              ...form,
-              nama: e.target.value,
-            })
-          }
-          className="
-            w-full
-            rounded-2xl
-            border
-            border-white/10
-            bg-white/10
-            px-4
-            py-3
-            text-white
-            placeholder:text-white/50
-            outline-none
-            transition
-            focus:border-[#C9AE63]-300/50
-            focus:bg-white/15
-          "
+          onChange={(e) => setForm({ ...form, nama: e.target.value })}
+          className={inputClass}
         />
-
       </div>
 
-      {/* =====================================================
-          USERNAME
-      ===================================================== */}
+      {/* USERNAME */}
       <div className="space-y-2">
-
-        <label
-          className="
-            text-sm
-            font-medium
-            text-white
-          "
-        >
-          Username
-        </label>
-
+        <label className="text-sm font-medium text-white">Username</label>
         <input
           type="text"
           placeholder="Masukkan username"
           value={form.username}
-          onChange={(e) =>
-            setForm({
-              ...form,
-              username: e.target.value,
-            })
-          }
-          className="
-            w-full
-            rounded-2xl
-            border
-            border-white/10
-            bg-white/10
-            px-4
-            py-3
-            text-white
-            placeholder:text-white/50
-            outline-none
-            transition
-            focus:border-[#C9AE63]-300/50
-            focus:bg-white/15
-          "
+          onChange={(e) => setForm({ ...form, username: e.target.value })}
+          className={inputClass}
         />
-
       </div>
 
-      {/* =====================================================
-          NO TELP
-      ===================================================== */}
+      {/* EMAIL */}
       <div className="space-y-2">
+        <label className="text-sm font-medium text-white">Email</label>
+        <input
+          type="email"
+          placeholder="Masukkan alamat email"
+          value={form.email}
+          onChange={(e) => setForm({ ...form, email: e.target.value })}
+          className={inputClass}
+        />
+      </div>
 
-        <label
-          className="
-            text-sm
-            font-medium
-            text-white
-          "
-        >
-          Nomor Telepon
-        </label>
-
+      {/* NO TELP */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-white">Nomor Telepon</label>
         <input
           type="text"
-          placeholder="Masukkan nomor telepon"
+          placeholder="Contoh: 08123456789"
           value={form.no_telp}
-          onChange={(e) =>
-            setForm({
-              ...form,
-              no_telp: e.target.value,
-            })
-          }
-          className="
-            w-full
-            rounded-2xl
-            border
-            border-white/10
-            bg-white/10
-            px-4
-            py-3
-            text-white
-            placeholder:text-white/50
-            outline-none
-            transition
-            focus:border-[#C9AE63]-300/50
-            focus:bg-white/15
-          "
+          onChange={(e) => setForm({ ...form, no_telp: e.target.value })}
+          className={inputClass}
         />
-
       </div>
 
-      {/* =====================================================
-          PASSWORD
-      ===================================================== */}
+      {/* PASSWORD */}
       <div className="space-y-2">
-
-        <label
-          className="
-            text-sm
-            font-medium
-            text-white
-          "
-        >
-          Password
-        </label>
-
+        <label className="text-sm font-medium text-white">Password</label>
         <div className="relative">
-
           <input
-            type={
-              showPassword
-                ? "text"
-                : "password"
-            }
+            type={showPassword ? "text" : "password"}
             placeholder="Masukkan password"
             value={form.password}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                password: e.target.value,
-              })
-            }
-            className="
-              w-full
-              rounded-2xl
-              border
-              border-white/10
-              bg-white/10
-              px-4
-              py-3
-              pr-12
-              text-white
-              placeholder:text-white/50
-              outline-none
-              transition
-              focus:border-[#C9AE63]-300/50
-              focus:bg-white/15
-            "
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            className={`${inputClass} pr-12`}
           />
-
           <button
             type="button"
-            onClick={() =>
-              setShowPassword(
-                !showPassword
-              )
-            }
-            className="
-              absolute
-              right-4
-              top-1/2
-              -translate-y-1/2
-              text-white/60
-              hover:text-white
-              transition
-            "
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition"
           >
-            {showPassword ? (
-              <EyeOff size={18} />
-            ) : (
-              <Eye size={18} />
-            )}
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
-
         </div>
-
       </div>
 
-      {/* =====================================================
-          ERROR
-      ===================================================== */}
+      {/* ERROR */}
       {error && (
-        <div
-          className="
-            rounded-2xl
-            border
-            border-red-400/20
-            bg-red-500/10
-            px-4
-            py-3
-            text-sm
-            text-red-100
-          "
-        >
+        <div className="rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-100">
           {error}
         </div>
       )}
 
-      {/* =====================================================
-          SUCCESS
-      ===================================================== */}
+      {/* SUCCESS */}
       {success && (
-        <div
-          className="
-            rounded-2xl
-            border
-            border-green-400/20
-            bg-green-500/10
-            px-4
-            py-3
-            text-sm
-            text-green-100
-          "
-        >
+        <div className="rounded-2xl border border-green-400/20 bg-green-500/10 px-4 py-3 text-sm text-green-100">
           {success}
         </div>
       )}
 
-      {/* =====================================================
-          BUTTON
-      ===================================================== */}
+      {/* BUTTON */}
       <button
         onClick={handleRegister}
         disabled={loading}
         className="
-          w-full
-          rounded-2xl
-          bg-white
-          py-3
-          font-semibold
-          text-[#160B44]
-          transition
-          hover:opacity-90
-          disabled:opacity-50
-          disabled:cursor-not-allowed
+          w-full rounded-2xl bg-white py-3 font-semibold
+          text-[#160B44] transition hover:opacity-90
+          disabled:opacity-50 disabled:cursor-not-allowed
         "
       >
-        {loading
-          ? "Loading..."
-          : "CREATE ACCOUNT"}
+        {loading ? "Loading..." : "CREATE ACCOUNT"}
       </button>
 
-      {/* =====================================================
-          LOGIN
-      ===================================================== */}
-      <p
-        className="
-          text-center
-          text-sm
-          text-white/70
-        "
-      >
+      {/* LOGIN LINK */}
+      <p className="text-center text-sm text-white/70">
         Sudah punya akun?{" "}
-
         <Link
           href="/login"
-          className="
-            font-semibold
-            text-[#C9AE63]
-            hover:text-white
-            transition
-          "
+          className="font-semibold text-[#C9AE63] hover:text-white transition"
         >
           Login
         </Link>
-
       </p>
 
     </div>

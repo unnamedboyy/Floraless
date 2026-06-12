@@ -15,6 +15,52 @@ import { createPelangganProfile } from "./pelanggan.controller.js";
    HELPERS
 ===================================================== */
 
+const checkEmail = async (email, Model, excludeId = null) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailRegex.test(email)) {
+    throw {
+      status: 400,
+      message: "Format email tidak valid (contoh: nama@email.com)",
+    };
+  }
+
+  const existing = await Model.findOne({
+    email,
+    ...(excludeId && { _id: { $ne: excludeId } }),
+  });
+
+  if (existing) {
+    throw {
+      status: 400,
+      message: "Email sudah terdaftar, silakan gunakan email lain",
+    };
+  }
+};
+
+const checkNoTelp = async (no_telp, Model, excludeId = null) => {
+  const phoneRegex = /^(\+62|62|0)8[1-9][0-9]{6,10}$/;
+
+  if (!phoneRegex.test(no_telp)) {
+    throw {
+      status: 400,
+      message: "Format nomor telepon tidak valid (contoh: 08123456789)",
+    };
+  }
+
+  const existing = await Model.findOne({
+    no_telp,
+    ...(excludeId && { _id: { $ne: excludeId } }),
+  });
+
+  if (existing) {
+    throw {
+      status: 400,
+      message: "Nomor telepon sudah terdaftar, silakan gunakan nomor lain",
+    };
+  }
+};
+
 const createUser = async (username, password, role) => {
   const hash = await bcrypt.hash(password, 10);
 
@@ -85,13 +131,14 @@ export const registerPelanggan = async (req, res, next) => {
       bio,
     } = req.body;
 
+    // Cek duplikasi username
     await checkUsername(username);
 
-    const user = await createUser(
-      username,
-      password,
-      "pelanggan"
-    );
+    // Validasi format + duplikasi email & no_telp
+    await checkEmail(email, Pelanggan);
+    await checkNoTelp(no_telp, Pelanggan);
+
+    const user = await createUser(username, password, "pelanggan");
 
     const pelanggan = await createPelangganProfile({
       userId: user._id,
@@ -107,7 +154,7 @@ export const registerPelanggan = async (req, res, next) => {
 
     res.json({
       success: true,
-      message: "Pelanggan berhasil dibuat",
+      message: "Akun pelanggan berhasil dibuat",
       user,
       pelanggan,
     });

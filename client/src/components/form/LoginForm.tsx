@@ -34,8 +34,26 @@ export default function LoginForm() {
 
     try {
 
-      setLoading(true);
       setError("");
+
+      /* ================= VALIDASI ================= */
+
+      if (!form.username.trim() && !form.password.trim()) {
+        setError("Username dan Password wajib diisi");
+        return;
+      }
+
+      if (!form.username.trim()) {
+        setError("Username wajib diisi");
+        return;
+      }
+
+      if (!form.password.trim()) {
+        setError("Password wajib diisi");
+        return;
+      }
+
+      setLoading(true);
 
       /* ================= API ================= */
 
@@ -56,7 +74,7 @@ export default function LoginForm() {
 
       if (!res?.user) {
         throw new Error(
-          "User tidak ditemukan"
+          "Username tidak ditemukan"
         );
       }
 
