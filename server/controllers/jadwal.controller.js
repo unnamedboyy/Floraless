@@ -133,7 +133,6 @@ export const createJadwal =
         pegawaiId,
         ticketId,
         title,
-        lokasi,
         catatan,
         status,
       } = req.body;
@@ -169,7 +168,6 @@ export const createJadwal =
           ticketId,
           pegawaiId,
           title,
-          lokasi,
           tanggal_acara,
           status:
             status ||
@@ -222,15 +220,9 @@ export const updateJadwal =
         req.params;
 
       const {
-
         tanggal_acara,
-
         status,
-
-        lokasi,
-
         title,
-
       } = req.body;
 
       /* ================= FIND ================= */
@@ -295,15 +287,6 @@ export const updateJadwal =
 
         jadwal.status =
           status;
-      }
-
-      if (
-        lokasi !==
-        undefined
-      ) {
-
-        jadwal.lokasi =
-          lokasi;
       }
 
       if (

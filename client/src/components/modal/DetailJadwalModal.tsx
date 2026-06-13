@@ -1,23 +1,14 @@
 "use client";
 
 import {
-
   CalendarDays,
-
   MapPin,
-
   User2,
-
   Ticket,
-
   ClipboardList,
-
   Clock3,
-
   X,
-
   FileText,
-
 } from "lucide-react";
 
 import BaseModal from "@/components/form/BaseModal";
@@ -356,44 +347,16 @@ export default function DetailJadwalModal({
         </Section>
 
         {/* =====================================================
-            LOKASI
-        ===================================================== */}
-
-        <Section title="Lokasi Acara">
-
-          <FieldCard
-
-            icon={
-              <MapPin
-                size={18}
-              />
-            }
-
-            label="Alamat / Lokasi"
-
-            value={
-              data.lokasi || "-"
-            }
-
-            multiline
-          />
-
-        </Section>
-
-        {/* =====================================================
             PEGAWAI & TICKET
         ===================================================== */}
 
         <Section title="Penugasan">
 
           <div className="
-
             grid
             grid-cols-1
             md:grid-cols-2
-
             gap-5
-
           ">
 
             <FieldCard

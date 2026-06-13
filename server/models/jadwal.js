@@ -30,11 +30,6 @@ const jadwalSchema =
       default: ""
     },
 
-    lokasi: {
-      type: String,
-      default: ""
-    },
-
     catatan: {
       type: String,
       default: ""
@@ -52,15 +47,10 @@ const jadwalSchema =
       type: String,
 
       enum: [
-
         "available",
-
         "booked",
-
         "ongoing",
-
         "done"
-
       ],
 
       default: "available"

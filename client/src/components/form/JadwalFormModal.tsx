@@ -74,11 +74,7 @@ export default function JadwalFormModal({
     useState({
 
       tanggal_acara: "",
-
-      lokasi: "",
-
       pegawaiId: "",
-
       catatan: "",
     });
 
@@ -106,13 +102,9 @@ export default function JadwalFormModal({
 
             : "",
 
-        lokasi:
-          initialData.lokasi || "",
-
         pegawaiId:
 
           initialData.pegawaiId?._id ||
-
           initialData.pegawaiId ||
 
           "",
@@ -124,13 +116,8 @@ export default function JadwalFormModal({
     } else {
 
       setForm({
-
         tanggal_acara: "",
-
-        lokasi: "",
-
         pegawaiId: "",
-
         catatan: "",
       });
     }
@@ -161,7 +148,7 @@ export default function JadwalFormModal({
           return;
         }
 
-        if (!form.lokasi.trim()) {
+        if (!form.catatan.trim()) {
 
           toast.error(
             "Lokasi acara wajib diisi"
@@ -272,7 +259,7 @@ export default function JadwalFormModal({
                       Tambah{" "}
 
                       <span className="
-                        text-[#64748B]
+                        text-[#C9AE63]
                       ">
                         jadwal
                       </span>
@@ -289,18 +276,19 @@ export default function JadwalFormModal({
 
               rounded-2xl
 
-              bg-blue-50
+              bg-[#C9AE63]-50
 
               border
-              border-blue-200
+              border-[#C9AE63]-200
 
-              text-blue-700
+              text-[#C9AE63]-700
 
               inline-flex
               items-center
               justify-center
 
               text-sm
+              text-[#C9AE63]
               font-semibold
 
             ">
@@ -494,46 +482,6 @@ export default function JadwalFormModal({
         </Section>
 
         {/* =====================================================
-            LOKASI
-        ===================================================== */}
-
-        <Section title="Lokasi Acara">
-
-          <TextareaField
-
-            label="Alamat / Lokasi"
-
-            icon={
-              <MapPin
-                size={18}
-              />
-            }
-
-            value={
-              form.lokasi
-            }
-
-            onChange={(
-              e: React.ChangeEvent<HTMLTextAreaElement>
-            ) =>
-
-              setForm({
-
-                ...form,
-
-                lokasi:
-                  e.target.value,
-              })
-            }
-
-            placeholder="
-              Masukkan lokasi acara
-            "
-          />
-
-        </Section>
-
-        {/* =====================================================
             CATATAN
         ===================================================== */}
 
@@ -642,7 +590,7 @@ export default function JadwalFormModal({
               leading-relaxed
 
             ">
-              Pastikan tanggal, lokasi, dan pegawai sudah benar sebelum menyimpan jadwal acara.
+              Pastikan tanggal, catatan, dan pegawai sudah benar sebelum menyimpan jadwal acara.
             </p>
 
           </div>
