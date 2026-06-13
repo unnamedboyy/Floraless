@@ -2,12 +2,20 @@ import mongoose from "mongoose";
 
 const portfolioSchema = new mongoose.Schema({
 
-  layananIds: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Layanan"
+  layananIds: {
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Layanan"
+      }
+    ],
+    validate: {
+      validator: function (val) {
+        return val.length <= 1;
+      },
+      message: "Kategori layanan maksimal 1"
     }
-  ],
+  },
 
   title: {
     type: String,
@@ -22,7 +30,7 @@ const portfolioSchema = new mongoose.Schema({
 
   excerpt: {
     type: String,
-    default: ""
+    required: true
   },
   
   content: {

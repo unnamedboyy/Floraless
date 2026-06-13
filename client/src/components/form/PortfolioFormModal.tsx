@@ -840,7 +840,7 @@ export default function PortfolioFormModal({
                 item !== id
             )
 
-          : [...prev, id]
+          : [id]
     );
   };
 
@@ -909,6 +909,33 @@ export default function PortfolioFormModal({
 
   const handleSubmit =
     async () => {
+
+      if (!title.trim()) {
+
+        toast.error(
+          "Judul portfolio wajib diisi"
+        );
+
+        return;
+      }
+
+      if (!excerpt.trim()) {
+
+        toast.error(
+          "Deskripsi singkat wajib diisi"
+        );
+
+        return;
+      }
+
+      if (selectedLayanan.length === 0) {
+
+        toast.error(
+          "Kategori layanan wajib dipilih"
+        );
+
+        return;
+      }
 
       if (
         gallery.length === 0 &&
@@ -1064,16 +1091,11 @@ export default function PortfolioFormModal({
               </h2>
 
               <h2 className="
-
                 text-[42px]
-
                 leading-none
-
                 tracking-tight
-
                 font-bold
-
-                text-violet-600
+                text-[#C9AE63]
 
               ">
 
@@ -1274,7 +1296,7 @@ export default function PortfolioFormModal({
 
               <TextareaField
 
-                label="Deskripsi Singkat"
+                label="Deskripsi Singkat *"
 
                 icon={<AlignLeft size={18} />}
 
@@ -1344,7 +1366,7 @@ export default function PortfolioFormModal({
             LAYANAN
         ===================================================== */}
 
-        <Section title="Kategori Layanan">
+        <Section title="Kategori Layanan *">
 
           {
 
@@ -1378,6 +1400,20 @@ export default function PortfolioFormModal({
               )
 
               : (
+
+                <>
+
+                  <p className="
+
+                    text-xs
+
+                    text-slate-400
+
+                  ">
+
+                    Pilih 1 kategori layanan (wajib)
+
+                  </p>
 
                 <div className="
 
@@ -1455,6 +1491,8 @@ export default function PortfolioFormModal({
                   }
 
                 </div>
+
+                </>
               )
           }
 
@@ -1514,31 +1552,20 @@ export default function PortfolioFormModal({
               </div>
 
               <label className="
-
                 h-12
-
                 px-5
-
                 rounded-2xl
-
                 border
                 border-slate-200
-
                 bg-white
-
                 flex
                 items-center
                 gap-2
-
                 text-sm
                 font-medium
-
                 text-slate-700
-
                 hover:bg-slate-100
-
                 transition-all
-
                 cursor-pointer
 
               ">
@@ -1550,15 +1577,10 @@ export default function PortfolioFormModal({
                 Tambah Gambar
 
                 <input
-
                   type="file"
-
                   multiple
-
                   accept="image/*"
-
                   hidden
-
                   onChange={
                     handleGalleryChange
                   }

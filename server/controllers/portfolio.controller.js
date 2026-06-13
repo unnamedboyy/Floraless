@@ -153,8 +153,18 @@ export const createPortfolio =
         };
       }
 
+      if (!excerpt?.trim()) {
+
+        throw {
+
+          status: 400,
+
+          message:
+            "Deskripsi singkat wajib diisi",
+        };
+      }
+
       if (
-        excerpt &&
         excerpt.length > 500
       ) {
 
@@ -164,6 +174,22 @@ export const createPortfolio =
 
           message:
             "Excerpt terlalu panjang",
+        };
+      }
+
+      const parsedLayananIds =
+        parseLayananIds(layananIds);
+
+      if (
+        parsedLayananIds.length > 1
+      ) {
+
+        throw {
+
+          status: 400,
+
+          message:
+            "Kategori layanan maksimal 1",
         };
       }
 
@@ -200,9 +226,7 @@ export const createPortfolio =
         await Portfolio.create({
 
           layananIds:
-            parseLayananIds(
-              layananIds
-            ),
+            parsedLayananIds,
 
           title:
             title.trim(),
@@ -626,8 +650,18 @@ export const updatePortfolio =
         };
       }
 
+      if (!excerpt?.trim()) {
+
+        throw {
+
+          status: 400,
+
+          message:
+            "Deskripsi singkat wajib diisi",
+        };
+      }
+
       if (
-        excerpt &&
         excerpt.length > 500
       ) {
 
@@ -637,6 +671,22 @@ export const updatePortfolio =
 
           message:
             "Excerpt terlalu panjang",
+        };
+      }
+
+      const parsedLayananIds =
+        parseLayananIds(layananIds);
+
+      if (
+        parsedLayananIds.length > 1
+      ) {
+
+        throw {
+
+          status: 400,
+
+          message:
+            "Kategori layanan maksimal 1",
         };
       }
 
@@ -669,9 +719,7 @@ export const updatePortfolio =
         content || "";
 
       portfolio.layananIds =
-        parseLayananIds(
-          layananIds
-        );
+        parsedLayananIds;
 
       portfolio.isFeatured =
         isFeatured === "true" ||
