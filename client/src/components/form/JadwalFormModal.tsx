@@ -151,7 +151,7 @@ export default function JadwalFormModal({
         if (!form.catatan.trim()) {
 
           toast.error(
-            "Lokasi acara wajib diisi"
+            "Catatan wajib diisi"
           );
 
           return;
@@ -247,7 +247,7 @@ export default function JadwalFormModal({
                       Edit{" "}
 
                       <span className="
-                        text-[#64748B]
+                        text-[#C9AE63]
                       ">
                         jadwal
                       </span>
@@ -268,34 +268,6 @@ export default function JadwalFormModal({
               }
 
             </h2>
-
-            <div className="
-
-              h-10
-              px-4
-
-              rounded-2xl
-
-              bg-[#C9AE63]-50
-
-              border
-              border-[#C9AE63]-200
-
-              text-[#C9AE63]-700
-
-              inline-flex
-              items-center
-              justify-center
-
-              text-sm
-              text-[#C9AE63]
-              font-semibold
-
-            ">
-
-              Jadwal
-
-            </div>
 
           </div>
 

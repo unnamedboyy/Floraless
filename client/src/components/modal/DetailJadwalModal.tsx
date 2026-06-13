@@ -194,48 +194,20 @@ export default function DetailJadwalModal({
               Detail{" "}
 
               <span className="
-                text-[#64748B]
+                text-[#C9AE63]
               ">
                 jadwal
               </span>
 
             </h2>
 
-            <div className={`
-
-              h-10
-              px-4
-
-              rounded-2xl
-
-              inline-flex
-              items-center
-              justify-center
-
-              text-sm
-              font-semibold
-
-              border
-
-              ${currentStatus.className}
-
-            `}>
-
-              {
-                currentStatus.label
-              }
-
-            </div>
 
           </div>
 
           <p className="
-
             text-slate-500
             text-sm
-
             mt-3
-
           ">
             Informasi lengkap jadwal acara dan penugasan
           </p>
@@ -399,7 +371,7 @@ export default function DetailJadwalModal({
             CATATAN
         ===================================================== */}
 
-        <Section title="Catatan Tambahan">
+        <Section title="Catatan">
 
           <FieldCard
 
@@ -409,12 +381,12 @@ export default function DetailJadwalModal({
               />
             }
 
-            label="Informasi Tambahan"
+            label="Informasi"
 
             value={
               data.catatan ||
 
-              "Belum ada catatan tambahan"
+              "Belum ada catatan"
             }
 
             multiline
