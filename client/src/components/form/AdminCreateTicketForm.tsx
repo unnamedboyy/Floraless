@@ -7,6 +7,10 @@ import BaseModal from "@/components/form/BaseModal";
 import { createTicketByAdmin } from "@/services/ticket.service";
 import api from "@/lib/axios";
 
+import { getPegawaiList } from "@/services/pegawai.service";
+import { getPelangganList } from "@/services/pelanggan.service";
+import { getAllLayanan } from "@/services/layanan.service";
+
 import {
   X,
   User,
@@ -187,7 +191,7 @@ const textareaClass = `
   focus:ring-4
   focus:ring-gray-100
 `;
-    
+
   const [loading, setLoading] =
     useState(false);
 
@@ -222,39 +226,52 @@ const textareaClass = `
   }, [open]);
 
   const loadData = async () => {
-    try {
-      const [
-        pelangganRes,
-        pegawaiRes,
-        layananRes,
-      ] = await Promise.all([
-        api.get("/pelanggans"),
-        api.get("/pegawais"),
-        api.get("/layanans"),
-      ]);
+  try {
+    const [
+      pelangganRes,
+      pegawaiRes,
+      layananRes,
+    ] = await Promise.all([
+      getPelangganList(),
+      getPegawaiList(),
+      getAllLayanan(),
+    ]);
 
-      setPelanggans(
-        pelangganRes.data.data ||
-          pelangganRes.data
-      );
+    console.log(
+      "PELANGGAN",
+      pelangganRes.data
+    );
 
-      setPegawais(
-        pegawaiRes.data.data ||
-          pegawaiRes.data
-      );
+    console.log(
+      "PEGAWAI",
+      pegawaiRes.data
+    );
 
-      setLayanans(
-        layananRes.data.data ||
-          layananRes.data
-      );
-    } catch (err) {
-      console.error(err);
+    console.log(
+      "LAYANAN",
+      layananRes.data
+    );
 
-      toast.error(
-        "Gagal memuat data"
-      );
-    }
-  };
+    setPelanggans(
+      pelangganRes.data.data || []
+    );
+
+    setPegawais(
+      pegawaiRes.data.data || []
+    );
+
+    setLayanans(
+      layananRes.data.data || []
+    );
+
+  } catch (err) {
+    console.error(err);
+
+    toast.error(
+      "Gagal memuat data"
+    );
+  }
+};
 
   /* =========================================
      HANDLE CHANGE

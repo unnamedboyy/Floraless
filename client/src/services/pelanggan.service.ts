@@ -11,3 +11,6 @@ export const updatePelanggan = (id: string, data: any) =>
 
 export const deletePelanggan = (id: string) =>
   api.patch(`/pelanggan/${id}/delete`);
+
+export const getPelangganList = () =>
+  api.get("/auth/users/pelanggan?limit=100");
