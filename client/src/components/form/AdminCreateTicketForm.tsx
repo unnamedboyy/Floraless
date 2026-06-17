@@ -321,12 +321,6 @@ const textareaClass = `
         maxWidth="max-w-6xl"
         className="h-[92vh]"
     >
-        <div className="flex flex-col h-full">
-            <form
-                onSubmit={handleSubmit}
-                className="space-y-4"
-            >
-        <>
         {/* HEADER */}
 
                 <div
@@ -414,6 +408,7 @@ const textareaClass = `
                     flex
                     flex-col
                     h-full
+                    overflow-y-auto
                     "
                 >
                     <div
@@ -696,9 +691,6 @@ const textareaClass = `
                     </div>
                     </div>
                 </form>
-                </>
-            </form>
-        </div>
     </BaseModal>
   );
 }
