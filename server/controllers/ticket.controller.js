@@ -18,69 +18,22 @@ import { getIO } from "../socket/index.js";
 
 export const createTicket = async (req, res, next) => {
   try {
-    const {
-      layananId,
-      tanggal,
-      lokasi,
-      nama_acara,
-      catatan,
-      referensi,
-    } = req.body;
+    const { layananId, tanggal, lokasi, nama_acara, catatan, referensi} = req.body;
+    const pelanggan = await Pelanggan.findOne({ userId: req.user.id});
 
-    /* ================= USER ================= */
-
-    const pelanggan = await Pelanggan.findOne({
-      userId: req.user.id,
-    });
-
-    if (!pelanggan) {
-      throw {
-        status: 404,
-        message: "Pelanggan tidak ditemukan",
-      };
-    }
-
-    /* ================= VALIDATION ================= */
-
-    if (!mongoose.Types.ObjectId.isValid(layananId)) {
-      throw {
-        status: 400,
-        message: "layananId tidak valid",
-      };
-    }
+    /*  VALIDASI INPUTAN  */
+    if (!pelanggan) throw { status: 404, message: "Pelanggan tidak ditemukan" };
+    if (!mongoose.Types.ObjectId.isValid(layananId))
+      throw { status: 400, message: "layananId tidak valid" };
 
     const layanan = await Layanan.findById(layananId);
 
-    if (!layanan) {
-      throw {
-        status: 404,
-        message: "Layanan tidak ditemukan",
-      };
-    }
+    if (!layanan) throw { status: 404, message: "Layanan tidak ditemukan" };
+    if (!tanggal) throw { status: 400, message: "Tanggal acara wajib diisi" };
+    if (!lokasi) throw { status: 400, message: "Lokasi wajib diisi" };
+    if (!nama_acara) throw { status: 400, message: "Nama acara wajib diisi" };
 
-    if (!tanggal) {
-      throw {
-        status: 400,
-        message: "Tanggal acara wajib diisi",
-      };
-    }
-
-    if (!lokasi) {
-      throw {
-        status: 400,
-        message: "Lokasi wajib diisi",
-      };
-    }
-
-    if (!nama_acara) {
-      throw {
-        status: 400,
-        message: "Nama acara wajib diisi",
-      };
-    }
-
-    /* ================= CEK BENTROK ================= */
-
+    /*  CEK BENTROK  */
     const startDate = new Date(tanggal);
     startDate.setHours(0, 0, 0, 0);
 
@@ -88,29 +41,21 @@ export const createTicket = async (req, res, next) => {
     endDate.setHours(23, 59, 59, 999);
 
     const bentrok = await Jadwal.findOne({
-      tanggal_acara: {
-        $gte: startDate,
-        $lte: endDate,
-      },
+      tanggal_acara: { $gte: startDate, $lte: endDate}
     });
 
     if (bentrok) {
-      throw {
-        status: 400,
-        message: "Tanggal tersebut sudah dibooking pelanggan lain",
-      };
+      throw { status: 400, message: "Tanggal tersebut sudah dibooking pelanggan lain"};
     }
 
-    /* ================= CREATE TICKET ================= */
-
+    /*  CREATE TICKET  */
     const ticket = await Ticket.create({
       pelangganId: pelanggan._id,
       layananId,
       status: "pending",
     });
 
-    /* ================= DETAIL ================= */
-
+    /* CREATE DETAIL */
     const detail = await DetailTicket.create({
       ticketId: ticket._id,
       tanggal_acara: tanggal,
@@ -120,34 +65,25 @@ export const createTicket = async (req, res, next) => {
       referensi: referensi || "",
     });
 
-    /* ================= JADWAL ================= */
-
+    /*  CREATE JADWAL  */
     try {
-
       await Jadwal.create({
         ticketId: ticket._id,
         tanggal_acara: tanggal,
         status: "booked",
       });
 
-      getIO().emit("jadwal:update");
+    // Implementasi pengiriman event
+    getIO().emit("jadwal:update");
 
     } catch (err) {
-
       if (err.code === 11000) {
-
-        throw {
-          status: 400,
-          message: "Tanggal tersebut baru saja dibooking pelanggan lain",
-        };
-
+        throw {status: 400, message: "Tanggal tersebut baru saja dibooking pelanggan lain"};
       }
-
       throw err;
     }
     
-    /* ================= LOG ================= */
-
+    /* CREATE LOG  */
     await LogActivity.create({
       ticketId: ticket._id,
       action: "CREATE_TICKET",
@@ -155,12 +91,184 @@ export const createTicket = async (req, res, next) => {
       description: "Ticket dibuat oleh pelanggan",
     });
 
-    /* ================= RESPONSE ================= */
+  } catch (err) {
+    next(err);
+  }
+};
+
+/* =========================================================
+   ADMIN CREATE TICKET
+========================================================= */
+
+export const createTicketByAdmin = async (req, res, next) => {
+  try {
+    const {
+      pelangganId,
+      pegawaiId,
+      layananId,
+      tanggal,
+      lokasi,
+      nama_acara,
+      catatan,
+      referensi,
+    } = req.body;
+
+    /* ================= VALIDASI ================= */
+
+    if (!pelangganId) {
+      throw {
+        status: 400,
+        message: "Pelanggan wajib dipilih",
+      };
+    }
+
+    if (!pegawaiId) {
+      throw {
+        status: 400,
+        message: "Pegawai PIC wajib dipilih",
+      };
+    }
+
+    const pelanggan =
+      await Pelanggan.findById(pelangganId);
+
+    if (!pelanggan) {
+      throw {
+        status: 404,
+        message: "Pelanggan tidak ditemukan",
+      };
+    }
+
+    const pegawai =
+      await Pegawai.findById(pegawaiId);
+
+    if (!pegawai) {
+      throw {
+        status: 404,
+        message: "Pegawai tidak ditemukan",
+      };
+    }
+
+    const layanan =
+      await Layanan.findById(layananId);
+
+    if (!layanan) {
+      throw {
+        status: 404,
+        message: "Layanan tidak ditemukan",
+      };
+    }
+
+    /* ================= CEK BENTROK ================= */
+
+    const startDate = new Date(tanggal);
+    startDate.setHours(0,0,0,0);
+
+    const endDate = new Date(tanggal);
+    endDate.setHours(23,59,59,999);
+
+    const bentrok =
+      await Jadwal.findOne({
+        tanggal_acara: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+      });
+
+    if (bentrok) {
+      throw {
+        status: 400,
+        message:
+          "Tanggal tersebut sudah dibooking",
+      };
+    }
+
+    /* ================= CREATE TICKET ================= */
+
+    const ticket =
+      await Ticket.create({
+
+        pelangganId,
+
+        pegawaiId,
+
+        layananId,
+
+        status:
+          "approved",
+
+      });
+
+    /* ================= CREATE DETAIL ================= */
+
+    await DetailTicket.create({
+
+      ticketId:
+        ticket._id,
+
+      tanggal_acara:
+        tanggal,
+
+      lokasi,
+
+      nama_acara,
+
+      catatan:
+        catatan || "",
+
+      referensi:
+        referensi || "",
+
+    });
+
+    /* ================= CREATE JADWAL ================= */
+
+    await Jadwal.create({
+
+      ticketId:
+        ticket._id,
+
+      pegawaiId,
+
+      tanggal_acara:
+        tanggal,
+
+      status:
+        "booked",
+
+    });
+
+    getIO().emit(
+      "jadwal:update"
+    );
+
+    /* ================= LOG ================= */
+
+    await LogActivity.create({
+
+      ticketId:
+        ticket._id,
+
+      action:
+        "CREATE_TICKET_ADMIN",
+
+      status:
+        "approved",
+
+      description:
+        "Ticket dibuat oleh admin",
+
+    });
 
     res.status(201).json({
-      message: "Pemesanan berhasil dibuat",
-      ticket,
-      detail,
+
+      success: true,
+
+      message:
+        "Ticket berhasil dibuat",
+
+      data: ticket,
+
     });
 
   } catch (err) {
@@ -472,88 +580,45 @@ export const updateStatusTicket = async (req, res, next) => {
   try {
     const { status, note } = req.body;
     const { id } = req.params;
-
-    const allowedStatus = [
-      "pending",
-      "approved",
-      "in_progress",
-      "done",
-      "rejected",
-    ];
+    const allowedStatus = ["pending","approved","in_progress","done","rejected"];
 
     if (!allowedStatus.includes(status)) {
-      throw {
-        status: 400,
-        message: "Status tidak valid",
-      };
+      throw {status: 400, message: "Status tidak valid"};
     }
 
     const ticket = await Ticket.findById(id);
 
     if (!ticket) {
-      throw {
-        status: 404,
-        message: "Ticket tidak ditemukan",
-      };
+      throw {status: 404,message: "Ticket tidak ditemukan"};
     }
 
-    const flow = {
-      pending: ["approved", "rejected"],
-      approved: ["in_progress"],
-      in_progress: ["done"],
-      done: [],
-      rejected: [],
-    };
-
+    const flow = {pending: ["approved", "rejected"], approved: ["in_progress"], in_progress: ["done"], done: [], rejected: []};
     const current = ticket.status;
 
     if (!flow[current].includes(status)) {
-      throw {
-        status: 400,
-        message: `Tidak bisa mengubah status dari ${current} ke ${status}`,
-      };
+      throw {status: 400, message: `Tidak bisa mengubah status dari ${current} ke ${status}`};
     }
 
     ticket.status = status;
 
     /* ================= HAPUS JADWAL JIKA REJECT ================= */
-
     if (status === "rejected") {
-
       await Jadwal.deleteOne({
         ticketId: ticket._id,
       });
 
-      // await Jadwal.deleteMany({
-      //   ticketId: ticket._id,
-      // });
-
-      getIO().emit(
-        "jadwal:update"
-      );
+      getIO().emit("jadwal:update");
     }
 
     await ticket.save();
-
     await LogActivity.create({
-
-      ticketId:
-        ticket._id,
-
-      action:
-        "UPDATE_STATUS",
-
+      ticketId: ticket._id,
+      action: "UPDATE_STATUS",
       status,
-
       description:
         status === "rejected"
           ? `Ticket ditolak. Alasan: ${note || "-"}`
           : `Status diubah ke ${status}`,
-    });
-    
-    res.json({
-      message: "Status berhasil diupdate",
-      ticket,
     });
 
   } catch (err) {

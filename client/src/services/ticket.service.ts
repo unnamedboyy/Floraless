@@ -126,3 +126,11 @@ export const addTicketLog =
 
   window.open(url);
 };
+
+export const createTicketByAdmin = (
+  payload: any
+) =>
+  api.post(
+    "/tickets/admin-create",
+    payload
+  );

@@ -7,242 +7,79 @@ import { logActivity } from "../utils/logger.js";
 
 /* ================= CREATE CLAIM (PELANGGAN) ================= */
 
-export const createClaim =
-  async (
-    req,
-    res,
-    next
-  ) => {
-
-    try {
-
-      /* =========================================
-         CUSTOMER
-      ========================================= */
-
-      const pelanggan =
-        await Pelanggan.findOne({
-
-          userId:
-            req.user.id,
-        });
-
-      if (!pelanggan) {
-
-        throw {
-
-          status: 404,
-
-          message:
-            "Pelanggan tidak ditemukan",
-        };
-      }
-
-      /* =========================================
-         BODY
-      ========================================= */
-
-      const {
-
-        voucherCode,
-
-        code,
-
-        bank,
-
-        nomor_rekening,
-
-        nama_rekening,
-
-      } = req.body;
-
-      const finalCode =
-
-        voucherCode ||
-        code ||
-        "";
-
-      if (!finalCode) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Kode voucher wajib diisi",
-        };
-      }
-
-      /* =========================================
-         FIND VOUCHER
-      ========================================= */
-
-      const voucher =
-        await Voucher.findOne({
-
-          code:
-            finalCode.trim(),
-        });
-
-      if (!voucher) {
-
-        throw {
-
-          status: 404,
-
-          message:
-            "Voucher tidak ditemukan",
-        };
-      }
-
-      /* =========================================
-         VALIDATION
-      ========================================= */
-
-      if (
-        voucher.isUsed
-      ) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Voucher sudah digunakan",
-        };
-      }
-
-      if (
-
-        voucher.pelangganId
-          .toString() !==
-
-        pelanggan._id
-          .toString()
-
-      ) {
-
-        throw {
-
-          status: 403,
-
-          message:
-            "Voucher bukan milik Anda",
-        };
-      }
-
-      if (
-
-        voucher.expiredAt &&
-
-        new Date(
-          voucher.expiredAt
-        ) < new Date()
-
-      ) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Voucher sudah expired",
-        };
-      }
-
-      /* =========================================
-         DUPLICATE CLAIM
-      ========================================= */
-
-      const existingClaim =
-        await CashbackClaim.findOne({
-
-          voucherId:
-            voucher._id,
-        });
-
-      if (
-        existingClaim
-      ) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Voucher sudah pernah diclaim",
-        };
-      }
-
-      /* =========================================
-         CREATE CLAIM
-      ========================================= */
-
-      const claim =
-        await CashbackClaim.create({
-
-          voucherId:
-            voucher._id,
-
-          pelangganId:
-            pelanggan._id,
-
-          kode_voucher:
-            voucher.code,
-
-          amount:
-            voucher.amount,
-
-          bank,
-
-          nomor_rekening,
-
-          nama_rekening,
-
-          status:
-            "pending",
-        });
-
-      /* =========================================
-         UPDATE VOUCHER
-      ========================================= */
-
-      voucher.isUsed =
-        true;
-
-      await voucher.save();
-
-      /* =========================================
-         RESPONSE
-      ========================================= */
-
-      res.json({
-
-        message:
-          "Claim cashback berhasil",
-
-        data:
-          claim,
-      });
-
-    } catch (err) {
-
-      next(err);
-    }
-  };
-
-/* ================= PROCESS CLAIM (ADMIN / PEGAWAI PIC) ================= */
+export const createClaim = async (req, res, next) => {
+  try {
+    const pelanggan = await Pelanggan.findOne({
+      userId: req.user.id,
+    });
+
+    if (!pelanggan)
+      throw { status: 404, message: "Pelanggan tidak ditemukan" };
+
+    const {
+      voucherCode,
+      code,
+      bank,
+      nomor_rekening,
+      nama_rekening,
+    } = req.body;
+
+    const finalCode = voucherCode || code || "";
+
+    if (!finalCode)
+      throw { status: 400, message: "Kode voucher wajib diisi" };
+
+    const voucher = await Voucher.findOne({
+      code: finalCode.trim(),
+    });
+
+    if (!voucher)
+      throw { status: 404, message: "Voucher tidak ditemukan" };
+
+    if (voucher.isUsed)
+      throw { status: 400, message: "Voucher sudah digunakan" };
+
+    if (voucher.pelangganId.toString() !== pelanggan._id.toString())
+      throw { status: 403, message: "Voucher bukan milik Anda" };
+
+    if (voucher.expiredAt && new Date(voucher.expiredAt) < new Date())
+      throw { status: 400, message: "Voucher sudah expired" };
+
+    const existingClaim = await CashbackClaim.findOne({
+      voucherId: voucher._id,
+    });
+
+    if (existingClaim)
+      throw { status: 400, message: "Voucher sudah pernah diclaim" };
+
+    const claim = await CashbackClaim.create({
+      voucherId: voucher._id,
+      pelangganId: pelanggan._id,
+      kode_voucher: voucher.code,
+      amount: voucher.amount,
+      bank,
+      nomor_rekening,
+      nama_rekening,
+      status: "pending",
+    });
+
+    voucher.isUsed = true;
+    await voucher.save();
+
+  } catch (err) {
+    next(err);
+  }
+};
 
 export const processClaim = async (req, res, next) => {
   try {
     const { status, alasan, bukti_tf } = req.body;
 
-    if (!["approved", "rejected"].includes(status)) {
+    if (!["approved", "rejected"].includes(status))
       throw {
         status: 400,
         message: "Status harus approved/rejected",
       };
-    }
 
     const claim = await CashbackClaim.findById(req.params.id)
       .populate("voucherId");
@@ -250,44 +87,34 @@ export const processClaim = async (req, res, next) => {
     if (!claim)
       throw { status: 404, message: "Claim tidak ditemukan" };
 
-    if (claim.status !== "pending") {
+    if (claim.status !== "pending")
       throw { status: 400, message: "Claim sudah diproses" };
-    }
 
-    if (status === "rejected" && !alasan) {
+    if (status === "rejected" && !alasan)
       throw { status: 400, message: "Alasan wajib diisi" };
-    }
 
-    if (status === "approved" && !bukti_tf) {
+    if (status === "approved" && !bukti_tf)
       throw { status: 400, message: "Bukti transfer wajib" };
-    }
-
-    /* ================= VALIDASI PEGAWAI (PIC) ================= */
 
     if (req.user.role === "pegawai") {
       const pegawai = await Pegawai.findOne({
         userId: req.user.id,
       });
 
-      if (!pegawai) {
+      if (!pegawai)
         throw { status: 404, message: "Pegawai tidak ditemukan" };
-      }
 
-      // cek apakah pelanggan punya ticket di pegawai ini
       const ticket = await Ticket.findOne({
         pelangganId: claim.pelangganId,
         pegawaiId: pegawai._id,
       });
 
-      if (!ticket) {
+      if (!ticket)
         throw {
           status: 403,
           message: "Bukan PIC dari pelanggan ini",
         };
-      }
     }
-
-    /* ================= UPDATE CLAIM ================= */
 
     claim.status = status;
     claim.alasan = alasan;
@@ -297,28 +124,11 @@ export const processClaim = async (req, res, next) => {
 
     await claim.save();
 
-    /* ================= UPDATE VOUCHER ================= */
-
     if (status === "approved") {
       claim.voucherId.isUsed = true;
       await claim.voucherId.save();
     }
 
-    /* ================= LOG ================= */
-
-    await logActivity({
-      userId: req.user.id,
-      action: "PROCESS_CLAIM",
-      customDescription:
-        status === "approved"
-          ? `Menyetujui klaim voucher ${claim.kode_voucher}`
-          : `Menolak klaim voucher ${claim.kode_voucher} karena ${alasan}`,
-    });
-
-    res.json({
-      message: `Claim ${status}`,
-      claim,
-    });
   } catch (err) {
     next(err);
   }

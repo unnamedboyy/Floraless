@@ -1,72 +1,31 @@
-import { Server }
-from "socket.io";
-
+import { Server } from "socket.io";
 let io;
 
-/* =====================================================
-   INIT SOCKET
-===================================================== */
+/* INIT SOCKET */
+export const initSocket = (server) => {
+  io = new Server(server, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"],
+    },
+  });
 
-export const initSocket =
-  (server) => {
+  io.on("connection", (socket) => {
+    console.log("SOCKET CONNECTED:", socket.id);
 
-    io =
-      new Server(
-        server,
-        {
+    socket.on("disconnect", () => {
+      console.log("SOCKET DISCONNECTED:", socket.id);
+    });
+  });
 
-          cors: {
+  return io;
+};
 
-            origin: "*",
+/* GET IO */
+export const getIO = () => {
+  if (!io) {
+    throw new Error("Socket.io belum diinisialisasi");
+  }
 
-            methods: [
-              "GET",
-              "POST",
-            ],
-          },
-        }
-      );
-
-    io.on(
-      "connection",
-
-      (socket) => {
-
-        console.log(
-          "SOCKET CONNECTED:",
-          socket.id
-        );
-
-        socket.on(
-          "disconnect",
-
-          () => {
-
-            console.log(
-              "SOCKET DISCONNECTED:",
-              socket.id
-            );
-          }
-        );
-      }
-    );
-
-    return io;
-  };
-
-/* =====================================================
-   GET IO
-===================================================== */
-
-export const getIO =
-  () => {
-
-    if (!io) {
-
-      throw new Error(
-        "Socket.io belum diinisialisasi"
-      );
-    }
-
-    return io;
-  };
+  return io;
+};

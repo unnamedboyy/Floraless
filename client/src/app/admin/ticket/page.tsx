@@ -25,6 +25,9 @@ from "@/components/modal/AssignPICModal";
 import TicketDetailModal
 from "@/components/modal/TicketDetailModal";
 
+import AdminCreateTicketModal
+from "@/components/form/AdminCreateTicketForm";
+
 import {
   useTickets,
 } from "@/hooks/useTickets";
@@ -101,6 +104,9 @@ export default function TicketPage() {
     );
 
   const [openLog, setOpenLog] =
+    useState(false);
+
+  const [openCreate, setOpenCreate] =
     useState(false);
 
   /* =====================================================
@@ -526,22 +532,49 @@ export default function TicketPage() {
           HEADER
       ===================================================== */}
 
-      <div>
+      <div className="
+        flex
+        items-center
+        justify-between
+      ">
 
-        <h1 className="
-          text-2xl
-          font-bold
-        ">
-          Kelola Ticket
-        </h1>
+        <div>
 
-        <p className="
-          text-sm
-          text-gray-500
-          mt-1
-        ">
-          Monitoring ticket dan progress layanan
-        </p>
+          <h1 className="
+            text-2xl
+            font-bold
+          ">
+            Kelola Ticket
+          </h1>
+
+          <p className="
+            text-sm
+            text-gray-500
+            mt-1
+          ">
+            Monitoring ticket dan progress layanan
+          </p>
+
+        </div>
+
+        <button
+          onClick={() =>
+            setOpenCreate(true)
+          }
+          className="
+            px-4
+            py-2
+            rounded-xl
+            bg-black
+            text-white
+            text-sm
+            font-medium
+            hover:bg-gray-800
+            transition
+          "
+        >
+          + Buat Ticket
+        </button>
 
       </div>
 
@@ -884,6 +917,16 @@ export default function TicketPage() {
           setOpenLog(false);
           setSelected(null);
         }}
+        onSuccess={() => {
+          reload();
+        }}
+      />
+
+      <AdminCreateTicketModal
+        open={openCreate}
+        onClose={() =>
+          setOpenCreate(false)
+        }
         onSuccess={() => {
           reload();
         }}

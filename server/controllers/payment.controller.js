@@ -20,592 +20,202 @@ import LogActivity from "../models/logAktivitas.js";
    CREATE PAYMENT (CUSTOMER)
 ========================================================= */
 
-export const createPayment =
-  async (
-    req,
-    res,
-    next
-  ) => {
+export const createPayment = async (req, res, next) => {
+  try {
+    const {ticketId, tipe, nama_pengirim, bank_pengirim} = req.body;
 
-    try {
+    /* VALIDASI TICKET */
+    const ticket = await Ticket.findById(ticketId);
 
-      const {
+    if (!ticket) throw { status: 404, message: "Ticket tidak ditemukan" };
 
-        ticketId,
-        tipe,
-        nama_pengirim,
-        bank_pengirim,
+    if (!["approved", "in_progress"].includes(ticket.status))
+      throw { status: 400, message: "Ticket belum siap pembayaran" };
 
-      } = req.body;
+    /* VALIDASI LAYANAN */
+    const layanan = await Layanan.findById(ticket.layananId);
 
-      /* ===================================================
-         VALIDASI TICKET
-      =================================================== */
+    if (!layanan)
+      throw { status: 404, message: "Layanan tidak ditemukan" };
 
-      const ticket =
-        await Ticket.findById(
-          ticketId
-        );
+     /* PAYMENT EXISTING */
+    const payments = await Payment.find({ ticketId });
 
-      if (!ticket) {
+    const approvedPayments = payments.filter(
+      (p) => p.status === "approved"
+    );
 
-        throw {
+    const approvedTypes = approvedPayments.map(
+      (p) => p.tipe
+    );
 
-          status: 404,
+    /* VALIDASI FLOW */
+    if (approvedTypes.includes("LUNAS"))
+      throw {status: 400, message: "Ticket sudah lunas" };
 
-          message:
-            "Ticket tidak ditemukan",
-        };
-      }
+    const pendingSameType = payments.find(
+      (p) => p.tipe === tipe && p.status === "pending"
+    );
 
-      if (
-        ![
-          "approved",
-          "in_progress",
-        ].includes(
-          ticket.status
-        )
-      ) {
+    if (pendingSameType)
+      throw {status: 400, message: `${tipe} masih menunggu approval`};
 
-        throw {
+    if (tipe === "DP1" && approvedTypes.includes("DP1"))
+      throw { status: 400, message: "DP1 sudah dibayar" };
 
-          status: 400,
+    if (tipe === "DP2") {
+      if (!approvedTypes.includes("DP1"))
+        throw {status: 400, message: "DP1 belum di-approve"};
 
-          message:
-            "Ticket belum siap pembayaran",
-        };
-      }
-
-      /* ===================================================
-         VALIDASI LAYANAN
-      =================================================== */
-
-      const layanan =
-        await Layanan.findById(
-          ticket.layananId
-        );
-
-      if (!layanan) {
-
-        throw {
-
-          status: 404,
-
-          message:
-            "Layanan tidak ditemukan",
-        };
-      }
-
-      /* ===================================================
-         PAYMENT EXISTING
-      =================================================== */
-
-      const payments =
-        await Payment.find({
-          ticketId,
-        });
-
-      const approvedPayments =
-        payments.filter(
-          (p) =>
-            p.status ===
-            "approved"
-        );
-
-      const approvedTypes =
-        approvedPayments.map(
-          (p) => p.tipe
-        );
-
-      /* ===================================================
-        SUDAH LUNAS SEKALI BAYAR
-      =================================================== */
-
-      if (
-        approvedTypes.includes(
-          "LUNAS"
-        )
-      ) {
-        throw {
-          status: 400,
-          message:
-            "Ticket sudah lunas",
-        };
-      }
-
-      const pendingSameType =
-        payments.find(
-          (p) =>
-
-            p.tipe === tipe &&
-
-            p.status ===
-              "pending"
-        );
-
-      if (
-        pendingSameType
-      ) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            `${tipe} masih menunggu approval`,
-        };
-      }
-
-      /* ===================================================
-         VALIDASI FLOW
-      =================================================== */
-
-      if (
-
-        tipe === "DP1" &&
-
-        approvedTypes.includes(
-          "DP1"
-        )
-
-      ) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "DP1 sudah dibayar",
-        };
-      }
-
-      if (
-        tipe === "DP2"
-      ) {
-
-        if (
-          !approvedTypes.includes(
-            "DP1"
-          )
-        ) {
-
-          throw {
-
-            status: 400,
-
-            message:
-              "DP1 belum di-approve",
-          };
-        }
-
-        if (
-          approvedTypes.includes(
-            "DP2"
-          )
-        ) {
-
-          throw {
-
-            status: 400,
-
-            message:
-              "DP2 sudah dibayar",
-          };
-        }
-      }
-
-      if (
-        tipe === "PELUNASAN"
-      ) {
-
-        if (
-
-          !approvedTypes.includes(
-            "DP1"
-          ) ||
-
-          !approvedTypes.includes(
-            "DP2"
-          )
-
-        ) {
-
-          throw {
-
-            status: 400,
-
-            message:
-              "DP1 & DP2 harus approved dulu",
-          };
-        }
-
-        if (
-          approvedTypes.includes(
-            "PELUNASAN"
-          )
-        ) {
-
-          throw {
-
-            status: 400,
-
-            message:
-              "Sudah lunas",
-          };
-        }
-      }
-
-      if (
-        tipe === "LUNAS"
-      ) {
-
-        if (
-          approvedTypes.length > 0
-        ) {
-
-          throw {
-            status: 400,
-            message:
-              "Tidak bisa bayar lunas karena sudah ada pembayaran sebelumnya",
-          };
-        }
-
-      }
-
-      /* ===================================================
-         HITUNG NOMINAL
-      =================================================== */
-
-      const harga =
-        layanan.harga;
-
-      let jumlah = 0;
-
-      if (tipe === "DP1") {
-        jumlah = harga * 0.2;
-      }
-
-      if (tipe === "DP2") {
-        jumlah = harga * 0.3;
-      }
-
-      if (
-        tipe ===
-        "PELUNASAN"
-      ) {
-
-        jumlah = harga * 0.5;
-      }
-
-      if (
-        tipe ===
-        "LUNAS"
-      ) {
-        jumlah = harga;
-      }
-
-      /* ===================================================
-         IMAGE
-      =================================================== */
-
-      let bukti_bayar =
-        "";
-
-      if (
-        req.file?.filename
-      ) {
-
-        bukti_bayar =
-          `/uploads/payment/${req.file.filename}`;
-      }
-
-      /* ===================================================
-         CREATE
-      =================================================== */
-
-      const payment =
-        await Payment.create({
-
-          ticketId,
-
-          tipe,
-
-          jumlah,
-
-          nama_pengirim,
-
-          bank_pengirim,
-
-          bukti_bayar,
-        });
-
-      /* ===================================================
-         LOG
-      =================================================== */
-
-      await logActivity({
-
-        userId:
-          req.user.id,
-
-        ticketId:
-          ticket._id,
-
-        action:
-          "CREATE_PAYMENT",
-
-        description:
-          `Membuat pembayaran`,
-      });
-
-      res.json({
-
-        message:
-          "Payment berhasil dibuat",
-
-        payment,
-      });
-
-    } catch (err) {
-
-      next(err);
+      if (approvedTypes.includes("DP2"))
+        throw {status: 400, message: "DP2 sudah dibayar"};
     }
-  };
+
+    if (tipe === "PELUNASAN") {
+      if (
+        !approvedTypes.includes("DP1") ||
+        !approvedTypes.includes("DP2")
+      )
+        throw {status: 400,message: "DP1 & DP2 harus approved dulu"};
+
+      if (approvedTypes.includes("PELUNASAN"))
+        throw {status: 400, message: "Sudah lunas"};
+    }
+
+    if (tipe === "LUNAS" && approvedTypes.length > 0)
+      throw {status: 400, message:"Tidak bisa bayar lunas karena sudah ada pembayaran sebelumnya"};
+
+    /* HITUNG NOMINAL */
+    const harga = layanan.harga;
+
+    let jumlah = 0;
+
+    if (tipe === "DP1") jumlah = harga * 0.2;
+    if (tipe === "DP2") jumlah = harga * 0.3;
+    if (tipe === "PELUNASAN") jumlah = harga * 0.5;
+    if (tipe === "LUNAS") jumlah = harga;
+
+    /* GAMBAR BUKTI BAYAR */
+    let bukti_bayar = "";
+
+    if (req.file?.filename) {
+      bukti_bayar = `/uploads/payment/${req.file.filename}`;
+    }
+
+    /* CREATE PEMBAYARAN */
+    const payment = await Payment.create({
+      ticketId,
+      tipe,
+      jumlah,
+      nama_pengirim,
+      bank_pengirim,
+      bukti_bayar,
+    });
+
+    /* CREATE LOG */
+    await logActivity({
+      userId: req.user.id,
+      ticketId: ticket._id,
+      action: "CREATE_PAYMENT",
+      description: "Membuat pembayaran",
+    });
+
+  } catch (err) {
+    next(err);
+  }
+};
 
 /* =========================================================
    REJECT PAYMENT
 ========================================================= */
+export const rejectPayment = async (req, res, next) => {
+  try {
+    const { catatan } = req.body;
 
-export const rejectPayment =
-  async (req, res, next) => {
+    const payment = await Payment.findById(req.params.id);
 
-    try {
+    if (!payment)
+      throw { status: 404, message: "Payment tidak ditemukan" };
 
-      const { catatan } =
-        req.body;
+    payment.status = "rejected";
+    payment.catatan = catatan.trim();
 
-      const payment =
-        await Payment.findById(
-          req.params.id
-        );
+    await payment.save();
 
-      if (!payment) {
-        throw {
-          status: 404,
-          message: "Payment tidak ditemukan",
-        };
-      }
+    /* CREATE LOG */
+    await LogActivity.create({
+      ticketId: payment.ticketId,
+      action: "PAYMENT_REJECTED",
+      status: "rejected",
+      description: catatan,
+    });
 
-      payment.status =
-        "rejected";
-
-      payment.catatan =
-        catatan.trim();
-
-      await payment.save();
-
-      /* ================= LOG ================= */
-
-      await LogActivity.create({
-        ticketId: payment.ticketId,
-        action: "PAYMENT_REJECTED",
-        status: "rejected",
-        description: catatan,
-      });
-
-      /* ================= RESPONSE ================= */
-
-      res.json({
-        message:
-          "Pembayaran berhasil ditolak",
-      });
-
-    } catch (err) {
-      next(err);
-    }
+  } catch (err) {
+    next(err);
+  }
 };
 
+export const approvePayment = async (req, res, next) => {
+  try {
+    const { status, catatan } = req.body;
 
-/* =========================================================
-   APPROVE PAYMENT
-========================================================= */
+    if (!["approved", "rejected"].includes(status))
+      throw { status: 400, message: "Status tidak valid" };
 
-export const approvePayment =
-  async (
-    req,
-    res,
-    next
-  ) => {
+    const payment = await Payment.findById(req.params.id);
 
-    try {
+    if (!payment)
+      throw { status: 404, message: "Payment tidak ditemukan" };
 
-      const {
-        status,
-        catatan,
-      } = req.body;
+    if (payment.status !== "pending")
+      throw { status: 400, message: "Payment sudah diproses" };
 
-      if (
-        ![
-          "approved",
-          "rejected",
-        ].includes(status)
-      ) {
+    const ticket = await Ticket.findById(payment.ticketId);
 
-        throw {
+    payment.status = status;
+    payment.approvedBy = req.user.id;
+    payment.approvedAt = new Date();
+    payment.catatan = catatan || "";
 
-          status: 400,
+    await payment.save();
 
-          message:
-            "Status tidak valid",
-        };
-      }
-
-      const payment =
-        await Payment.findById(
-          req.params.id
-        );
-
-      if (!payment) {
-
-        throw {
-
-          status: 404,
-
-          message:
-            "Payment tidak ditemukan",
-        };
-      }
-
-      if (
-        payment.status !==
-        "pending"
-      ) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Payment sudah diproses",
-        };
-      }
-
-      const ticket =
-        await Ticket.findById(
-          payment.ticketId
-        );
-
-      /* ===================================================
-        UPDATE
-      =================================================== */
-
-      payment.status =
-        status;
-
-      payment.approvedBy =
-        req.user.id;
-
-      payment.approvedAt =
-        new Date();
-
-      payment.catatan =
-        catatan || "";
-
-      await payment.save();
-
-      /* ===================================================
-         AUTO UPDATE TICKET
-      =================================================== */
-
-      if (
-        status ===
-        "approved"
-      ) {
-
-        const approvedPayments =
-          await Payment.find({
-
-            ticketId:
-              payment.ticketId,
-
-            status:
-              "approved",
-          });
-
-        const types =
-          approvedPayments.map(
-            (p) => p.tipe
-          );
-
-        const isLunasBertahap =
-
-          types.includes(
-            "DP1"
-          ) &&
-
-          types.includes(
-            "DP2"
-          ) &&
-
-          types.includes(
-            "PELUNASAN"
-          );
-
-        const isLunasSekali =
-          types.includes(
-            "LUNAS"
-          );
-
-        if (
-          isLunasBertahap ||
-          isLunasSekali
-        ) {
-
-          ticket.status =
-            "in_progress";
-
-          await ticket.save();
-        }
-      }
-
-      /* ===================================================
-         LOG
-      =================================================== */
-
-      await logActivity({
-
-        userId:
-          req.user.id,
-
-        ticketId:
-          ticket._id,
-
-        action:
-
-          status ===
-          "approved"
-
-            ? "APPROVE_PAYMENT"
-
-            : "REJECT_PAYMENT",
-
-        description:
-          `Payment ${payment.tipe} ${status}`,
+    if (status === "approved") {
+      const approvedPayments = await Payment.find({
+        ticketId: payment.ticketId,
+        status: "approved",
       });
 
-      res.json({
+      const types = approvedPayments.map((p) => p.tipe);
 
-        message:
-          `Payment ${status}`,
+      const isLunasBertahap =
+        types.includes("DP1") &&
+        types.includes("DP2") &&
+        types.includes("PELUNASAN");
 
-        payment,
-      });
+      const isLunasSekali = types.includes("LUNAS");
 
-    } catch (err) {
-
-      next(err);
+      if (isLunasBertahap || isLunasSekali) {
+        ticket.status = "in_progress";
+        await ticket.save();
+      }
     }
-  };
+
+    /* CREATE LOG */
+    await logActivity({
+      userId: req.user.id,
+      ticketId: ticket._id,
+      action:
+        status === "approved"
+          ? "APPROVE_PAYMENT"
+          : "REJECT_PAYMENT",
+      description: `Payment ${payment.tipe} ${status}`,
+    });
+
+
+  } catch (err) {
+    next(err);
+  }
+};
 
 
 /* =========================================================
