@@ -12,6 +12,7 @@ import {
   getPaymentSummaryByTicket,
   getTicketFullById,
   addTicketLog,
+  createTicketByAdmin,
 } from "../controllers/ticket.controller.js";
 
 const router = express.Router();
@@ -25,6 +26,13 @@ router.post(
   auth,
   role("pelanggan"),
   createTicket
+);
+
+router.post(
+  "/admin-create",
+  auth,
+  role("admin"),
+  createTicketByAdmin
 );
 
 /* =========================================================
