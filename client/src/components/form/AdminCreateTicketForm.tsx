@@ -69,7 +69,6 @@ export default function AdminCreateTicketModal({
     nama_acara: "",
     lokasi: "",
     catatan: "",
-    referensi: "",
   });
 
   /* =====================================================
@@ -130,7 +129,6 @@ export default function AdminCreateTicketModal({
         nama_acara: "",
         lokasi: "",
         catatan: "",
-        referensi: "",
       });
 
       onSuccess?.();
@@ -384,24 +382,6 @@ export default function AdminCreateTicketModal({
                   })
                 }
                 placeholder="Masukkan nama acara"
-                className={inputClass}
-              />
-            </InputField>
-
-            <InputField
-              label="Referensi"
-              icon={<Link2 size={18} />}
-            >
-              <input
-                type="text"
-                value={form.referensi}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    referensi: e.target.value,
-                  })
-                }
-                placeholder="Link referensi"
                 className={inputClass}
               />
             </InputField>
