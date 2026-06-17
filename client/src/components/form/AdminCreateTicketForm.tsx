@@ -9,7 +9,7 @@ import api from "@/lib/axios";
 
 import { getPegawaiList } from "@/services/pegawai.service";
 import { getPelangganList } from "@/services/pelanggan.service";
-import { getAllLayanan } from "@/services/layanan.service";
+import { useLayanan } from "@/hooks/useLayanan";
 
 import {
   X,
@@ -192,17 +192,16 @@ const textareaClass = `
   focus:ring-gray-100
 `;
 
-  const [loading, setLoading] =
-    useState(false);
+    const [loading, setLoading] =
+        useState(false);
 
-  const [pelanggans, setPelanggans] =
-    useState<Pelanggan[]>([]);
+    const [pelanggans, setPelanggans] =
+        useState<Pelanggan[]>([]);
 
-  const [pegawais, setPegawais] =
-    useState<Pegawai[]>([]);
+    const [pegawais, setPegawais] =
+        useState<Pegawai[]>([]);
 
-  const [layanans, setLayanans] =
-    useState<Layanan[]>([]);
+    const { data: layananList,} = useLayanan({});
 
   const [form, setForm] = useState({
     pelangganId: "",
@@ -230,27 +229,10 @@ const textareaClass = `
     const [
       pelangganRes,
       pegawaiRes,
-      layananRes,
     ] = await Promise.all([
       getPelangganList(),
       getPegawaiList(),
-      getAllLayanan(),
     ]);
-
-    console.log(
-      "PELANGGAN",
-      pelangganRes.data
-    );
-
-    console.log(
-      "PEGAWAI",
-      pegawaiRes.data
-    );
-
-    console.log(
-      "LAYANAN",
-      layananRes.data
-    );
 
     setPelanggans(
       pelangganRes.data.data || []
@@ -258,10 +240,6 @@ const textareaClass = `
 
     setPegawais(
       pegawaiRes.data.data || []
-    );
-
-    setLayanans(
-      layananRes.data.data || []
     );
 
   } catch (err) {
@@ -528,36 +506,32 @@ const textareaClass = `
                     <Briefcase size={18} />
                     }
                 >
-                    <select
-                    value={form.layananId}
-                    onChange={(e) =>
-                        setForm({
-                        ...form,
-                        layananId:
-                            e.target.value,
-                        })
-                    }
-                    className={inputClass}
-                    required
-                    >
-                    <option value="">
-                        Pilih Layanan
-                    </option>
+                <select
+                value={form.layananId}
+                onChange={(e) =>
+                    setForm({
+                    ...form,
+                    layananId: e.target.value,
+                    })
+                }
+                className={inputClass}
+                required
+                >
+                <option value="">
+                    Pilih Layanan
+                </option>
 
-                    {layanans.map(
-                        (item) => (
-                        <option
-                            key={item._id}
-                            value={item._id}
-                        >
-                            {item.nama} - Rp
-                            {item.harga.toLocaleString(
-                            "id-ID"
-                            )}
-                        </option>
-                        )
-                    )}
-                    </select>
+                {layananList?.map(
+                    (item: any) => (
+                    <option
+                        key={item._id}
+                        value={item._id}
+                    >
+                        {item.nama}
+                    </option>
+                    )
+                )}
+                </select>
                 </InputField>
 
                 <InputField
