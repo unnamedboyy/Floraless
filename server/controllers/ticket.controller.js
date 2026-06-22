@@ -16,24 +16,75 @@ import { getIO } from "../socket/index.js";
    CUSTOMER CREATE TICKET
 ========================================================= */
 
+/* =========================================================
+   CUSTOMER CREATE TICKET
+========================================================= */
+
 export const createTicket = async (req, res, next) => {
   try {
-    const { layananId, tanggal, lokasi, nama_acara, catatan, referensi} = req.body;
-    const pelanggan = await Pelanggan.findOne({ userId: req.user.id});
+    const {
+      layananId,
+      tanggal,
+      lokasi,
+      nama_acara,
+      catatan,
+      referensi,
+    } = req.body;
 
-    /*  VALIDASI INPUTAN  */
-    if (!pelanggan) throw { status: 404, message: "Pelanggan tidak ditemukan" };
-    if (!mongoose.Types.ObjectId.isValid(layananId))
-      throw { status: 400, message: "layananId tidak valid" };
+    /* ================= CARI PELANGGAN ================= */
+
+    const pelanggan = await Pelanggan.findOne({
+      userId: req.user.id,
+    });
+
+    if (!pelanggan) {
+      throw {
+        status: 404,
+        message: "Pelanggan tidak ditemukan",
+      };
+    }
+
+    /* ================= VALIDASI INPUT ================= */
+
+    if (!mongoose.Types.ObjectId.isValid(layananId)) {
+      throw {
+        status: 400,
+        message: "Layanan tidak valid",
+      };
+    }
 
     const layanan = await Layanan.findById(layananId);
 
-    if (!layanan) throw { status: 404, message: "Layanan tidak ditemukan" };
-    if (!tanggal) throw { status: 400, message: "Tanggal acara wajib diisi" };
-    if (!lokasi) throw { status: 400, message: "Lokasi wajib diisi" };
-    if (!nama_acara) throw { status: 400, message: "Nama acara wajib diisi" };
+    if (!layanan) {
+      throw {
+        status: 404,
+        message: "Layanan tidak ditemukan",
+      };
+    }
 
-    /*  CEK BENTROK  */
+    if (!tanggal) {
+      throw {
+        status: 400,
+        message: "Tanggal acara wajib diisi",
+      };
+    }
+
+    if (!lokasi) {
+      throw {
+        status: 400,
+        message: "Lokasi wajib diisi",
+      };
+    }
+
+    if (!nama_acara) {
+      throw {
+        status: 400,
+        message: "Nama acara wajib diisi",
+      };
+    }
+
+    /* ================= CEK BENTROK ================= */
+
     const startDate = new Date(tanggal);
     startDate.setHours(0, 0, 0, 0);
 
@@ -41,21 +92,29 @@ export const createTicket = async (req, res, next) => {
     endDate.setHours(23, 59, 59, 999);
 
     const bentrok = await Jadwal.findOne({
-      tanggal_acara: { $gte: startDate, $lte: endDate}
+      tanggal_acara: {
+        $gte: startDate,
+        $lte: endDate,
+      },
     });
 
     if (bentrok) {
-      throw { status: 400, message: "Tanggal tersebut sudah dibooking pelanggan lain"};
+      throw {
+        status: 400,
+        message: "Tanggal tersebut sudah dibooking pelanggan lain",
+      };
     }
 
-    /*  CREATE TICKET  */
+    /* ================= CREATE TICKET ================= */
+
     const ticket = await Ticket.create({
       pelangganId: pelanggan._id,
       layananId,
       status: "pending",
     });
 
-    /* CREATE DETAIL */
+    /* ================= CREATE DETAIL ================= */
+
     const detail = await DetailTicket.create({
       ticketId: ticket._id,
       tanggal_acara: tanggal,
@@ -65,7 +124,8 @@ export const createTicket = async (req, res, next) => {
       referensi: referensi || "",
     });
 
-    /*  CREATE JADWAL  */
+    /* ================= CREATE JADWAL ================= */
+
     try {
       await Jadwal.create({
         ticketId: ticket._id,
@@ -73,17 +133,23 @@ export const createTicket = async (req, res, next) => {
         status: "booked",
       });
 
-    // Implementasi pengiriman event
-    getIO().emit("jadwal:update");
+      // realtime update
+      getIO().emit("jadwal:update");
 
     } catch (err) {
+      // duplicate key mongodb
       if (err.code === 11000) {
-        throw {status: 400, message: "Tanggal tersebut baru saja dibooking pelanggan lain"};
+        throw {
+          status: 400,
+          message: "Tanggal tersebut baru saja dibooking pelanggan lain",
+        };
       }
+
       throw err;
     }
-    
-    /* CREATE LOG  */
+
+    /* ================= CREATE LOG ================= */
+
     await LogActivity.create({
       ticketId: ticket._id,
       action: "CREATE_TICKET",
@@ -91,8 +157,24 @@ export const createTicket = async (req, res, next) => {
       description: "Ticket dibuat oleh pelanggan",
     });
 
+    /* ================= RESPONSE ================= */
+
+    return res.status(201).json({
+      success: true,
+      message: "Ticket berhasil dibuat",
+      data: {
+        ticket,
+        detail,
+      },
+    });
+
   } catch (err) {
-    next(err);
+    console.error("CREATE TICKET ERROR:", err);
+
+    return next({
+      status: err.status || 500,
+      message: err.message || "Gagal membuat ticket",
+    });
   }
 };
 
