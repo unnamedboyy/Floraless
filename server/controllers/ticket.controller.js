@@ -162,7 +162,7 @@ export const createTicket = async (req, res, next) => {
       title: "Ticket Berhasil Dibuat",
       message: `Halo ${pelanggan.nama || ""},\n\nTicket untuk acara "${nama_acara}" pada tanggal ${tanggal} telah berhasil dibuat dan menunggu persetujuan admin.\n\nNomor Ticket: ${ticket._id}`,
       ctaText: "Lihat Ticket",
-      ctaUrl: `${process.env.NEXT_PUBLIC_API_URL}/ticket/${ticket._id}`,
+      ctaUrl: `${process.env.APP_URL}ticket/${ticket._id}`,
     });
 
     /* ================= RESPONSE ================= */
@@ -660,7 +660,7 @@ export const approveTicket = async (req, res, next) => {
       title: "Ticket Disetujui ✅",
       message: `Halo ${updated.pelangganId?.nama || ""},\n\nTicket Anda telah disetujui dan ditangani oleh ${updated.pegawaiId?.nama || "tim kami"}.`,
       ctaText: "Lihat Detail Ticket",
-      ctaUrl: `${process.env.NEXT_PUBLIC_API_URL}/ticket/${updated._id}`,
+      ctaUrl: `${process.env.APP_URL}ticket/${updated._id}`,
     });
 
     res.json(updated);
@@ -752,7 +752,7 @@ export const updateStatusTicket = async (req, res, next) => {
           title: tpl.title,
           message: tpl.message,
           ctaText: "Lihat Ticket",
-          ctaUrl: `${process.env.NEXT_PUBLIC_API_URL}/ticket/${ticket._id}`,
+          ctaUrl: `${process.env.APP_URL}ticket/${ticket._id}`,
         });
       }
     }
