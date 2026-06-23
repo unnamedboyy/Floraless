@@ -1,35 +1,40 @@
 import nodemailer from "nodemailer";
 
 /* =========================================================
-   TRANSPORTER
-   - Sesuaikan EMAIL_HOST / EMAIL_PORT kalau bukan pakai gmail
-   - Simpan kredensial di .env, JANGAN hardcode
+   SMTP TRANSPORTER
 ========================================================= */
 
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST || "smtp.gmail.com",
-  port: 465,
+  port: Number(process.env.EMAIL_PORT) || 465,
   secure: true,
+  requireTLS: true,
+
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+
+  connectionTimeout: 30000,
+  greetingTimeout: 30000,
+  socketTimeout: 30000,
 });
 
 /* =========================================================
-   FUNGSI UTAMA - sendEmail
-   Dipakai di controller mana saja, tujuan & isi beda-beda
-   tapi template/layout tetap konsisten.
+   CEK KONEKSI SMTP
+========================================================= */
 
-   Contoh pakai:
-   await sendEmail({
-     to: "user@email.com",
-     subject: "Ticket Anda Disetujui",
-     title: "Ticket Disetujui ✅",
-     message: "Ticket Anda dengan nomor #123 telah disetujui...",
-     ctaText: "Lihat Ticket",
-     ctaUrl: "https://app-kamu.com/ticket/123",
-   });
+export const verifyEmailConnection = async () => {
+  try {
+    await transporter.verify();
+    console.log("✅ SMTP siap digunakan");
+  } catch (err) {
+    console.error("❌ SMTP gagal:", err);
+  }
+};
+
+/* =========================================================
+   KIRIM EMAIL
 ========================================================= */
 
 export const sendEmail = async ({
@@ -42,7 +47,7 @@ export const sendEmail = async ({
 }) => {
   try {
     if (!to) {
-      console.warn("[sendEmail] Dilewati: tujuan email kosong");
+      console.warn("[sendEmail] Email tujuan kosong");
       return;
     }
 
@@ -53,72 +58,131 @@ export const sendEmail = async ({
       ctaUrl,
     });
 
-    await transporter.sendMail({
-      from: `"${process.env.EMAIL_FROM_NAME || "Admin"}" <${process.env.EMAIL_USER}>`,
+    const info = await transporter.sendMail({
+      from: `"${process.env.EMAIL_FROM_NAME || "FLORALESS"}" <${process.env.EMAIL_USER}>`,
       to,
       subject,
       html,
     });
 
-    console.log(`[sendEmail] Terkirim ke ${to} - "${subject}"`);
+    console.log("✅ Email berhasil dikirim");
+    console.log("Message ID:", info.messageId);
+
+    return info;
   } catch (err) {
-    console.error("[sendEmail] Gagal kirim email:", err.message);
+    console.error("❌ [sendEmail] Gagal kirim email");
+    console.error(err);
+
+    return null;
   }
 };
 
 /* =========================================================
-   TEMPLATE HTML
-   Satu layout, dipakai ulang. Bagian yang beda cuma:
-   title, message (boleh multi-baris / HTML sederhana), dan CTA button (opsional)
+   TEMPLATE EMAIL
 ========================================================= */
 
-const renderEmailTemplate = ({ title, message, ctaText, ctaUrl }) => {
+const renderEmailTemplate = ({
+  title = "",
+  message = "",
+  ctaText,
+  ctaUrl,
+}) => {
   const buttonHtml =
     ctaText && ctaUrl
       ? `
       <tr>
-        <td style="padding: 24px 0 0 0;" align="center">
-          <a href="${ctaUrl}"
-             style="background-color:#2563eb;color:#ffffff;text-decoration:none;
-                    padding:12px 28px;border-radius:6px;font-size:14px;
-                    font-weight:600;display:inline-block;">
+        <td align="center" style="padding-top:24px;">
+          <a
+            href="${ctaUrl}"
+            style="
+              background:#2563eb;
+              color:white;
+              text-decoration:none;
+              padding:12px 24px;
+              border-radius:8px;
+              display:inline-block;
+              font-weight:600;
+            "
+          >
             ${ctaText}
           </a>
         </td>
-      </tr>`
+      </tr>
+      `
       : "";
 
   return `
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f7;padding:32px 0;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0"
+    style="
+      background:#f3f4f6;
+      padding:40px 0;
+      font-family:Arial,Helvetica,sans-serif;
+    ">
     <tr>
       <td align="center">
-        <table width="480" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;">
+
+        <table width="600" cellpadding="0" cellspacing="0"
+          style="
+            background:white;
+            border-radius:12px;
+            overflow:hidden;
+          ">
+
           <tr>
-            <td style="background-color:#111827;padding:20px 24px;">
-              <span style="color:#ffffff;font-size:18px;font-weight:700;">
-                ${process.env.EMAIL_FROM_NAME || "Aplikasi"}
-              </span>
+            <td
+              style="
+                background:#111827;
+                color:white;
+                padding:24px;
+                font-size:24px;
+                font-weight:bold;
+              "
+            >
+              ${process.env.EMAIL_FROM_NAME || "FLORALESS"}
             </td>
           </tr>
+
           <tr>
-            <td style="padding:32px 24px;">
-              <h2 style="margin:0 0 16px 0;color:#111827;font-size:20px;">
-                ${title || ""}
+            <td style="padding:32px">
+
+              <h2 style="
+                margin:0 0 20px 0;
+                color:#111827;
+              ">
+                ${title}
               </h2>
-              <div style="color:#374151;font-size:14px;line-height:1.6;white-space:pre-line;">
-                ${message || ""}
+
+              <div style="
+                color:#4b5563;
+                line-height:1.8;
+                white-space:pre-line;
+              ">
+                ${message}
               </div>
-              <table width="100%">${buttonHtml}</table>
+
+              <table width="100%">
+                ${buttonHtml}
+              </table>
+
             </td>
           </tr>
+
           <tr>
-            <td style="background-color:#f9fafb;padding:16px 24px;">
-              <span style="color:#9ca3af;font-size:12px;">
-                Email ini dikirim otomatis, mohon tidak membalas email ini.
-              </span>
+            <td
+              style="
+                background:#f9fafb;
+                padding:20px;
+                color:#9ca3af;
+                font-size:12px;
+              "
+            >
+              Email ini dikirim secara otomatis oleh FLORALESS.<br>
+              Mohon tidak membalas email ini.
             </td>
           </tr>
+
         </table>
+
       </td>
     </tr>
   </table>
