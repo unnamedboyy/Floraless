@@ -11,10 +11,7 @@ import CashbackClaim from "../models/cashbackClaim.js";
 import LogActivity from "../models/logAktivitas.js";
 import Portfolio from "../models/portfolio.js";
 import { getIO } from "../socket/index.js";
-
-/* =========================================================
-   CUSTOMER CREATE TICKET
-========================================================= */
+import { sendEmail } from "../utils/mailer.js";
 
 /* =========================================================
    CUSTOMER CREATE TICKET
@@ -155,6 +152,17 @@ export const createTicket = async (req, res, next) => {
       action: "CREATE_TICKET",
       status: "pending",
       description: "Ticket dibuat oleh pelanggan",
+    });
+
+    /* ================= KIRIM EMAIL ================= */
+
+    sendEmail({
+      to: pelanggan.email,
+      subject: "Ticket Anda Berhasil Dibuat",
+      title: "Ticket Berhasil Dibuat",
+      message: `Halo ${pelanggan.nama || ""},\n\nTicket untuk acara "${nama_acara}" pada tanggal ${tanggal} telah berhasil dibuat dan menunggu persetujuan admin.\n\nNomor Ticket: ${ticket._id}`,
+      ctaText: "Lihat Ticket",
+      ctaUrl: `${process.env.APP_URL}/ticket/${ticket._id}`,
     });
 
     /* ================= RESPONSE ================= */
@@ -630,7 +638,7 @@ export const approveTicket = async (req, res, next) => {
       { new: true }
     )
       .populate("pegawaiId", "nama")
-      .populate("pelangganId", "nama")
+      .populate("pelangganId", "nama email")
       .populate("layananId", "nama harga");
 
     if (!updated) {
@@ -644,6 +652,15 @@ export const approveTicket = async (req, res, next) => {
       action: "APPROVE_TICKET",
       status: "approved",
       description: "Ticket disetujui",
+    });
+
+    sendEmail({
+      to: updated.pelangganId?.email,
+      subject: "Ticket Anda Disetujui",
+      title: "Ticket Disetujui ✅",
+      message: `Halo ${updated.pelangganId?.nama || ""},\n\nTicket Anda telah disetujui dan ditangani oleh ${updated.pegawaiId?.nama || "tim kami"}.`,
+      ctaText: "Lihat Detail Ticket",
+      ctaUrl: `${process.env.APP_URL}/ticket/${updated._id}`,
     });
 
     res.json(updated);
@@ -702,6 +719,43 @@ export const updateStatusTicket = async (req, res, next) => {
           ? `Ticket ditolak. Alasan: ${note || "-"}`
           : `Status diubah ke ${status}`,
     });
+
+    /* ================= KIRIM EMAIL NOTIFIKASI STATUS ================= */
+
+    const pelangganTicket = await Pelanggan.findById(ticket.pelangganId);
+
+    if (pelangganTicket?.email) {
+      const emailMap = {
+        rejected: {
+          subject: "Ticket Anda Ditolak",
+          title: "Ticket Ditolak",
+          message: `Halo ${pelangganTicket.nama || ""},\n\nMohon maaf, ticket Anda ditolak.\nAlasan: ${note || "-"}`,
+        },
+        done: {
+          subject: "Ticket Selesai",
+          title: "Ticket Selesai 🎉",
+          message: `Halo ${pelangganTicket.nama || ""},\n\nTicket Anda telah selesai dikerjakan. Terima kasih telah menggunakan layanan kami!`,
+        },
+        in_progress: {
+          subject: "Ticket Sedang Dikerjakan",
+          title: "Ticket Diproses",
+          message: `Halo ${pelangganTicket.nama || ""},\n\nTicket Anda sedang dalam proses pengerjaan.`,
+        },
+      };
+
+      const tpl = emailMap[status];
+
+      if (tpl) {
+        sendEmail({
+          to: pelangganTicket.email,
+          subject: tpl.subject,
+          title: tpl.title,
+          message: tpl.message,
+          ctaText: "Lihat Ticket",
+          ctaUrl: `${process.env.APP_URL}/ticket/${ticket._id}`,
+        });
+      }
+    }
 
   } catch (err) {
     next(err);
