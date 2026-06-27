@@ -109,12 +109,6 @@ export default function RegisterForm() {
   return (
     <div className="space-y-5">
 
-      {/* TITLE */}
-      <div>
-        <h2 className="text-4xl font-bold text-white">Sign Up</h2>
-        <p className="mt-3 text-white/70">Buat akun pelanggan Floraless</p>
-      </div>
-
       {/* NAMA */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-white">Nama Lengkap</label>

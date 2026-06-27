@@ -50,29 +50,10 @@ export const getPelanggan = async (req, res, next) => {
 
 export const createPelanggan = async (req, res, next) => {
   try {
-    const {
-      username,
-      password,
-      nama,
-      email,
-      no_telp,
-      profile,
-      alamat,
-      jenis_kelamin,
-      tanggal_lahir,
-      bio,
-    } = req.body;
+    const { username, password, nama, email, no_telp, profile, alamat, jenis_kelamin, tanggal_lahir, bio } = req.body;
 
-    const existing = await User.findOne({
-      username,
-    });
-
-    if (existing) {
-      return res.status(400).json({
-        success: false,
-        message: "Username sudah digunakan",
-      });
-    }
+    const existing = await User.findOne({ username });
+    if (existing) return res.status(400).json({ success: false, message: "Username sudah digunakan" });
 
     const hash = await bcrypt.hash(password, 10);
 
@@ -83,25 +64,13 @@ export const createPelanggan = async (req, res, next) => {
       isActive: true,
     });
 
-    const pelanggan =
-      await createPelangganProfile({
-        userId: user._id,
-        nama,
-        email,
-        no_telp,
-        profile,
-        alamat,
-        jenis_kelamin,
-        tanggal_lahir,
-        bio,
-      });
+    const pelanggan = await createPelangganProfile({ userId: user._id, nama, email, no_telp, profile, alamat, jenis_kelamin, tanggal_lahir, bio });
 
     res.json({
       success: true,
       message: "Pelanggan berhasil dibuat",
       pelanggan,
     });
-
   } catch (err) {
     next(err);
   }
@@ -111,15 +80,9 @@ export const createPelanggan = async (req, res, next) => {
 
 export const updatePelanggan = async (req, res, next) => {
   try {
-    const pelanggan =
-      await Pelanggan.findById(req.params.id);
+    const pelanggan = await Pelanggan.findById(req.params.id);
 
-    if (!pelanggan) {
-      return res.status(404).json({
-        success: false,
-        message: "Pelanggan tidak ditemukan",
-      });
-    }
+    if (!pelanggan) return res.status(404).json({ success: false, message: "Pelanggan tidak ditemukan" });
 
     if (req.body.username) {
       const existingUser = await User.findOne({
@@ -127,17 +90,11 @@ export const updatePelanggan = async (req, res, next) => {
         _id: { $ne: pelanggan.userId },
       });
 
-      if (existingUser) {
-        return res.status(400).json({
-          success: false,
-          message: "Username sudah digunakan",
-        });
-      }
+      if (existingUser) return res.status(400).json({ success: false, message: "Username sudah digunakan" });
 
-      await User.findByIdAndUpdate(
-        pelanggan.userId,
-        { username: req.body.username }
-      );
+      await User.findByIdAndUpdate(pelanggan.userId, {
+        username: req.body.username,
+      });
     }
 
     const payload = {
@@ -151,19 +108,16 @@ export const updatePelanggan = async (req, res, next) => {
       bio: req.body.bio,
     };
 
-    const updated =
-      await Pelanggan.findByIdAndUpdate(
-        req.params.id,
-        payload,
-        { new: true }
-      ).populate("userId", "username role isActive");
+    const updated = await Pelanggan.findByIdAndUpdate(req.params.id, payload, { new: true }).populate(
+      "userId",
+      "username role isActive"
+    );
 
     res.json({
       success: true,
       message: "Pelanggan berhasil diperbarui",
       data: updated,
     });
-
   } catch (err) {
     next(err);
   }
@@ -173,8 +127,7 @@ export const updatePelanggan = async (req, res, next) => {
 
 export const deletePelanggan = async (req, res, next) => {
   try {
-    const pelanggan =
-      await Pelanggan.findById(req.params.id);
+    const pelanggan =await Pelanggan.findById(req.params.id);
 
     if (!pelanggan) {
       return res.status(404).json({
@@ -183,17 +136,9 @@ export const deletePelanggan = async (req, res, next) => {
       });
     }
 
-    // Toggle status
     pelanggan.isActive = !pelanggan.isActive;
-
     await pelanggan.save();
-
-    await User.findByIdAndUpdate(
-      pelanggan.userId,
-      {
-        isActive: pelanggan.isActive,
-      }
-    );
+    await User.findByIdAndUpdate(pelanggan.userId,{isActive: pelanggan.isActive});
 
     res.json({
       success: true,

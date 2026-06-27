@@ -118,39 +118,14 @@ const getProfileByRole = async (role, userId) => {
 
 export const registerPelanggan = async (req, res, next) => {
   try {
-    const {
-      username,
-      password,
-      nama,
-      no_telp,
-      email,
-      profile,
-      alamat,
-      jenis_kelamin,
-      tanggal_lahir,
-      bio,
-    } = req.body;
+    const { username, password, nama, no_telp, email, profile, alamat, jenis_kelamin, tanggal_lahir, bio } = req.body;
 
-    // Cek duplikasi username
     await checkUsername(username);
-
-    // Validasi format + duplikasi email & no_telp
     await checkEmail(email, Pelanggan);
     await checkNoTelp(no_telp, Pelanggan);
 
     const user = await createUser(username, password, "pelanggan");
-
-    const pelanggan = await createPelangganProfile({
-      userId: user._id,
-      nama,
-      no_telp,
-      email,
-      profile,
-      alamat,
-      jenis_kelamin,
-      tanggal_lahir,
-      bio,
-    });
+    const pelanggan = await createPelangganProfile({ userId: user._id, nama, no_telp, email, profile, alamat, jenis_kelamin, tanggal_lahir, bio });
 
     res.json({
       success: true,
@@ -170,40 +145,12 @@ export const registerPelanggan = async (req, res, next) => {
 
 export const registerPegawai = async (req, res, next) => {
   try {
-    const {
-      username,
-      password,
-      nama,
-      no_telp,
-      email,
-      profile,
-      alamat,
-      jenis_kelamin,
-      tanggal_lahir,
-      tanggal_masuk,
-      bio,
-    } = req.body;
+    const { username, password, nama, no_telp, email, profile, alamat, jenis_kelamin, tanggal_lahir, tanggal_masuk, bio } = req.body;
 
     await checkUsername(username);
 
-    const user = await createUser(
-      username,
-      password,
-      "pegawai"
-    );
-
-    const pegawai = await createPegawaiProfile({
-      userId: user._id,
-      nama,
-      no_telp,
-      email,
-      profile,
-      alamat,
-      jenis_kelamin,
-      tanggal_lahir,
-      tanggal_masuk,
-      bio,
-    });
+    const user = await createUser(username, password, "pegawai");
+    const pegawai = await createPegawaiProfile({ userId: user._id, nama, no_telp, email, profile, alamat, jenis_kelamin, tanggal_lahir, tanggal_masuk, bio });
 
     res.json({
       success: true,
@@ -263,70 +210,31 @@ export const registerAdmin = async (req, res, next) => {
 
 export const login = async (req, res, next) => {
   try {
-    const {
-      username,
-      password,
-    } = req.body;
-
+    const { username, password } = req.body;
     const user = await User.findOne({ username });
 
-    if (!user) {
-      throw {
-        status: 404,
-        message: "User tidak ditemukan",
-      };
-    }
+    if (!user) throw { status: 404, message: "User tidak ditemukan" };
+    if (!user.isActive) throw { status: 403, message: "Akun sudah dinonaktifkan" };
 
-    if (!user.isActive) {
-      throw {
-        status: 403,
-        message: "Akun sudah dinonaktifkan",
-      };
-    }
+    const match = await bcrypt.compare(password, user.password);
 
-    const match = await bcrypt.compare(
-      password,
-      user.password
-    );
+    if (!match) throw { status: 400, message: "Password salah" };
 
-    if (!match) {
-      throw {
-        status: 400,
-        message: "Password salah",
-      };
-    }
-
-    const token = jwt.sign(
-      {
-        id: user._id,
-        role: user.role,
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "1d",
-      }
-    );
-
-    const profile = await getProfileByRole(
-      user.role,
-      user._id
-    );
+    const token = jwt.sign( {id: user._id, role: user.role}, process.env.JWT_SECRET, { expiresIn: "1d" });
+    const profile = await getProfileByRole(user.role, user._id);
 
     res.json({
       success: true,
       message: "Login berhasil",
       token,
-
       user: {
         _id: user._id,
         username: user.username,
         role: user.role,
         isActive: user.isActive,
       },
-
       profile,
     });
-
   } catch (err) {
     next(err);
   }

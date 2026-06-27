@@ -47,67 +47,22 @@ export const getPegawai = async ( req, res, next) => {
 
 export const createPegawai = async (req, res, next) => {
   try {
-    const {
-      username,
-      password,
-      nama,
-      email,
-      no_telp,
-      profile,
-      alamat,
-      jenis_kelamin,
-      tanggal_lahir,
-      tanggal_masuk,
-      bio,
-    } = req.body;
-
-    /* ================= CEK USERNAME ================= */
+    const { username, password, nama, email, no_telp, profile, alamat, jenis_kelamin, tanggal_lahir, tanggal_masuk, bio } = req.body;
 
     const existing = await User.findOne({ username });
-    if (existing) {
-      return res.status(400).json({
-        success: false,
-        message: "Username sudah digunakan",
-      });
-    }
-
-    /* ================= VALIDASI FORMAT ================= */
+    if (existing) return res.status(400).json({ success: false, message: "Username sudah digunakan" });
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({
-        success: false,
-        message: "Format email tidak valid (contoh: nama@email.com)",
-      });
-    }
-
+    if (!emailRegex.test(email)) return res.status(400).json({ success: false, message: "Format email tidak valid (contoh: nama@email.com)" });
+    
     const phoneRegex = /^(\+62|62|0)8[1-9][0-9]{6,10}$/;
-    if (!phoneRegex.test(no_telp)) {
-      return res.status(400).json({
-        success: false,
-        message: "Format nomor telepon tidak valid (contoh: 08123456789 atau +628123456789)",
-      });
-    }
-
-    /* ================= CEK DUPLIKASI ================= */
-
+    if (!phoneRegex.test(no_telp)) return res.status(400).json({ success: false, message: "Format nomor telepon tidak valid (contoh: 08123456789 atau +628123456789)" });
+    
     const existingEmail = await Pegawai.findOne({ email });
-    if (existingEmail) {
-      return res.status(400).json({
-        success: false,
-        message: "Email sudah terdaftar, silakan gunakan email lain",
-      });
-    }
+    if (existingEmail) return res.status(400).json({ success: false, message: "Email sudah terdaftar, silakan gunakan email lain" });
 
     const existingPhone = await Pegawai.findOne({ no_telp });
-    if (existingPhone) {
-      return res.status(400).json({
-        success: false,
-        message: "Nomor telepon sudah terdaftar, silakan gunakan nomor lain",
-      });
-    }
-
-    /* ================= CREATE ================= */
+    if (existingPhone) return res.status(400).json({ success: false, message: "Nomor telepon sudah terdaftar, silakan gunakan nomor lain" });
 
     const hash = await bcrypt.hash(password, 10);
 
@@ -118,25 +73,13 @@ export const createPegawai = async (req, res, next) => {
       isActive: true,
     });
 
-    const pegawai = await createPegawaiProfile({
-      userId: user._id,
-      nama,
-      email,
-      no_telp,
-      profile,
-      alamat,
-      jenis_kelamin,
-      tanggal_lahir,
-      tanggal_masuk,
-      bio,
-    });
+    const pegawai = await createPegawaiProfile({ userId: user._id, nama, email, no_telp, profile, alamat, jenis_kelamin, tanggal_lahir, tanggal_masuk, bio });
 
     res.json({
       success: true,
       message: "Pegawai berhasil dibuat",
       pegawai,
     });
-
   } catch (err) {
     next(err);
   }
@@ -146,15 +89,9 @@ export const createPegawai = async (req, res, next) => {
 
 export const updatePegawai = async (req, res, next) => {
   try {
-    const pegawai =
-      await Pegawai.findById(req.params.id);
+    const pegawai = await Pegawai.findById(req.params.id);
 
-    if (!pegawai) {
-      return res.status(404).json({
-        success: false,
-        message: "Pegawai tidak ditemukan",
-      });
-    }
+    if (!pegawai) return res.status(404).json({ success: false, message: "Pegawai tidak ditemukan" });
 
     if (req.body.username) {
       const existingUser = await User.findOne({
@@ -162,17 +99,11 @@ export const updatePegawai = async (req, res, next) => {
         _id: { $ne: pegawai.userId },
       });
 
-      if (existingUser) {
-        return res.status(400).json({
-          success: false,
-          message: "Username sudah digunakan",
-        });
-      }
+      if (existingUser) return res.status(400).json({ success: false, message: "Username sudah digunakan" });
 
-      await User.findByIdAndUpdate(
-        pegawai.userId,
-        { username: req.body.username }
-      );
+      await User.findByIdAndUpdate(pegawai.userId, {
+        username: req.body.username,
+      });
     }
 
     const payload = {
@@ -187,19 +118,16 @@ export const updatePegawai = async (req, res, next) => {
       bio: req.body.bio,
     };
 
-    const updated =
-      await Pegawai.findByIdAndUpdate(
-        req.params.id,
-        payload,
-        { new: true }
-      ).populate("userId", "username role isActive");
+    const updated = await Pegawai.findByIdAndUpdate(req.params.id, payload, { new: true }).populate(
+      "userId",
+      "username role isActive"
+    );
 
     res.json({
       success: true,
       message: "Pegawai berhasil diperbarui",
       data: updated,
     });
-
   } catch (err) {
     next(err);
   }
@@ -209,8 +137,7 @@ export const updatePegawai = async (req, res, next) => {
 
 export const deletePegawai = async (req, res, next) => {
   try {
-    const pegawai =
-      await Pegawai.findById(req.params.id);
+    const pegawai = await Pegawai.findById(req.params.id);
 
     if (!pegawai) {
       return res.status(404).json({
@@ -219,17 +146,9 @@ export const deletePegawai = async (req, res, next) => {
       });
     }
 
-    // Toggle status
     pegawai.isActive = !pegawai.isActive;
-
     await pegawai.save();
-
-    await User.findByIdAndUpdate(
-      pegawai.userId,
-      {
-        isActive: pegawai.isActive,
-      }
-    );
+    await User.findByIdAndUpdate(pegawai.userId,{ isActive: pegawai.isActive});
 
     res.json({
       success: true,
