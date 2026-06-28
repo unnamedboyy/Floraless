@@ -16,66 +16,46 @@ const generateVoucherCode = () => {
 export const createReview = async (req, res, next) => {
   try {
     const { ticketId, rating, komentar } = req.body;
-
     const ticket = await Ticket.findById(ticketId);
     if (!ticket) throw { status: 404, message: "Ticket tidak ditemukan" };
 
-    // hanya pelanggan pemilik
     const pelanggan = await Pelanggan.findOne({ userId: req.user.id });
     if (!pelanggan) throw { status: 404, message: "Pelanggan tidak ditemukan" };
+    if (ticket.pelangganId.toString() !== pelanggan._id.toString()) throw { status: 403, message: "Bukan ticket anda" };
+    if (ticket.status !== "done") throw { status: 400, message: "Review hanya bisa setelah selesai" };
 
-    if (ticket.pelangganId.toString() !== pelanggan._id.toString()) {
-      throw { status: 403, message: "Bukan ticket anda" };
-    }
-
-    // hanya jika selesai
-    if (ticket.status !== "done") {
-      throw { status: 400, message: "Review hanya bisa setelah selesai" };
-    }
-
-    // tidak boleh double
     const existing = await Review.findOne({ ticketId });
-    if (existing) {
-      throw { status: 400, message: "Review sudah ada" };
-    }
+    if (existing) throw { status: 400, message: "Review sudah ada" };
 
-    // ================= SAVE REVIEW =================
     const review = await Review.create({
       ticketId,
       pelangganId: pelanggan._id,
       rating,
-      komentar
+      komentar,
     });
 
-    // ================= HITUNG CASHBACK =================
-    const layanan = await Layanan.findById(ticket.layananId);
-
-    const totalHarga = layanan.harga;
-    const cashback = Math.floor(totalHarga * 0.05); // 5%
-
-    // ================= CREATE VOUCHER =================
+    const cashback = 200000;
     const voucher = await Voucher.create({
       code: generateVoucherCode(),
       pelangganId: pelanggan._id,
       amount: cashback,
-      expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 hari
+      expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     });
 
-    // ================= LOG =================
     await logActivity({
       userId: req.user.id,
       ticketId,
       action: "CREATE_REVIEW",
       meta: {},
-      customDescription: `Pelanggan memberikan review dan mendapatkan voucher ${voucher.code}`
+      customDescription: `Pelanggan memberikan review dan mendapatkan voucher ${voucher.code}`,
     });
 
     res.json({
+      success: true,
       message: "Review berhasil, voucher telah dibuat",
       review,
-      voucher
+      voucher,
     });
-
   } catch (err) {
     next(err);
   }

@@ -181,318 +181,98 @@ export const getAllVouchers =
    CREATE
 ===================================================== */
 
-export const createVoucher =
-  async (req, res, next) => {
+export const createVoucher = async (req, res, next) => {
+  try {
+    const {code,pelangganId,amount, expiredAt} = req.body;
 
-    try {
+    if (!code?.trim()) 
+      throw { status: 400, message: "Kode voucher wajib diisi" };
 
-      const {
+    if (code.trim().length < 3)
+      throw { status: 400,message: "Kode voucher minimal 3 karakter"};
 
-        code,
+    if (!pelangganId)
+      throw {status: 400,message: "Pelanggan wajib dipilih"};
 
-        pelangganId,
+    if (!amount || Number(amount) <= 0)
+      throw {status: 400,message: "Nominal voucher tidak valid"};
 
-        amount,
+    if (!expiredAt)
+      throw { status: 400,message: "Tanggal expired wajib diisi"};
 
-        expiredAt,
+    const voucherCode = code.trim().toUpperCase();
+    const exist = await Voucher.findOne({code: voucherCode});
 
-      } = req.body;
+    if (exist)
+      throw {status: 400, message: "Kode voucher sudah digunakan"};
 
-      /* ================= CODE ================= */
+    const voucher = await Voucher.create({
+      code: voucherCode,
+      pelangganId,
+      amount,
+      expiredAt,
+    });
 
-      if (!code?.trim()) {
+    res.json(voucher);
 
-        throw {
-
-          status: 400,
-
-          message:
-            "Kode voucher wajib diisi"
-        };
-      }
-
-      if (
-        code.trim().length < 3
-      ) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Kode voucher minimal 3 karakter"
-        };
-      }
-
-      /* ================= PELANGGAN ================= */
-
-      if (!pelangganId) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Pelanggan wajib dipilih"
-        };
-      }
-
-      /* ================= AMOUNT ================= */
-
-      if (
-        !amount ||
-        Number(amount) <= 0
-      ) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Nominal voucher tidak valid"
-        };
-      }
-
-      /* ================= EXPIRED ================= */
-
-      if (!expiredAt) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Tanggal expired wajib diisi"
-        };
-      }
-
-      /* ================= EXIST ================= */
-
-      const exist =
-        await Voucher.findOne({
-
-          code:
-            code.toUpperCase()
-        });
-
-      if (exist) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Kode voucher sudah digunakan"
-        };
-      }
-
-      /* ================= CREATE ================= */
-
-      const voucher =
-        await Voucher.create({
-
-          code:
-            code.toUpperCase(),
-
-          pelangganId,
-
-          amount,
-
-          expiredAt,
-        });
-
-      res.json(voucher);
-
-    } catch (err) {
-
-      next(err);
-    }
-  };
+  } catch (err) {
+    next(err);
+  }
+};
 
 /* =====================================================
    UPDATE
 ===================================================== */
 
-export const updateVoucher =
-  async (req, res, next) => {
+export const updateVoucher = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const {code,pelangganId, amount,expiredAt} = req.body;
+    const voucher = await Voucher.findById(id);
 
-    try {
+    if (!voucher) throw { status: 404, message: "Voucher tidak ditemukan" };
+    if (voucher.isUsed) throw { status: 400, message: "Voucher yang sudah digunakan tidak bisa diedit"};
+    if (!code?.trim()) throw { status: 400, message: "Kode voucher wajib diisi"};
+    if (!pelangganId) throw {status: 400,message: "Pelanggan wajib dipilih"};
+    if (!amount || Number(amount) <= 0) throw {status: 400,message: "Nominal voucher tidak valid"};
 
-      const { id } =
-        req.params;
+    const voucherCode = code.trim().toUpperCase();
+    const duplicate = await Voucher.findOne({_id: { $ne: id }, code: voucherCode});
 
-      const {
+    if (duplicate) throw {status: 400,message: "Kode voucher sudah digunakan"};
 
-        code,
+    voucher.code = voucherCode;
+    voucher.pelangganId = pelangganId;
+    voucher.amount = amount;
+    voucher.expiredAt = expiredAt;
 
-        pelangganId,
+    await voucher.save();
+    res.json(voucher);
 
-        amount,
-
-        expiredAt,
-
-      } = req.body;
-
-      const voucher =
-        await Voucher.findById(id);
-
-      if (!voucher) {
-
-        throw {
-
-          status: 404,
-
-          message:
-            "Voucher tidak ditemukan"
-        };
-      }
-
-      /* ================= USED ================= */
-
-      if (voucher.isUsed) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Voucher yang sudah digunakan tidak bisa diedit"
-        };
-      }
-
-      /* ================= VALIDATION ================= */
-
-      if (!code?.trim()) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Kode voucher wajib diisi"
-        };
-      }
-
-      if (!pelangganId) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Pelanggan wajib dipilih"
-        };
-      }
-
-      if (
-        !amount ||
-        Number(amount) <= 0
-      ) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Nominal voucher tidak valid"
-        };
-      }
-
-      /* ================= DUPLICATE ================= */
-
-      const duplicate =
-        await Voucher.findOne({
-
-          _id: {
-            $ne: id
-          },
-
-          code:
-            code.toUpperCase()
-        });
-
-      if (duplicate) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Kode voucher sudah digunakan"
-        };
-      }
-
-      /* ================= UPDATE ================= */
-
-      voucher.code =
-        code.toUpperCase();
-
-      voucher.pelangganId =
-        pelangganId;
-
-      voucher.amount =
-        amount;
-
-      voucher.expiredAt =
-        expiredAt;
-
-      await voucher.save();
-
-      res.json(voucher);
-
-    } catch (err) {
-
-      next(err);
-    }
-  };
+  } catch (err) {
+    next(err);
+  }
+};
 
 /* =====================================================
    DELETE
 ===================================================== */
 
-export const deleteVoucher =
-  async (req, res, next) => {
+export const deleteVoucher = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const voucher = await Voucher.findById(id);
 
-    try {
+    if (!voucher) throw { status: 404, message: "Voucher tidak ditemukan" };
+    if (voucher.isUsed) throw { status: 400,message: "Voucher sudah digunakan, tidak bisa dihapus"};
 
-      const { id } =
-        req.params;
+    await voucher.deleteOne();
 
-      const voucher =
-        await Voucher.findById(id);
+    res.json({
+      message: "Voucher berhasil dihapus",
+    });
 
-      if (!voucher) {
-
-        throw {
-
-          status: 404,
-
-          message:
-            "Voucher tidak ditemukan"
-        };
-      }
-
-      if (voucher.isUsed) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Voucher sudah digunakan, tidak bisa dihapus"
-        };
-      }
-
-      await voucher.deleteOne();
-
-      res.json({
-
-        message:
-          "Voucher berhasil dihapus"
-      });
-
-    } catch (err) {
-
-      next(err);
-    }
-  };
+  } catch (err) {
+    next(err);
+  }
+};

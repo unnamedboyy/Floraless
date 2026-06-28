@@ -326,16 +326,11 @@ export default function VoucherFormModal({
               </h2>
 
               <h2 className="
-
                 text-[40px]
-
                 leading-none
-
                 tracking-tight
-
                 font-bold
-
-                text-emerald-600
+                text-[#C9AE63]
 
               ">
 
