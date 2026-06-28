@@ -311,39 +311,12 @@ export default function PaymentUploadModal({
               Upload{" "}
 
               <span className="
-                text-[#64748B]
+                text-[#C9AE63]
               ">
                 pembayaran
               </span>
 
             </h2>
-
-            <div className="
-
-              h-10
-              px-4
-
-              rounded-2xl
-
-              bg-emerald-50
-
-              border
-              border-emerald-200
-
-              text-emerald-700
-
-              inline-flex
-              items-center
-              justify-center
-
-              text-sm
-              font-semibold
-
-            ">
-
-              Payment
-
-            </div>
 
           </div>
 
