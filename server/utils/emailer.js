@@ -50,7 +50,7 @@ export const sendEmail = async ({
 
     const { data, error } = await resend.emails.send({
       from:
-        process.env.EMAIL_FROM ||"FLORALESS <onboarding@resend.dev>",
+        process.env.EMAIL_FROM_NAME ||"FLORALESS <noreply@floraless.site>",
 
       to: Array.isArray(to) ? to : [to],
 
@@ -96,8 +96,8 @@ export const sendCustomEmail = async ({
   try {
     const { data, error } = await resend.emails.send({
       from:
-        process.env.EMAIL_FROM ||
-        "FLORALESS <onboarding@resend.dev>",
+        process.env.EMAIL_FROM_NAME ||
+        "FLORALESS <noreply@floraless.site>",
 
       to: Array.isArray(to) ? to : [to],
 

@@ -14,12 +14,12 @@ async function main() {
     console.log("==========================================");
 
     console.log("API KEY :", process.env.RESEND_API_KEY ? "✅ OK" : "❌ TIDAK ADA");
-    console.log("FROM    :", process.env.EMAIL_FROM);
+    console.log("FROM    :", process.env.EMAIL_FROM_NAME);
     console.log("TO      :", "kaisarsimaa22@gmail.com");
     console.log("------------------------------------------");
 
     const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM,
+      from: process.env.EMAIL_FROM_NAME,
       to: ["kaisarsimaa22@gmail.com"],
       subject: "Testing Email FLORALESS 🚀",
       html: `
