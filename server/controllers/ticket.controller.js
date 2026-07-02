@@ -11,8 +11,7 @@ import CashbackClaim from "../models/cashbackClaim.js";
 import LogActivity from "../models/logAktivitas.js";
 import Portfolio from "../models/portfolio.js";
 import { getIO } from "../socket/index.js";
-import { sendEmail } from "../utils/mailer.js";
-import { resend } from "../utils/resend.js";
+import { sendEmail } from "../utils/emailer.js";
 
 /* =========================================================
    CUSTOMER CREATE TICKET
@@ -156,45 +155,18 @@ export const createTicket = async (req, res, next) => {
 
     /* ================= KIRIM EMAIL ================= */
 
-export const sendEmail = async ({
-  to,
-  subject,
-  title,
-  message,
-  ctaText,
-  ctaUrl,
-}) => {
+    await sendEmail({
+      to: pelanggan.email,
+      subject: "Ticket Anda Berhasil Dibuat",
+      title: "Ticket Berhasil Dibuat",
+      message: `Halo ${pelanggan.nama},
 
-  try {
+    Ticket Anda berhasil dibuat dan sedang menunggu persetujuan admin.
 
-    const html = renderEmailTemplate({
-      title,
-      message,
-      ctaText,
-      ctaUrl,
+    Nomor Ticket: ${ticket._id}`,
+      ctaText: "Lihat Ticket",
+      ctaUrl: `${process.env.APP_URL}/ticket/${ticket._id}`,
     });
-
-    const { data, error } =
-      await resend.emails.send({
-        from: "FLORALESS <onboarding@resend.dev>",
-        to,
-        subject,
-        html,
-      });
-
-    if (error) {
-      console.error(error);
-      return null;
-    }
-
-    console.log(data);
-    return data;
-
-  } catch (err) {
-    console.error(err);
-    return null;
-  }
-};
 
     /* ================= RESPONSE ================= */
 
@@ -685,7 +657,7 @@ export const approveTicket = async (req, res, next) => {
       description: "Ticket disetujui",
     });
 
-    sendEmail({
+    await sendEmail({
       to: updated.pelangganId?.email,
       subject: "Ticket Anda Disetujui",
       title: "Ticket Disetujui ✅",
@@ -777,7 +749,7 @@ export const updateStatusTicket = async (req, res, next) => {
       const tpl = emailMap[status];
 
       if (tpl) {
-        sendEmail({
+        await sendEmail({
           to: pelangganTicket.email,
           subject: tpl.subject,
           title: tpl.title,
