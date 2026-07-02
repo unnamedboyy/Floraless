@@ -95,7 +95,7 @@ export const renderEmailTemplate = ({
     letter-spacing:1px;
   "
 >
-🌸 FLORALESS
+FLORALESS
 </div>
 
 <div
