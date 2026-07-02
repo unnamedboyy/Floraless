@@ -12,6 +12,7 @@ import LogActivity from "../models/logAktivitas.js";
 import Portfolio from "../models/portfolio.js";
 import { getIO } from "../socket/index.js";
 import { sendEmail } from "../utils/mailer.js";
+import { resend } from "../utils/resend.js";
 
 /* =========================================================
    CUSTOMER CREATE TICKET
@@ -146,7 +147,6 @@ export const createTicket = async (req, res, next) => {
     }
 
     /* ================= CREATE LOG ================= */
-
     await LogActivity.create({
       ticketId: ticket._id,
       action: "CREATE_TICKET",
@@ -156,14 +156,45 @@ export const createTicket = async (req, res, next) => {
 
     /* ================= KIRIM EMAIL ================= */
 
-    sendEmail({
-      to: pelanggan.email,
-      subject: "Ticket Anda Berhasil Dibuat",
-      title: "Ticket Berhasil Dibuat",
-      message: `Halo ${pelanggan.nama || ""},\n\nTicket untuk acara "${nama_acara}" pada tanggal ${tanggal} telah berhasil dibuat dan menunggu persetujuan admin.\n\nNomor Ticket: ${ticket._id}`,
-      ctaText: "Lihat Ticket",
-      ctaUrl: `${process.env.APP_URL}/ticket/${ticket._id}`,
+export const sendEmail = async ({
+  to,
+  subject,
+  title,
+  message,
+  ctaText,
+  ctaUrl,
+}) => {
+
+  try {
+
+    const html = renderEmailTemplate({
+      title,
+      message,
+      ctaText,
+      ctaUrl,
     });
+
+    const { data, error } =
+      await resend.emails.send({
+        from: "FLORALESS <onboarding@resend.dev>",
+        to,
+        subject,
+        html,
+      });
+
+    if (error) {
+      console.error(error);
+      return null;
+    }
+
+    console.log(data);
+    return data;
+
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
+};
 
     /* ================= RESPONSE ================= */
 

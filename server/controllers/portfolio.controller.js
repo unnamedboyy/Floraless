@@ -111,196 +111,91 @@ const ensureCoverExists =
    CREATE
 ===================================================== */
 
-export const createPortfolio =
-  async (req, res, next) => {
+export const createPortfolio = async (req, res, next) => {
+  try {
+    const {
+      title,
+      excerpt,
+      content,
+      layananIds,
+      isFeatured,
+    } = req.body;
 
-    try {
+    const galleryFiles = req.files?.gallery || [];
 
-      const {
-        title,
-        excerpt,
-        content,
-        layananIds,
-        isFeatured,
-      } = req.body;
+    if (!title?.trim())
+      throw { status: 400, message: "Judul portfolio wajib diisi" };
 
-      const galleryFiles =
-        req.files?.gallery || [];
+    if (title.trim().length < 3)
+      throw {
+        status: 400,
+        message: "Judul portfolio minimal 3 karakter",
+      };
 
-      /* ================= VALIDATION ================= */
+    if (!excerpt?.trim())
+      throw {
+        status: 400,
+        message: "Deskripsi singkat wajib diisi",
+      };
 
-      if (!title?.trim()) {
+    if (excerpt.length > 500)
+      throw {
+        status: 400,
+        message: "Excerpt terlalu panjang",
+      };
 
-        throw {
+    const parsedLayananIds = parseLayananIds(layananIds);
 
-          status: 400,
+    if (parsedLayananIds.length > 1)
+      throw {
+        status: 400,
+        message: "Kategori layanan maksimal 1",
+      };
 
-          message:
-            "Judul portfolio wajib diisi",
-        };
-      }
+    if (content && content.length > 10000)
+      throw {
+        status: 400,
+        message: "Content terlalu panjang",
+      };
 
-      if (
-        title.trim().length < 3
-      ) {
+    if (galleryFiles.length === 0)
+      throw {
+        status: 400,
+        message: "Gallery wajib diisi",
+      };
 
-        throw {
+    const portfolio = await Portfolio.create({
+      layananIds: parsedLayananIds,
+      title: title.trim(),
+      slug: generateSlug(title),
+      excerpt: excerpt.trim(),
+      content: content || "",
+      isFeatured: isFeatured === "true" || isFeatured === true,
+      isActive: true,
+    });
 
-          status: 400,
+    const imageDocs = galleryFiles.map((file, index) => ({
+      portfolioId: portfolio._id,
+      url: `/uploads/portfolio/${file.filename}`,
+      order: index,
+      caption: "Portfolio Floraless",
+      isCover: index === 0,
+    }));
 
-          message:
-            "Judul portfolio minimal 3 karakter",
-        };
-      }
+    await FotoPortfolio.insertMany(imageDocs);
 
-      if (!excerpt?.trim()) {
+    const result = await Portfolio.findById(portfolio._id)
+      .populate("layananIds", "nama");
 
-        throw {
+    res.json({
+      message: "Portfolio berhasil dibuat",
+      portfolio: await attachCoverImage(result),
+    });
 
-          status: 400,
-
-          message:
-            "Deskripsi singkat wajib diisi",
-        };
-      }
-
-      if (
-        excerpt.length > 500
-      ) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Excerpt terlalu panjang",
-        };
-      }
-
-      const parsedLayananIds =
-        parseLayananIds(layananIds);
-
-      if (
-        parsedLayananIds.length > 1
-      ) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Kategori layanan maksimal 1",
-        };
-      }
-
-      if (
-        content &&
-        content.length > 10000
-      ) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Content terlalu panjang",
-        };
-      }
-
-      if (
-        galleryFiles.length === 0
-      ) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Gallery wajib diisi",
-        };
-      }
-
-      /* ================= CREATE ================= */
-
-      const portfolio =
-        await Portfolio.create({
-
-          layananIds:
-            parsedLayananIds,
-
-          title:
-            title.trim(),
-
-          slug:
-            generateSlug(title),
-
-          excerpt:
-            excerpt || "",
-
-          content:
-            content || "",
-
-          isFeatured:
-            isFeatured === "true" ||
-            isFeatured === true,
-
-          isActive: true,
-        });
-
-      const imageDocs =
-        galleryFiles.map(
-          (
-            file,
-            index
-          ) => ({
-
-            portfolioId:
-              portfolio._id,
-
-            url:
-              `/uploads/portfolio/${file.filename}`,
-
-            order:
-              index,
-
-            caption:
-              "Portfolio Floraless",
-
-            isCover:
-              index === 0,
-          })
-        );
-
-      await FotoPortfolio.insertMany(
-        imageDocs
-      );
-
-      const result =
-        await Portfolio.findById(
-          portfolio._id
-        )
-
-        .populate(
-          "layananIds",
-          "nama"
-        );
-
-      res.json({
-
-        message:
-          "Portfolio berhasil dibuat",
-
-        portfolio:
-          await attachCoverImage(
-            result
-          ),
-      });
-
-    } catch (err) {
-
-      next(err);
-    }
-  };
+  } catch (err) {
+    next(err);
+  }
+};
 
 /* =====================================================
    GET ALL
@@ -590,372 +485,128 @@ export const getPortfolioBySlug =
    UPDATE
 ===================================================== */
 
-export const updatePortfolio =
-  async (
-    req,
-    res,
-    next
-  ) => {
-
-    try {
-
-      const portfolio =
-        await Portfolio.findById(
-          req.params.id
-        );
-
-      if (!portfolio) {
-
-        throw {
-
-          status: 404,
-
-          message:
-            "Portfolio tidak ditemukan",
-        };
-      }
-
-      const {
-        title,
-        excerpt,
-        content,
-        existingImages,
-        layananIds,
-        isFeatured,
-      } = req.body;
-
-      /* ================= VALIDATION ================= */
-
-      if (!title?.trim()) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Judul portfolio wajib diisi",
-        };
-      }
-
-      if (
-        title.trim().length < 3
-      ) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Judul portfolio minimal 3 karakter",
-        };
-      }
-
-      if (!excerpt?.trim()) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Deskripsi singkat wajib diisi",
-        };
-      }
-
-      if (
-        excerpt.length > 500
-      ) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Excerpt terlalu panjang",
-        };
-      }
-
-      const parsedLayananIds =
-        parseLayananIds(layananIds);
-
-      if (
-        parsedLayananIds.length > 1
-      ) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Kategori layanan maksimal 1",
-        };
-      }
-
-      if (
-        content &&
-        content.length > 10000
-      ) {
-
-        throw {
-
-          status: 400,
-
-          message:
-            "Content terlalu panjang",
-        };
-      }
-
-      /* ================= UPDATE DATA ================= */
-
-      portfolio.title =
-        title.trim();
-
-      portfolio.slug =
-        generateSlug(title);
-
-      portfolio.excerpt =
-        excerpt || "";
-
-      portfolio.content =
-        content || "";
-
-      portfolio.layananIds =
-        parsedLayananIds;
-
-      portfolio.isFeatured =
-        isFeatured === "true" ||
-        isFeatured === true;
-
-      await portfolio.save();
-
-      /* ================= EXISTING IMAGES ================= */
-
-      const parsedExistingImages =
-
-        existingImages
-
-          ? JSON.parse(
-              existingImages
-            )
-
-          : [];
-
-      const existingImageIds =
-
-        parsedExistingImages.map(
-          (img) => img._id
-        );
-
-      const oldImages =
-        await FotoPortfolio.find({
-
-          portfolioId:
-            portfolio._id,
-        });
-
-      /* ================= DELETE REMOVED ================= */
-
-      for (const img of oldImages) {
-
-        if (
-
-          !existingImageIds.includes(
-            img._id.toString()
-          )
-
-        ) {
-
-          deleteFile(
-            img.url
-          );
-
-          await FotoPortfolio.findByIdAndDelete(
-            img._id
-          );
-        }
-      }
-
-      /* ================= UPDATE EXISTING ================= */
-
-      for (
-        let i = 0;
-        i < parsedExistingImages.length;
-        i++
-      ) {
-
-        const img =
-          parsedExistingImages[i];
-
-        await FotoPortfolio.findByIdAndUpdate(
-
-          img._id,
-
-          {
-
-            order:
-              img.order ??
-              i,
-
-            isCover:
-              img.isCover ||
-              false,
-          }
-        );
-      }
-
-      /* ================= NEW GALLERY ================= */
-
-      const galleryFiles =
-        req.files?.gallery || [];
-
-      if (
-        galleryFiles.length > 0
-      ) {
-
-        const existingCount =
-          await FotoPortfolio.countDocuments({
-
-            portfolioId:
-              portfolio._id,
-          });
-
-        const imageDocs =
-          galleryFiles.map(
-            (
-              file,
-              index
-            ) => ({
-
-              portfolioId:
-                portfolio._id,
-
-              url:
-                `/uploads/portfolio/${file.filename}`,
-
-              order:
-                existingCount +
-                index,
-
-              caption:
-                "Portfolio Floraless",
-
-              isCover: false,
-            })
-          );
-
-        await FotoPortfolio.insertMany(
-          imageDocs
-        );
-      }
-
-      /* ================= ENSURE COVER ================= */
-
-      await ensureCoverExists(
-        portfolio._id
-      );
-
-      const result =
-        await Portfolio.findById(
-          portfolio._id
-        )
-
-        .populate(
-          "layananIds",
-          "nama"
-        );
-
-      res.json({
-
-        message:
-          "Portfolio berhasil diupdate",
-
-        portfolio:
-          await attachCoverImage(
-            result
-          ),
+export const updatePortfolio = async (req, res, next) => {
+  try {
+    const portfolio = await Portfolio.findById(req.params.id);
+
+    if (!portfolio) throw { status: 404, message: "Portfolio tidak ditemukan" };
+
+    const {title, excerpt, content, existingImages, layananIds, isFeatured } = req.body;
+    if (!title?.trim()) throw { status: 400, message: "Judul portfolio wajib diisi" };
+    if (title.trim().length < 3) throw {status: 400,  message: "Judul portfolio minimal 3 karakter"};
+    if (!excerpt?.trim()) throw { status: 400, message: "Deskripsi singkat wajib diisi"};
+    if (excerpt.length > 500) throw { status: 400,message: "Excerpt terlalu panjang"};
+
+    const parsedLayananIds = parseLayananIds(layananIds);
+    if (parsedLayananIds.length > 1) throw {status: 400, message: "Kategori layanan maksimal 1"};
+    if (content && content.length > 10000) throw {status: 400, message: "Content terlalu panjang"};
+
+    portfolio.title = title.trim();
+    portfolio.slug = generateSlug(title);
+    portfolio.excerpt = excerpt.trim();
+    portfolio.content = content || "";
+    portfolio.layananIds = parsedLayananIds;
+    portfolio.isFeatured = isFeatured === "true" || isFeatured === true;
+
+    await portfolio.save();
+
+    const parsedExistingImages = existingImages
+      ? JSON.parse(existingImages)
+      : [];
+
+    const existingImageIds = parsedExistingImages.map((img) => img._id);
+    const oldImages = await FotoPortfolio.find({portfolioId: portfolio._id });
+
+    for (const img of oldImages) {
+      if (existingImageIds.includes(img._id.toString()))
+        continue;
+
+      deleteFile(img.url);
+      await FotoPortfolio.findByIdAndDelete(img._id);
+    }
+
+    for (let i = 0; i < parsedExistingImages.length; i++) {
+      const img = parsedExistingImages[i];
+
+      await FotoPortfolio.findByIdAndUpdate(img._id, {
+        order: img.order ?? i,
+        isCover: img.isCover || false,
+      });
+    }
+
+    const galleryFiles = req.files?.gallery || [];
+
+    if (galleryFiles.length) {
+      const existingCount = await FotoPortfolio.countDocuments({
+        portfolioId: portfolio._id,
       });
 
-    } catch (err) {
+      const imageDocs = galleryFiles.map((file, index) => ({
+        portfolioId: portfolio._id,
+        url: `/uploads/portfolio/${file.filename}`,
+        order: existingCount + index,
+        caption: "Portfolio Floraless",
+        isCover: false,
+      }));
 
-      next(err);
+      await FotoPortfolio.insertMany(imageDocs);
     }
-  };
+
+    await ensureCoverExists(portfolio._id);
+
+    const result = await Portfolio.findById(portfolio._id)
+      .populate("layananIds", "nama");
+
+    res.json({
+      message: "Portfolio berhasil diupdate",
+      portfolio: await attachCoverImage(result),
+    });
+
+  } catch (err) {
+    next(err);
+  }
+};
 
 /* =====================================================
    DELETE
 ===================================================== */
 
-export const deletePortfolio =
-  async (
-    req,
-    res,
-    next
-  ) => {
+export const deletePortfolio = async (req, res, next) => {
+  try {
+    const portfolio = await Portfolio.findById(req.params.id);
 
-    try {
+    if (!portfolio)
+      throw { status: 404, message: "Portfolio tidak ditemukan" };
 
-      const portfolio =
-        await Portfolio.findById(
-          req.params.id
-        );
+    const images = await FotoPortfolio.find({
+      portfolioId: portfolio._id,
+    });
 
-      if (!portfolio) {
-
-        throw {
-
-          status: 404,
-
-          message:
-            "Portfolio tidak ditemukan",
-        };
-      }
-
-      const images =
-        await FotoPortfolio.find({
-
-          portfolioId:
-            portfolio._id,
-        });
-
-      for (const img of images) {
-
-        deleteFile(
-          img.url
-        );
-      }
-
-      await FotoPortfolio.deleteMany({
-
-        portfolioId:
-          portfolio._id,
-      });
-
-      portfolio.isActive = false;
-
-      await portfolio.save();
-
-      await logActivity({
-
-        userId:
-          req.user.id,
-
-        action:
-          "DELETE_PORTFOLIO",
-
-        customDescription:
-          `Portfolio ${portfolio.title} dihapus`,
-      });
-
-      res.json({
-
-        message:
-          "Portfolio berhasil dihapus",
-      });
-
-    } catch (err) {
-
-      next(err);
+    for (const img of images) {
+      deleteFile(img.url);
     }
-  };
+
+    await FotoPortfolio.deleteMany({
+      portfolioId: portfolio._id,
+    });
+
+    portfolio.isActive = false;
+    await portfolio.save();
+
+    await logActivity({
+      userId: req.user.id,
+      action: "DELETE_PORTFOLIO",
+      customDescription: `Portfolio ${portfolio.title} dihapus`,
+    });
+
+    res.json({
+      message: "Portfolio berhasil dihapus",
+    });
+
+  } catch (err) {
+    next(err);
+  }
+};
 
 /* =====================================================
    RELATED

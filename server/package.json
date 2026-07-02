@@ -33,6 +33,7 @@
     "puppeteer": "^25.0.4",
     "react-big-calendar": "^1.19.4",
     "react-hot-toast": "^2.6.0",
+    "resend": "^6.16.0",
     "sharp": "^0.34.5",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.8.3",
