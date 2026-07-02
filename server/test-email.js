@@ -19,7 +19,7 @@ async function main() {
 
     const { data, error } = await resend.emails.send({
       from: "FLORALESS <onboarding@resend.dev>",
-      to: "kaiasarsimaa22@gmail.com",
+      to: "kaisarsimaa22@gmail.com",
       subject: "Testing Email Resend",
       html: `
         <h2>Halo 👋</h2>
