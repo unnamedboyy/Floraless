@@ -353,6 +353,50 @@ export const createTicketByAdmin = async (req, res, next) => {
 
     });
 
+  /* ================= EMAIL ================= */
+
+  await sendEmail({
+    to: pelanggan.email,
+    subject: "Pemesanan Anda Telah Dibuat",
+    title: "Pemesanan Berhasil Dibuat",
+    message: `Halo ${pelanggan.nama},
+
+  Admin telah membuat pemesanan atas nama Anda dan pesanan tersebut telah langsung disetujui.
+
+  Detail acara:
+  • Layanan : ${layanan.nama}
+  • Nama Acara : ${nama_acara}
+  • Tanggal : ${new Date(tanggal).toLocaleDateString("id-ID")}
+  • Lokasi : ${lokasi}
+
+  Silakan login ke FLORALESS untuk melihat detail pemesanan dan proses selanjutnya.
+
+  Nomor Ticket: ${ticket._id}`,
+    ctaText: "Lihat Ticket",
+    ctaUrl: `${process.env.APP_URL}/ticket/${ticket._id}`,
+  });
+
+  await sendEmail({
+    to: pegawai.email,
+    subject: "Penugasan Acara Baru",
+    title: "Anda Mendapat Penugasan Baru",
+    message: `Halo ${pegawai.nama},
+
+  Anda telah ditugaskan sebagai PIC untuk acara berikut.
+
+  Detail penugasan:
+  • Nama Acara : ${nama_acara}
+  • Layanan : ${layanan.nama}
+  • Tanggal : ${new Date(tanggal).toLocaleDateString("id-ID")}
+  • Lokasi : ${lokasi}
+
+  Silakan login ke FLORALESS untuk melihat detail penugasan Anda.
+
+  Nomor Ticket: ${ticket._id}`,
+    ctaText: "Lihat Penugasan",
+    ctaUrl: `${process.env.APP_URL}/pegawai/ticket/${ticket._id}`,
+  });
+
     res.status(201).json({
 
       success: true,
