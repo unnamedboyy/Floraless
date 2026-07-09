@@ -192,10 +192,9 @@ export const createPayment = async (req, res, next) => {
 
     /* ================= EMAIL ADMIN ================= */
 
-    const admins = await User.find({
-      role: "admin",
+    const admins = await Admin.find({
       isActive: true,
-    }).select("email");
+    }).select("nama email");
 
     for (const admin of admins) {
       if (!admin.email) continue;
@@ -204,7 +203,7 @@ export const createPayment = async (req, res, next) => {
         to: admin.email,
         subject: `Pembayaran ${payment.tipe} Menunggu Verifikasi`,
         title: "Pembayaran Baru Masuk",
-        message: `Halo Admin,
+        message: `Halo ${admin.nama},
 
     Terdapat pembayaran baru yang memerlukan verifikasi.
 
@@ -223,12 +222,6 @@ export const createPayment = async (req, res, next) => {
         ctaUrl: `${process.env.APP_URL}/admin/payment`,
       });
     }
-
-    return res.status(201).json({
-      success: true,
-      message: "Pembayaran berhasil dikirim",
-      data: payment,
-    });
 
   } catch (err) {
     next(err);
