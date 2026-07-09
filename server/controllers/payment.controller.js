@@ -6,7 +6,7 @@ import Pelanggan from "../models/pelanggan.js";
 import User from "../models/user.js";
 import LogActivity from "../models/logAktivitas.js";
 import { logActivity }from "../utils/logger.js";
-import { sendEmail } from "../services/email.service.js"
+import { sendEmail } from "../utils/emailer.js"
 
 /* =========================================================
    CREATE PAYMENT (CUSTOMER)
