@@ -9,6 +9,9 @@ import LogActivity from "../models/logAktivitas.js";
 import { logActivity }from "../utils/logger.js";
 import { sendEmail } from "../utils/emailer.js"
 
+const delay = (ms) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
 /* =========================================================
    CREATE PAYMENT (CUSTOMER)
 ========================================================= */
@@ -160,6 +163,8 @@ export const createPayment = async (req, res, next) => {
       ctaUrl: `${process.env.APP_URL}/ticket/${ticket._id}`,
     });
 
+    await delay(1000);
+
     /* ================= EMAIL PEGAWAI PIC ================= */
 
     if (pegawai.email) {
@@ -190,6 +195,7 @@ export const createPayment = async (req, res, next) => {
       });
     }
 
+    await delay(1000);
 
     /* ================= EMAIL ADMIN ================= */
     const admins = await Admin.find().select("email");
