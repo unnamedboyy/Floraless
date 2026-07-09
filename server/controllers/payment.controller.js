@@ -1,20 +1,12 @@
-import Payment
-from "../models/payment.js";
-
-import Ticket
-from "../models/ticket.js";
-
-import Layanan
-from "../models/layanan.js";
-
-import Pegawai
-from "../models/pegawai.js";
-
-import { logActivity }
-from "../utils/logger.js";
-
+import Payment from "../models/payment.js";
+import Ticket from "../models/ticket.js";
+import Layanan from "../models/layanan.js";
+import Pegawai from "../models/pegawai.js";
+import Pelanggan from "../models/pelanggan.js";
+import User from "../models/user.js";
 import LogActivity from "../models/logAktivitas.js";
-
+import { logActivity }from "../utils/logger.js";
+import { sendEmail } from "../services/email.service.js"
 
 /* =========================================================
    CREATE PAYMENT (CUSTOMER)
@@ -37,6 +29,18 @@ export const createPayment = async (req, res, next) => {
 
     if (!layanan)
       throw { status: 404, message: "Layanan tidak ditemukan" };
+
+    /* ================= AMBIL DATA PELANGGAN ================= */
+    const pelanggan = await Pelanggan.findById(
+      ticket.pelangganId
+    );
+
+    if (!pelanggan) {
+      throw {
+        status: 404,
+        message: "Pelanggan tidak ditemukan",
+      };
+    }
 
      /* PAYMENT EXISTING */
     const payments = await Payment.find({ ticketId });
@@ -120,6 +124,71 @@ export const createPayment = async (req, res, next) => {
       description: "Membuat pembayaran",
     });
 
+    /* ================= EMAIL PELANGGAN ================= */
+
+    await sendEmail({
+      to: pelanggan.email,
+      subject: `Pembayaran ${payment.tipe} Berhasil Dikirim`,
+      title: "Bukti Pembayaran Berhasil Diterima",
+      message: `Halo ${pelanggan.nama},
+
+    Terima kasih, bukti pembayaran Anda telah berhasil kami terima.
+
+    Detail pembayaran:
+
+    • Ticket : ${ticket._id}
+    • Layanan : ${layanan.nama}
+    • Tahap : ${payment.tipe}
+    • Nominal : Rp ${payment.jumlah.toLocaleString("id-ID")}
+    • Status : Menunggu Verifikasi Admin
+
+    Admin akan segera melakukan pengecekan terhadap pembayaran Anda.
+
+    Anda akan menerima email kembali setelah pembayaran berhasil diverifikasi.`,
+      ctaText: "Lihat Pembayaran",
+      ctaUrl: `${process.env.APP_URL}/ticket/${ticket._id}`,
+    });
+
+    /* ================= EMAIL ADMIN ================= */
+
+    const admins = await User.find({
+      role: "admin",
+      isActive: true,
+    }).select("email");
+
+    for (const admin of admins) {
+      if (!admin.email) continue;
+
+      await sendEmail({
+        to: admin.email,
+        subject: `Pembayaran ${payment.tipe} Menunggu Verifikasi`,
+        title: "Pembayaran Baru Masuk",
+        message: `Halo Admin,
+
+    Terdapat pembayaran baru yang memerlukan verifikasi.
+
+    Detail pembayaran:
+
+    • Nama Pelanggan : ${pelanggan.nama}
+    • Ticket : ${ticket._id}
+    • Layanan : ${layanan.nama}
+    • Tahap : ${payment.tipe}
+    • Nominal : Rp ${payment.jumlah.toLocaleString("id-ID")}
+    • Pengirim : ${nama_pengirim}
+    • Bank : ${bank_pengirim}
+
+    Silakan login ke dashboard admin untuk melakukan verifikasi pembayaran.`,
+        ctaText: "Verifikasi Pembayaran",
+        ctaUrl: `${process.env.APP_URL}/admin/payment`,
+      });
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: "Pembayaran berhasil dikirim",
+      data: payment,
+    });
+
   } catch (err) {
     next(err);
   }
@@ -142,12 +211,81 @@ export const rejectPayment = async (req, res, next) => {
 
     await payment.save();
 
+    /* ================= AMBIL DATA ================= */
+
+    const ticket = await Ticket.findById(
+      payment.ticketId
+    );
+
+    if (!ticket) {
+      throw {
+        status: 404,
+        message: "Ticket tidak ditemukan",
+      };
+    }
+
+    const pelanggan = await Pelanggan.findById(
+      ticket.pelangganId
+    );
+
+    if (!pelanggan) {
+      throw {
+        status: 404,
+        message: "Pelanggan tidak ditemukan",
+      };
+    }
+
+    const layanan = await Layanan.findById(
+      ticket.layananId
+    );
+
     /* CREATE LOG */
     await LogActivity.create({
       ticketId: payment.ticketId,
       action: "PAYMENT_REJECTED",
       status: "rejected",
       description: catatan,
+    });
+
+    /* ================= EMAIL PELANGGAN ================= */
+
+    try {
+
+      await sendEmail({
+        to: pelanggan.email,
+        subject: `Pembayaran ${payment.tipe} Ditolak`,
+        title: "Pembayaran Ditolak",
+        message: `Halo ${pelanggan.nama},
+
+    Mohon maaf, pembayaran ${payment.tipe} Anda belum dapat kami verifikasi.
+
+    Detail pembayaran:
+
+    • Ticket : ${ticket._id}
+    • Layanan : ${layanan?.nama || "-"}
+    • Tahap : ${payment.tipe}
+
+    Alasan penolakan:
+
+    ${catatan}
+
+    Silakan melakukan upload ulang bukti pembayaran yang benar agar proses pemesanan dapat dilanjutkan.`,
+        ctaText: "Upload Bukti Baru",
+        ctaUrl: `${process.env.APP_URL}/ticket/${ticket._id}`,
+      });
+
+    } catch (err) {
+
+      console.error(
+        "EMAIL PAYMENT REJECT:",
+        err.message
+      );
+
+    }
+
+    return res.json({
+      success: true,
+      message: "Pembayaran berhasil ditolak",
     });
 
   } catch (err) {
@@ -172,6 +310,29 @@ export const approvePayment = async (req, res, next) => {
 
     const ticket = await Ticket.findById(payment.ticketId);
 
+    /* ================= AMBIL DATA ================= */
+
+    const pelanggan = await Pelanggan.findById(
+      ticket.pelangganId
+    );
+
+    if (!pelanggan) {
+      throw {
+        status: 404,
+        message: "Pelanggan tidak ditemukan",
+      };
+    }
+
+    const layanan = await Layanan.findById(
+      ticket.layananId
+    );
+
+    if (!layanan) {
+      throw {
+        status: 404,
+        message: "Layanan tidak ditemukan",
+      };
+    }
     payment.status = status;
     payment.approvedBy = req.user.id;
     payment.approvedAt = new Date();
@@ -211,12 +372,128 @@ export const approvePayment = async (req, res, next) => {
       description: `Payment ${payment.tipe} ${status}`,
     });
 
+    /* ================= EMAIL PAYMENT APPROVED ================= */
+
+    if (status === "approved") {
+
+      let tahapBerikutnya = "";
+
+      switch (payment.tipe) {
+
+        case "DP1":
+          tahapBerikutnya =
+            "Pembayaran berikutnya adalah DP2 sesuai jadwal yang telah ditentukan.";
+          break;
+
+        case "DP2":
+          tahapBerikutnya =
+            "Silakan menunggu informasi mengenai persiapan acara dan pelunasan.";
+          break;
+
+        case "PELUNASAN":
+          tahapBerikutnya =
+            "Seluruh pembayaran telah selesai. Tim FLORALESS akan mempersiapkan dekorasi acara Anda.";
+          break;
+
+        case "LUNAS":
+          tahapBerikutnya =
+            "Pembayaran penuh telah diterima. Tim FLORALESS akan segera mempersiapkan acara Anda.";
+          break;
+
+        default:
+          tahapBerikutnya = "";
+      }
+
+      try {
+
+        await sendEmail({
+
+          to: pelanggan.email,
+
+          subject: `Pembayaran ${payment.tipe} Disetujui`,
+
+          title: "Pembayaran Berhasil Diverifikasi",
+
+          message: `Halo ${pelanggan.nama},
+
+    Pembayaran ${payment.tipe} Anda telah berhasil diverifikasi oleh Admin.
+
+    Detail pembayaran:
+
+    • Ticket : ${ticket._id}
+    • Layanan : ${layanan.nama}
+    • Tahap : ${payment.tipe}
+    • Nominal : Rp ${payment.jumlah.toLocaleString("id-ID")}
+
+    ${tahapBerikutnya}
+
+    Terima kasih telah melakukan pembayaran tepat waktu.`,
+
+          ctaText: "Lihat Ticket",
+
+          ctaUrl: `${process.env.APP_URL}/ticket/${ticket._id}`,
+
+        });
+
+      } catch (err) {
+
+        console.error(
+          "EMAIL PAYMENT APPROVED:",
+          err.message
+        );
+
+      }
+
+    }
+
+    /* ================= EMAIL TICKET IN PROGRESS ================= */
+
+    const pembayaranSelesai =
+      ticket.status === "in_progress";
+
+    if (status === "approved" && pembayaranSelesai) {
+
+      try {
+
+        await sendEmail({
+
+          to: pelanggan.email,
+
+          subject: "Pemesanan Anda Mulai Diproses",
+
+          title: "Persiapan Acara Dimulai",
+
+          message: `Halo ${pelanggan.nama},
+
+    Seluruh pembayaran Anda telah berhasil diverifikasi.
+
+    Tim FLORALESS kini mulai memasuki tahap persiapan dekorasi untuk acara Anda.
+
+    Kami akan memastikan seluruh kebutuhan dekorasi dipersiapkan dengan sebaik mungkin hingga hari pelaksanaan.
+
+    Terima kasih telah mempercayakan momen spesial Anda kepada FLORALESS.`,
+
+          ctaText: "Lihat Status Ticket",
+
+          ctaUrl: `${process.env.APP_URL}/ticket/${ticket._id}`,
+
+        });
+
+      } catch (err) {
+
+        console.error(
+          "EMAIL IN PROGRESS:",
+          err.message
+        );
+
+      }
+
+    }
 
   } catch (err) {
     next(err);
   }
 };
-
 
 /* =========================================================
    GET PAYMENT BY TICKET
