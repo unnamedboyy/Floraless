@@ -192,28 +192,18 @@ export const createPayment = async (req, res, next) => {
 
 
     /* ================= EMAIL ADMIN ================= */
+    const admins = await Admin.find().select("email");
 
-    const admins = await Admin.find().select("nama email");
+    const adminEmails = admins
+      .map((admin) => admin.email)
+      .filter(Boolean);
 
-    console.log("ADMINS:", admins);
-
-    if (!admins.length) {
-      console.log("❌ Tidak ada admin ditemukan");
-    } else {
-      for (const admin of admins) {
-        if (!admin.email) {
-          console.log(`❌ Admin ${admin.nama} tidak memiliki email`);
-          continue;
-        }
-
-        console.log(`📨 Mengirim email ke ${admin.email}`);
-
-        try {
-          const result = await sendEmail({
-            to: admin.email,
-            subject: `Pembayaran ${payment.tipe} Menunggu Verifikasi`,
-            title: "Pembayaran Baru Masuk",
-            message: `Halo ${admin.nama},
+    if (adminEmails.length) {
+      await sendEmail({
+        to: adminEmails,
+        subject: `Pembayaran ${payment.tipe} Menunggu Verifikasi`,
+        title: "Pembayaran Baru Masuk",
+        message: `Halo Admin,
 
     Terdapat pembayaran baru yang memerlukan verifikasi.
 
@@ -228,15 +218,9 @@ export const createPayment = async (req, res, next) => {
     • Bank : ${bank_pengirim}
 
     Silakan login ke dashboard admin untuk melakukan verifikasi pembayaran.`,
-            ctaText: "Verifikasi Pembayaran",
-            ctaUrl: `${process.env.APP_URL}/admin/payment`,
-          });
-
-          console.log("✅ Result:", result);
-        } catch (err) {
-          console.error("❌ Gagal kirim email admin:", err);
-        }
-      }
+        ctaText: "Verifikasi Pembayaran",
+        ctaUrl: `${process.env.APP_URL}/admin/payment`,
+      });
     }
   } catch (err) {
     next(err);
