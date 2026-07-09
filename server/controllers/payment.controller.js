@@ -3,6 +3,7 @@ import Ticket from "../models/ticket.js";
 import Layanan from "../models/layanan.js";
 import Pegawai from "../models/pegawai.js";
 import Pelanggan from "../models/pelanggan.js";
+import Admin from "../models/admin.js";
 import User from "../models/user.js";
 import LogActivity from "../models/logAktivitas.js";
 import { logActivity }from "../utils/logger.js";
@@ -124,6 +125,16 @@ export const createPayment = async (req, res, next) => {
       description: "Membuat pembayaran",
     });
 
+    /* ================= AMBIL DATA PEGAWAI PIC ================= */
+    const pegawai = await Pegawai.findById(ticket.pegawaiId);
+
+    if (!pegawai) {
+      throw {
+        status: 404,
+        message: "Pegawai PIC tidak ditemukan",
+      };
+    }
+
     /* ================= EMAIL PELANGGAN ================= */
 
     await sendEmail({
@@ -148,6 +159,36 @@ export const createPayment = async (req, res, next) => {
       ctaText: "Lihat Pembayaran",
       ctaUrl: `${process.env.APP_URL}/ticket/${ticket._id}`,
     });
+
+    /* ================= EMAIL PEGAWAI PIC ================= */
+
+    if (pegawai.email) {
+      await sendEmail({
+        to: pegawai.email,
+        subject: `Pembayaran ${payment.tipe} dari ${pelanggan.nama}`,
+        title: "Pembayaran Customer Telah Dikirim",
+        message: `Halo ${pegawai.nama},
+
+    Pelanggan yang menjadi tanggung jawab Anda telah mengirimkan pembayaran.
+
+    Detail pembayaran:
+
+    • Nama Pelanggan : ${pelanggan.nama}
+    • Ticket : ${ticket._id}
+    • Layanan : ${layanan.nama}
+    • Tahap Pembayaran : ${payment.tipe}
+    • Nominal : Rp ${payment.jumlah.toLocaleString("id-ID")}
+    • Pengirim : ${nama_pengirim}
+    • Bank Pengirim : ${bank_pengirim}
+
+    Status pembayaran saat ini:
+    Menunggu verifikasi dari Admin.
+
+    Anda dapat memantau perkembangan proses pembayaran melalui dashboard pegawai.`,
+        ctaText: "Lihat Detail Ticket",
+        ctaUrl: `${process.env.APP_URL}/pegawai/ticket/${ticket._id}`,
+      });
+    }
 
     /* ================= EMAIL ADMIN ================= */
 
