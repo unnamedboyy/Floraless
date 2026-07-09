@@ -196,6 +196,8 @@ export const createPayment = async (req, res, next) => {
       isActive: true,
     }).select("nama email");
 
+    console.log("ADMINS:", admins);
+
     for (const admin of admins) {
       if (!admin.email) continue;
 
