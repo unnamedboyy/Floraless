@@ -3,7 +3,12 @@ import CashbackClaim from "../models/cashbackClaim.js";
 import Pelanggan from "../models/pelanggan.js";
 import Ticket from "../models/ticket.js";
 import Pegawai from "../models/pegawai.js";
+import Admin from "../models/admin.js";
 import { logActivity } from "../utils/logger.js";
+import { sendEmail } from "../services/email.service.js";
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 
 /* ================= CREATE CLAIM (PELANGGAN) ================= */
 
@@ -66,6 +71,99 @@ export const createClaim = async (req, res, next) => {
     voucher.isUsed = true;
     await voucher.save();
 
+    /* ================= EMAIL PELANGGAN ================= */
+
+    if (pelanggan.email) {
+      await sendEmail({
+        to: pelanggan.email,
+        subject: "Pengajuan Cashback Berhasil Dikirim",
+        title: "Pengajuan Cashback Berhasil Diterima",
+        message: `Halo ${pelanggan.nama},
+
+    Terima kasih, pengajuan cashback Anda telah berhasil kami terima.
+
+    Detail pengajuan:
+
+    • Kode Voucher : ${voucher.code}
+    • Nominal Cashback : Rp ${voucher.amount.toLocaleString("id-ID")}
+    • Bank Tujuan : ${bank}
+    • Nomor Rekening : ${nomor_rekening}
+    • Nama Rekening : ${nama_rekening}
+
+    Status pengajuan saat ini:
+    Menunggu verifikasi dari Admin.
+
+    Kami akan segera memproses pengajuan Anda dan mengirimkan pemberitahuan setelah proses selesai.`,
+        ctaText: "Lihat Pengajuan",
+        ctaUrl: `${process.env.APP_URL}/cashback`,
+      });
+    }
+
+    await delay(1000);
+    /* ================= EMAIL ADMIN ================= */
+
+    const admins = await Admin.find().select("email");
+
+    const adminEmails = admins
+      .map((admin) => admin.email)
+      .filter(Boolean);
+
+    if (adminEmails.length) {
+      await sendEmail({
+        to: adminEmails,
+        subject: "Pengajuan Cashback Baru",
+        title: "Pengajuan Cashback Baru Masuk",
+        message: `Halo Admin,
+
+    Terdapat pengajuan cashback baru yang memerlukan verifikasi.
+
+    Detail pengajuan:
+
+    • Nama Pelanggan : ${pelanggan.nama}
+    • Kode Voucher : ${voucher.code}
+    • Nominal Cashback : Rp ${voucher.amount.toLocaleString("id-ID")}
+    • Bank : ${bank}
+    • Nomor Rekening : ${nomor_rekening}
+    • Nama Rekening : ${nama_rekening}
+
+    Silakan login ke dashboard untuk memproses pengajuan cashback pelanggan.`,
+        ctaText: "Verifikasi Cashback",
+        ctaUrl: `${process.env.APP_URL}/admin/cashback`,
+      });
+    }
+
+    await delay(1000);
+    /* ================= EMAIL PEGAWAI PIC ================= */
+
+    const ticket = await Ticket.findOne({
+      pelangganId: pelanggan._id,
+    })
+      .sort({ createdAt: -1 })
+      .populate("pegawaiId");
+
+    if (ticket?.pegawaiId?.email) {
+      await delay(1000);
+
+      await sendEmail({
+        to: ticket.pegawaiId.email,
+        subject: "Pelanggan Mengajukan Cashback",
+        title: "Pengajuan Cashback Pelanggan",
+        message: `Halo ${ticket.pegawaiId.nama},
+
+    Pelanggan yang menjadi tanggung jawab Anda telah mengajukan cashback.
+
+    Detail:
+
+    • Nama Pelanggan : ${pelanggan.nama}
+    • Kode Voucher : ${voucher.code}
+    • Nominal Cashback : Rp ${voucher.amount.toLocaleString("id-ID")}
+
+    Pengajuan saat ini sedang menunggu proses verifikasi dari Admin.`,
+        ctaText: "Lihat Detail",
+        ctaUrl: `${process.env.APP_URL}/pegawai/cashback`,
+      });
+    }
+
   } catch (err) {
     next(err);
   }
@@ -127,6 +225,54 @@ export const processClaim = async (req, res, next) => {
     if (status === "approved") {
       claim.voucherId.isUsed = true;
       await claim.voucherId.save();
+
+      if (pelanggan?.email) {
+        await sendEmail({
+          to: pelanggan.email,
+          subject: "Cashback Anda Telah Disetujui",
+          title: "Pengajuan Cashback Disetujui",
+          message: `Halo ${pelanggan.nama},
+
+    Selamat! Pengajuan cashback Anda telah disetujui.
+
+    Detail cashback:
+
+    • Kode Voucher : ${claim.kode_voucher}
+    • Nominal Cashback : Rp ${claim.amount.toLocaleString("id-ID")}
+
+    Dana cashback telah diproses sesuai rekening yang Anda daftarkan.
+
+    Terima kasih telah menggunakan layanan FLORALESS.`,
+          ctaText: "Lihat Pengajuan",
+          ctaUrl: `${process.env.APP_URL}/cashback`,
+        });
+      }
+    }
+    
+    if (status === "rejected") {
+      if (pelanggan?.email) {
+        await sendEmail({
+          to: pelanggan.email,
+          subject: "Pengajuan Cashback Ditolak",
+          title: "Pengajuan Cashback Belum Dapat Diproses",
+          message: `Halo ${pelanggan.nama},
+
+    Mohon maaf, pengajuan cashback Anda belum dapat kami setujui.
+
+    Detail pengajuan:
+
+    • Kode Voucher : ${claim.kode_voucher}
+    • Nominal Cashback : Rp ${claim.amount.toLocaleString("id-ID")}
+
+    Alasan penolakan:
+
+    ${alasan}
+
+    Silakan lakukan pengajuan kembali apabila diperlukan atau hubungi Admin FLORALESS apabila membutuhkan informasi lebih lanjut.`,
+          ctaText: "Lihat Pengajuan",
+          ctaUrl: `${process.env.APP_URL}/cashback`,
+        });
+      }
     }
 
   } catch (err) {

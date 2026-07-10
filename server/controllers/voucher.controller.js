@@ -1,5 +1,6 @@
 import Voucher from "../models/voucher.js";
 import Pelanggan from "../models/pelanggan.js";
+import { sendEmail } from "../utils/emailer.js";
 
 /* =====================================================
    GET MY VOUCHERS
@@ -183,28 +184,46 @@ export const getAllVouchers =
 
 export const createVoucher = async (req, res, next) => {
   try {
-    const {code,pelangganId,amount, expiredAt} = req.body;
+    const { code, pelangganId, amount, expiredAt } = req.body;
 
-    if (!code?.trim()) 
+    if (!code?.trim())
       throw { status: 400, message: "Kode voucher wajib diisi" };
 
     if (code.trim().length < 3)
-      throw { status: 400,message: "Kode voucher minimal 3 karakter"};
+      throw {
+        status: 400,
+        message: "Kode voucher minimal 3 karakter",
+      };
 
     if (!pelangganId)
-      throw {status: 400,message: "Pelanggan wajib dipilih"};
+      throw {
+        status: 400,
+        message: "Pelanggan wajib dipilih",
+      };
 
     if (!amount || Number(amount) <= 0)
-      throw {status: 400,message: "Nominal voucher tidak valid"};
+      throw {
+        status: 400,
+        message: "Nominal voucher tidak valid",
+      };
 
     if (!expiredAt)
-      throw { status: 400,message: "Tanggal expired wajib diisi"};
+      throw {
+        status: 400,
+        message: "Tanggal expired wajib diisi",
+      };
 
     const voucherCode = code.trim().toUpperCase();
-    const exist = await Voucher.findOne({code: voucherCode});
+
+    const exist = await Voucher.findOne({
+      code: voucherCode,
+    });
 
     if (exist)
-      throw {status: 400, message: "Kode voucher sudah digunakan"};
+      throw {
+        status: 400,
+        message: "Kode voucher sudah digunakan",
+      };
 
     const voucher = await Voucher.create({
       code: voucherCode,
@@ -213,8 +232,38 @@ export const createVoucher = async (req, res, next) => {
       expiredAt,
     });
 
-    res.json(voucher);
+    /* ================= AMBIL DATA PELANGGAN ================= */
 
+    const pelanggan = await Pelanggan.findById(pelangganId);
+
+    if (pelanggan?.email) {
+      await sendEmail({
+        to: pelanggan.email,
+        subject: "🎉 Selamat! Anda Mendapatkan Voucher FLORALESS",
+        title: "Voucher Berhasil Diberikan",
+        message: `Halo ${pelanggan.nama},
+
+Selamat! Anda mendapatkan voucher spesial dari FLORALESS.
+
+Detail voucher Anda:
+
+• Kode Voucher : ${voucher.code}
+• Nominal Voucher : Rp ${Number(voucher.amount).toLocaleString("id-ID")}
+• Berlaku Hingga : ${new Date(voucher.expiredAt).toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })}
+
+Voucher ini dapat digunakan pada transaksi sesuai dengan ketentuan yang berlaku.
+
+Terima kasih telah mempercayakan kebutuhan dekorasi Anda kepada FLORALESS. Semoga voucher ini dapat memberikan pengalaman yang lebih menyenangkan untuk pemesanan Anda berikutnya.`,
+        ctaText: "Gunakan Voucher",
+        ctaUrl: `${process.env.APP_URL}/voucher`,
+      });
+    }
+
+    res.json(voucher);
   } catch (err) {
     next(err);
   }

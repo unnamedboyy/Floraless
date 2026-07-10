@@ -9,8 +9,7 @@ import LogActivity from "../models/logAktivitas.js";
 import { logActivity }from "../utils/logger.js";
 import { sendEmail } from "../utils/emailer.js"
 
-const delay = (ms) =>
-  new Promise((resolve) => setTimeout(resolve, ms));
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /* =========================================================
    CREATE PAYMENT (CUSTOMER)

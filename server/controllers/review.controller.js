@@ -3,10 +3,9 @@ import Ticket from "../models/ticket.js";
 import Voucher from "../models/voucher.js";
 import Pelanggan from "../models/pelanggan.js";
 import Layanan from "../models/layanan.js";
-import { logActivity } from "../utils/logger.js";
+import logActivity from "../utils/logger.js";
+import sendEmail from "../utils/emailer.js";
 
-
-// GENERATE CODE
 const generateVoucherCode = () => {
   const random = Math.random().toString(36).substring(2, 8).toUpperCase();
   return `FLORA-${random}`;
@@ -61,8 +60,6 @@ export const createReview = async (req, res, next) => {
   }
 };
 
-
-// GET REVIEW BY TICKET
 export const getReviewByTicket = async (req, res, next) => {
   try {
     const data = await Review.findOne({
