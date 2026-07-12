@@ -779,9 +779,15 @@ export const updateStatusTicket = async (req, res, next) => {
           message: `Halo ${pelangganTicket.nama || ""},\n\nMohon maaf, ticket Anda ditolak.\nAlasan: ${note || "-"}`,
         },
         done: {
-          subject: "Ticket Selesai",
-          title: "Ticket Selesai 🎉",
-          message: `Halo ${pelangganTicket.nama || ""},\n\nTicket Anda telah selesai dikerjakan. Terima kasih telah menggunakan layanan kami!`,
+          subject: "🎉 Acara Selesai! Terima Kasih Telah Memilih FLORALESS",
+          title: "Acara Anda Telah Selesai",
+          message: `Halo ${pelangganTicket.nama || ""},
+
+        Terima kasih telah mempercayakan kebutuhan dekorasi Anda kepada FLORALESS.
+        Kami dengan senang hati menginformasikan bahwa seluruh rangkaian layanan untuk pesanan Anda telah selesai.
+        Kami sangat menghargai pengalaman Anda selama menggunakan layanan kami. Oleh karena itu, kami mengundang Anda untuk memberikan ulasan dan penilaian terhadap layanan FLORALESS.
+        Sebagai bentuk apresiasi, setiap pelanggan yang memberikan review akan mendapatkan voucher cashback yang dapat digunakan dengan masa beraku 30 hari.
+        Terima kasih atas kepercayaan Anda. Kami berharap dapat kembali melayani Anda di kesempatan berikutnya.`,
         },
         in_progress: {
           subject: "Ticket Sedang Dikerjakan",

@@ -5,7 +5,7 @@ import Ticket from "../models/ticket.js";
 import Pegawai from "../models/pegawai.js";
 import Admin from "../models/admin.js";
 import { logActivity } from "../utils/logger.js";
-import { sendEmail } from "../services/email.service.js";
+import { sendEmail } from "../utils/emailer.js";
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
