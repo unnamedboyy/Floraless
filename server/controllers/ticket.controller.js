@@ -130,11 +130,9 @@ export const createTicket = async (req, res, next) => {
         status: "booked",
       });
 
-      // realtime update
       getIO().emit("jadwal:update");
 
     } catch (err) {
-      // duplicate key mongodb
       if (err.code === 11000) {
         throw {
           status: 400,
@@ -153,7 +151,7 @@ export const createTicket = async (req, res, next) => {
       description: "Ticket dibuat oleh pelanggan",
     });
 
-    /* ================= KIRIM EMAIL ================= */
+    /* ================= KIRIM EMAIL PELANGGAN ================= */
 
     await sendEmail({
       to: pelanggan.email,
@@ -167,6 +165,31 @@ export const createTicket = async (req, res, next) => {
       ctaText: "Lihat Ticket",
       ctaUrl: `${process.env.APP_URL}/ticket/${ticket._id}`,
     });
+
+
+    /* ================= KIRIM EMAIL ADMIN ================= */
+    const admins = await Admin.find().select("email");
+
+    const adminEmails = admins
+      .map((admin) => admin.email)
+      .filter(Boolean);
+
+    if (adminEmails.length) {
+      await sendEmail({
+        to: adminEmails,
+        subject: `Pesanan ${payment.tipe} Menunggu Verifikasi`,
+        title: "Pesanan Baru Masuk",
+        message: `Halo Admin,
+
+    Terdapat pesanan baru yang memerlukan verifikasi.
+
+    Nomor Ticket: ${ticket._id},
+
+    Silakan login ke dashboard admin untuk melakukan verifikasi pesanan.`,
+        ctaText: "Verifikasi Pesanan",
+        ctaUrl: `${process.env.APP_URL}/admin/ticket/${ticket._id}`,
+      });
+    }
 
     /* ================= RESPONSE ================= */
 
