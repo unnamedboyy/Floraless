@@ -4,6 +4,7 @@ import DetailTicket from "../models/detailTicket.js";
 import Jadwal from "../models/jadwal.js";
 import Pelanggan from "../models/pelanggan.js";
 import Layanan from "../models/layanan.js";
+import Admin from "../models/admin.js";
 import Pegawai from "../models/pegawai.js";
 import Payment from "../models/payment.js";
 import Review from "../models/review.js";
