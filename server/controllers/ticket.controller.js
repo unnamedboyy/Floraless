@@ -14,6 +14,8 @@ import Portfolio from "../models/portfolio.js";
 import { getIO } from "../socket/index.js";
 import { sendEmail } from "../utils/emailer.js";
 
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 /* =========================================================
    CUSTOMER CREATE TICKET
 ========================================================= */

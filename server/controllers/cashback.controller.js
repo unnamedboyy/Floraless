@@ -9,7 +9,6 @@ import { sendEmail } from "../utils/emailer.js";
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-
 /* ================= CREATE CLAIM (PELANGGAN) ================= */
 
 export const createClaim = async (req, res, next) => {

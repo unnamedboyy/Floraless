@@ -243,21 +243,21 @@ export const createVoucher = async (req, res, next) => {
         title: "Voucher Berhasil Diberikan",
         message: `Halo ${pelanggan.nama},
 
-Selamat! Anda mendapatkan voucher spesial dari FLORALESS.
+        Selamat! Anda mendapatkan voucher spesial dari FLORALESS.
 
-Detail voucher Anda:
+        Detail voucher Anda:
 
-• Kode Voucher : ${voucher.code}
-• Nominal Voucher : Rp ${Number(voucher.amount).toLocaleString("id-ID")}
-• Berlaku Hingga : ${new Date(voucher.expiredAt).toLocaleDateString("id-ID", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })}
+        • Kode Voucher : ${voucher.code}
+        • Nominal Voucher : Rp ${Number(voucher.amount).toLocaleString("id-ID")}
+        • Berlaku Hingga : ${new Date(voucher.expiredAt).toLocaleDateString("id-ID", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
 
-Voucher ini dapat digunakan pada transaksi sesuai dengan ketentuan yang berlaku.
+        Voucher ini dapat digunakan pada transaksi sesuai dengan ketentuan yang berlaku.
 
-Terima kasih telah mempercayakan kebutuhan dekorasi Anda kepada FLORALESS. Semoga voucher ini dapat memberikan pengalaman yang lebih menyenangkan untuk pemesanan Anda berikutnya.`,
+        Terima kasih telah mempercayakan kebutuhan dekorasi Anda kepada FLORALESS. Semoga voucher ini dapat memberikan pengalaman yang lebih menyenangkan untuk pemesanan Anda berikutnya.`,
         ctaText: "Gunakan Voucher",
         ctaUrl: `${process.env.APP_URL}/voucher`,
       });
