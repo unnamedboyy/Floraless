@@ -181,7 +181,7 @@ export const createTicket = async (req, res, next) => {
     if (adminEmails.length) {
       await sendEmail({
         to: adminEmails,
-        subject: `Pesanan ${payment.tipe} Menunggu Verifikasi`,
+        subject: `Pesanan ${ticket._id} Menunggu Verifikasi`,
         title: "Pesanan Baru Masuk",
         message: `Halo Admin,
 
