@@ -167,9 +167,14 @@ export const createTicket = async (req, res, next) => {
       ctaUrl: `${process.env.APP_URL}/ticket/${ticket._id}`,
     });
 
+    await delay(1000);
 
     /* ================= KIRIM EMAIL ADMIN ================= */
     const admins = await Admin.find().select("email");
+
+    const adminEmails = admins
+      .map((admin) => admin.email)
+      .filter(Boolean);
 
     const adminEmails = admins
       .map((admin) => admin.email)
