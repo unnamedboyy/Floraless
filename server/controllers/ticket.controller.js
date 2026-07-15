@@ -176,10 +176,6 @@ export const createTicket = async (req, res, next) => {
       .map((admin) => admin.email)
       .filter(Boolean);
 
-    const adminEmails = admins
-      .map((admin) => admin.email)
-      .filter(Boolean);
-
     if (adminEmails.length) {
       await sendEmail({
         to: adminEmails,
