@@ -688,26 +688,6 @@ export default function TicketDetailModal({
 
                   <Field
                     icon={
-                      <Ticket size={18} />
-                    }
-                    label="Ticket ID"
-                    value={
-                      ticket?._id
-                    }
-                  />
-
-                  <Field
-                    icon={
-                      <Camera size={18} />
-                    }
-                    label="Layanan"
-                    value={
-                      layanan?.nama
-                    }
-                  />
-
-                  <Field
-                    icon={
                       <Wallet size={18} />
                     }
                     label="Harga"
@@ -739,6 +719,16 @@ export default function TicketDetailModal({
                     label="Nama Acara"
                     value={
                       detail?.nama_acara
+                    }
+                  />
+
+                  <Field
+                    icon={
+                      <Ticket size={18} />
+                    }
+                    label="Jenis Acara"
+                    value={
+                      detail?.jenis_acara
                     }
                   />
 

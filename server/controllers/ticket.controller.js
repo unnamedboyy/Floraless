@@ -22,13 +22,11 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const createTicket = async (req, res, next) => {
   try {
-    const { layananId, tanggal, jam_mulai, jam_selesai, lokasi, nama_acara, catatan, referensi } = req.body;
+    const { layananId, tanggal, jam_mulai, jam_selesai, lokasi, nama_acara, jenis_acara,catatan, referensi } = req.body;
 
-    /* ================= CARI PELANGGAN ================= */
     const pelanggan = await Pelanggan.findOne({ userId: req.user.id });
     if (!pelanggan) throw { status: 404, message: "Pelanggan tidak ditemukan" };
 
-    /* ================= VALIDASI INPUT ================= */
     if (!mongoose.Types.ObjectId.isValid(layananId)) throw { status: 400, message: "Layanan tidak valid" };
 
     const layanan = await Layanan.findById(layananId);
@@ -40,8 +38,8 @@ export const createTicket = async (req, res, next) => {
     if (jam_mulai >= jam_selesai) throw { status: 400, message: "Jam selesai harus lebih besar dari jam mulai" };
     if (!lokasi) throw { status: 400, message: "Lokasi wajib diisi" };
     if (!nama_acara) throw { status: 400, message: "Nama acara wajib diisi" };
+    if (!jenis_acara) throw { status: 400, message: "Jenis acara wajib diisi" };
 
-    /* ================= CEK BENTROK ================= */
     const startDate = new Date(tanggal);
     startDate.setHours(0, 0, 0, 0);
 
@@ -51,10 +49,8 @@ export const createTicket = async (req, res, next) => {
     const bentrok = await Jadwal.findOne({ tanggal_acara: { $gte: startDate, $lte: endDate } });
     if (bentrok) throw { status: 400, message: "Tanggal tersebut sudah dibooking pelanggan lain" };
 
-    /* ================= CREATE TICKET ================= */
     const ticket = await Ticket.create({ pelangganId: pelanggan._id, layananId, status: "pending" });
 
-    /* ================= CREATE DETAIL ================= */
     const detail = await DetailTicket.create({
       ticketId: ticket._id,
       tanggal_acara: tanggal,
@@ -62,6 +58,7 @@ export const createTicket = async (req, res, next) => {
       jam_selesai,
       lokasi,
       nama_acara,
+      jenis_acara,
       catatan: catatan || "",
       referensi: referensi || "",
     });
@@ -141,7 +138,7 @@ export const createTicket = async (req, res, next) => {
 
 export const createTicketByAdmin = async (req, res, next) => {
   try {
-    const { pelangganId, pegawaiId, layananId, tanggal, jam_mulai, jam_selesai, lokasi, nama_acara, catatan, referensi } = req.body;
+    const { pelangganId, pegawaiId, layananId, tanggal, jam_mulai, jam_selesai, lokasi, nama_acara, jenis_acara, catatan, referensi } = req.body;
 
     /* ================= VALIDASI ================= */
     if (!pelangganId) throw { status: 400, message: "Pelanggan wajib dipilih" };
@@ -180,6 +177,7 @@ export const createTicketByAdmin = async (req, res, next) => {
       jam_selesai,
       lokasi,
       nama_acara,
+      jenis_acara,
       catatan: catatan || "",
       referensi: referensi || "",
     });
@@ -208,6 +206,7 @@ export const createTicketByAdmin = async (req, res, next) => {
   Detail acara:
   • Layanan : ${layanan.nama}
   • Nama Acara : ${nama_acara}
+  • Jenis Acara : ${jenis_acara}
   • Tanggal : ${new Date(tanggal).toLocaleDateString("id-ID")}
   • Jam : ${jam_mulai} - ${jam_selesai}
   • Lokasi : ${lokasi}
@@ -229,6 +228,7 @@ export const createTicketByAdmin = async (req, res, next) => {
 
   Detail penugasan:
   • Nama Acara : ${nama_acara}
+  • Jenis Acara : ${jenis_acara}
   • Layanan : ${layanan.nama}
   • Tanggal : ${new Date(tanggal).toLocaleDateString("id-ID")}
   • Jam : ${jam_mulai} - ${jam_selesai}

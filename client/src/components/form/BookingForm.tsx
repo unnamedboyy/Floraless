@@ -75,21 +75,14 @@ export default function BookingForm() {
 
   const [form, setForm] =
     useState({
-
       layananId: "",
-
       tanggal: "",
-
       jam_mulai: "",
-
       jam_selesai: "",
-
       lokasi: "",
-
       nama_acara: "",
-
+      jenis_acara: "",
       catatan: "",
-
       referensi: "",
     });
 
@@ -184,6 +177,17 @@ export default function BookingForm() {
 
           toast.error(
             "Nama acara wajib diisi"
+          );
+
+          return;
+        }
+
+        if (
+          !form.jenis_acara.trim()
+        ) {
+
+          toast.error(
+            "Jenis acara wajib diisi"
           );
 
           return;
@@ -452,6 +456,38 @@ export default function BookingForm() {
                   Contoh: Wedding Andini & Rizky
                 "
               />
+            </div>
+
+            {/* JENIS ACARA */}
+            <div className="md:col-span-2">
+
+              <InputField
+
+                label="Jenis Acara"
+
+                icon={
+                  <Sparkles
+                    size={18}
+                  />
+                }
+
+                type="text"
+
+                name="jenis_acara"
+
+                value={
+                  form.jenis_acara
+                }
+
+                onChange={
+                  handleChange
+                }
+
+                placeholder="
+                  Contoh: Acara Pernikahan, Ulang Tahun, Anniversary, dll.
+                "
+              />
+              
 
             </div>
 
