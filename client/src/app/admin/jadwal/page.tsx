@@ -16,7 +16,7 @@ import {
 import TableWrapper from "@/components/table/TableWrapper";
 import JadwalCalendar from "@/components/jadwal/JadwalCalendar";
 import JadwalFormModal from "@/components/form/JadwalFormModal";
-import DetailJadwalModal from "@/components/modal/DetailJadwalModal";
+import TicketDetailModal from "@/components/modal/TicketDetailModal";
 
 import {
   createJadwal,
@@ -76,8 +76,10 @@ export default function JadwalPage() {
   const [openForm, setOpenForm] =
     useState(false);
 
-  const [openDetail, setOpenDetail] =
-    useState(false);
+  // ID ticket yang sedang dilihat detailnya
+  // (diambil dari relasi ticketId pada objek jadwal)
+  const [detailTicketId, setDetailTicketId] =
+    useState<string | null>(null);
 
   const [selected, setSelected] =
     useState<any>(null);
@@ -138,6 +140,17 @@ export default function JadwalPage() {
     fetchPegawai();
 
   }, []);
+
+  /* =====================================================
+     HELPER: AMBIL TICKET ID DARI JADWAL
+  ===================================================== */
+
+  const getTicketIdFromJadwal =
+    (row: any) =>
+
+      row?.ticketId?._id ||
+      row?.ticketId ||
+      null;
 
   /* =====================================================
      SUBMIT
@@ -640,9 +653,19 @@ export default function JadwalPage() {
 
                   onClick: (row) => {
 
-                    setSelected(row);
+                    const ticketId =
+                      getTicketIdFromJadwal(row);
 
-                    setOpenDetail(true);
+                    if (!ticketId) {
+
+                      toast.error(
+                        "Ticket untuk jadwal ini tidak ditemukan"
+                      );
+
+                      return;
+                    }
+
+                    setDetailTicketId(ticketId);
                   },
                 },
 
@@ -695,9 +718,19 @@ export default function JadwalPage() {
 
               onSelect={(row: any) => {
 
-                setSelected(row);
+                const ticketId =
+                  getTicketIdFromJadwal(row);
 
-                setOpenDetail(true);
+                if (!ticketId) {
+
+                  toast.error(
+                    "Ticket untuk jadwal ini tidak ditemukan"
+                  );
+
+                  return;
+                }
+
+                setDetailTicketId(ticketId);
               }}
             />
           )
@@ -745,21 +778,18 @@ export default function JadwalPage() {
       />
 
       {/* =====================================================
-          DETAIL
+          DETAIL TICKET
       ===================================================== */}
 
-      <DetailJadwalModal
+      <TicketDetailModal
 
-        open={openDetail}
+        open={!!detailTicketId}
 
-        data={selected}
+        ticketId={detailTicketId}
 
-        onClose={() => {
-
-          setOpenDetail(false);
-
-          setSelected(null);
-        }}
+        onClose={() =>
+          setDetailTicketId(null)
+        }
       />
 
     </div>
