@@ -12,6 +12,16 @@ const detailTicketSchema = new mongoose.Schema({
     required: true
   },
 
+  jam_mulai: {
+    type: String,
+    required: true
+  },
+
+  jam_selesai: {
+    type: String,
+    required: true
+  },
+
   lokasi: {
     type: String,
     required: true

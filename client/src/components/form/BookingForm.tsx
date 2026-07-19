@@ -18,6 +18,8 @@ import {
 
   CalendarDays,
 
+  Clock3,
+
   MapPin,
 
   Sparkles,
@@ -77,6 +79,10 @@ export default function BookingForm() {
       layananId: "",
 
       tanggal: "",
+
+      jam_mulai: "",
+
+      jam_selesai: "",
 
       lokasi: "",
 
@@ -200,6 +206,39 @@ export default function BookingForm() {
 
           toast.error(
             "Tanggal acara wajib diisi"
+          );
+
+          return;
+        }
+
+        if (
+          !form.jam_mulai
+        ) {
+
+          toast.error(
+            "Jam mulai acara wajib diisi"
+          );
+
+          return;
+        }
+
+        if (
+          !form.jam_selesai
+        ) {
+
+          toast.error(
+            "Jam selesai acara wajib diisi"
+          );
+
+          return;
+        }
+
+        if (
+          form.jam_mulai >= form.jam_selesai
+        ) {
+
+          toast.error(
+            "Jam selesai harus lebih besar dari jam mulai"
           );
 
           return;
@@ -485,6 +524,54 @@ export default function BookingForm() {
 
               value={
                 form.tanggal
+              }
+
+              onChange={
+                handleChange
+              }
+            />
+
+            {/* JAM MULAI */}
+            <InputField
+
+              label="Jam Mulai"
+
+              icon={
+                <Clock3
+                  size={18}
+                />
+              }
+
+              type="time"
+
+              name="jam_mulai"
+
+              value={
+                form.jam_mulai
+              }
+
+              onChange={
+                handleChange
+              }
+            />
+
+            {/* JAM SELESAI */}
+            <InputField
+
+              label="Jam Selesai"
+
+              icon={
+                <Clock3
+                  size={18}
+                />
+              }
+
+              type="time"
+
+              name="jam_selesai"
+
+              value={
+                form.jam_selesai
               }
 
               onChange={

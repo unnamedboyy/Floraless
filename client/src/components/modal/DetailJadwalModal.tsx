@@ -4,7 +4,6 @@ import {
   CalendarDays,
   MapPin,
   User2,
-  Ticket,
   ClipboardList,
   Clock3,
   X,
@@ -132,6 +131,37 @@ export default function DetailJadwalModal({
         )
 
       : "-";
+
+  /* =====================================================
+     RESOLVE DETAIL ACARA
+     (fallback ke DetailTicket jika data jadwal
+     tidak membawa field ini secara langsung)
+  ===================================================== */
+
+  const namaAcara =
+    data.nama_acara ||
+    data.title ||
+    data.ticketId?.detail?.nama_acara ||
+    data.ticketId?.layananId?.nama ||
+    "-";
+
+  const lokasiAcara =
+    data.lokasi ||
+    data.ticketId?.detail?.lokasi ||
+    "-";
+
+  const jamAcara =
+    data.jam_mulai && data.jam_selesai
+      ? `${data.jam_mulai} - ${data.jam_selesai}`
+      : data.ticketId?.detail?.jam_mulai &&
+        data.ticketId?.detail?.jam_selesai
+      ? `${data.ticketId.detail.jam_mulai} - ${data.ticketId.detail.jam_selesai}`
+      : "-";
+
+  const catatanAcara =
+    data.catatan ||
+    data.ticketId?.detail?.catatan ||
+    "Belum ada catatan";
 
   /* =====================================================
      UI
@@ -263,10 +293,10 @@ export default function DetailJadwalModal({
       ">
 
         {/* =====================================================
-            INFORMASI ACARA
+            DETAIL ACARA
         ===================================================== */}
 
-        <Section title="Informasi Acara">
+        <Section title="Detail Acara">
 
           <div className="
 
@@ -286,17 +316,22 @@ export default function DetailJadwalModal({
                 />
               }
 
-              label="Title"
+              label="Nama Acara"
 
-              value={
-                data.title ||
+              value={namaAcara}
+            />
 
-                data.ticketId
-                  ?.layananId
-                  ?.nama ||
+            <FieldCard
 
-                "-"
+              icon={
+                <MapPin
+                  size={18}
+                />
               }
+
+              label="Lokasi"
+
+              value={lokasiAcara}
             />
 
             <FieldCard
@@ -307,19 +342,51 @@ export default function DetailJadwalModal({
                 />
               }
 
-              label="Tanggal"
+              label="Tanggal Acara"
 
               value={
                 formattedDate
               }
             />
 
+            <FieldCard
+
+              icon={
+                <Clock3
+                  size={18}
+                />
+              }
+
+              label="Jam Acara"
+
+              value={jamAcara}
+            />
+
+            <div className="md:col-span-2">
+
+              <FieldCard
+
+                icon={
+                  <FileText
+                    size={18}
+                  />
+                }
+
+                label="Catatan"
+
+                value={catatanAcara}
+
+                multiline
+              />
+
+            </div>
+
           </div>
 
         </Section>
 
         {/* =====================================================
-            PEGAWAI & TICKET
+            PENUGASAN
         ===================================================== */}
 
         <Section title="Penugasan">
@@ -347,50 +414,7 @@ export default function DetailJadwalModal({
               }
             />
 
-            <FieldCard
-
-              icon={
-                <Ticket
-                  size={18}
-                />
-              }
-
-              label="Ticket"
-
-              value={
-                data.ticketId
-                  ?._id || "-"
-              }
-            />
-
           </div>
-
-        </Section>
-
-        {/* =====================================================
-            CATATAN
-        ===================================================== */}
-
-        <Section title="Catatan">
-
-          <FieldCard
-
-            icon={
-              <FileText
-                size={18}
-              />
-            }
-
-            label="Informasi"
-
-            value={
-              data.catatan ||
-
-              "Belum ada catatan"
-            }
-
-            multiline
-          />
 
         </Section>
 

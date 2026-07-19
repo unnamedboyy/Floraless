@@ -16,6 +16,7 @@ import {
   Users,
   Briefcase,
   Calendar,
+  Clock3,
   MapPin,
   FileText,
   Link2,
@@ -66,6 +67,8 @@ export default function AdminCreateTicketModal({
     pegawaiId: "",
     layananId: "",
     tanggal: "",
+    jam_mulai: "",
+    jam_selesai: "",
     nama_acara: "",
     lokasi: "",
     catatan: "",
@@ -110,9 +113,16 @@ export default function AdminCreateTicketModal({
         !form.pegawaiId ||
         !form.layananId ||
         !form.tanggal ||
+        !form.jam_mulai ||
+        !form.jam_selesai ||
         !form.nama_acara
       ) {
         toast.error("Semua field wajib diisi");
+        return;
+      }
+
+      if (form.jam_mulai >= form.jam_selesai) {
+        toast.error("Jam selesai harus lebih besar dari jam mulai");
         return;
       }
 
@@ -126,6 +136,8 @@ export default function AdminCreateTicketModal({
         pegawaiId: "",
         layananId: "",
         tanggal: "",
+        jam_mulai: "",
+        jam_selesai: "",
         nama_acara: "",
         lokasi: "",
         catatan: "",
@@ -348,6 +360,40 @@ export default function AdminCreateTicketModal({
                   setForm({
                     ...form,
                     tanggal: e.target.value,
+                  })
+                }
+                className={inputClass}
+              />
+            </InputField>
+
+            <InputField
+              label="Jam Mulai"
+              icon={<Clock3 size={18} />}
+            >
+              <input
+                type="time"
+                value={form.jam_mulai}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    jam_mulai: e.target.value,
+                  })
+                }
+                className={inputClass}
+              />
+            </InputField>
+
+            <InputField
+              label="Jam Selesai"
+              icon={<Clock3 size={18} />}
+            >
+              <input
+                type="time"
+                value={form.jam_selesai}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    jam_selesai: e.target.value,
                   })
                 }
                 className={inputClass}

@@ -778,6 +778,18 @@ export default function TicketDetailModal({
 
                   <Field
                     icon={
+                      <Clock3 size={18} />
+                    }
+                    label="Jam Acara"
+                    value={
+                      detail?.jam_mulai && detail?.jam_selesai
+                        ? `${detail.jam_mulai} - ${detail.jam_selesai}`
+                        : "-"
+                    }
+                  />
+
+                  <Field
+                    icon={
                       <FileText size={18} />
                     }
                     label="Catatan"
