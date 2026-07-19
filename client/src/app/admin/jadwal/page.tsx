@@ -1,124 +1,460 @@
 "use client";
 
 import { useState } from "react";
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import interactionPlugin from "@fullcalendar/interaction";
-import { Calendar } from "lucide-react";
+import {
+  CalendarDays,
+  MapPin,
+  User2,
+  ClipboardList,
+  Clock3,
+  X,
+  FileText,
+  Ticket,
+} from "lucide-react";
 
-import DetailJadwalModal from "@/components/modal/DetailJadwalModal";
+import BaseModal from "@/components/form/BaseModal";
+import TicketDetailModal from "@/components/modal/TicketDetailModal";
 
 /* =========================================================
-   MOCK DATA JADWAL (Contoh struktur data API)
+   TYPES
 ========================================================= */
-const MOCK_EVENTS = [
-  {
-    id: "sched-101",
-    title: "Dekorasi Wedding Raisa & Hamish",
-    start: "2026-07-20", // format YYYY-MM-DD
-    status: "ongoing",
-    tanggal_acara: "2026-07-20",
-    jam_mulai: "08:00",
-    jam_selesai: "17:00",
-    lokasi: "Grand Ballroom Mulia Hotel, Jakarta",
-    catatan: "Harap bawa cadangan lampu LED sorot warna warm white.",
-    pegawaiId: {
-      nama: "Kaisar Simatupang",
-    },
-    ticketId: {
-      _id: "tkt-99901",
-      detail: {
-        nama_acara: "Dekorasi Wedding Raisa & Hamish",
-        lokasi: "Grand Ballroom Mulia Hotel, Jakarta",
-        jam_mulai: "08:00",
-        jam_selesai: "17:00",
-        catatan: "Harap bawa cadangan lampu LED sorot warna warm white.",
-      },
-    },
-    createdAt: "2026-07-15T09:00:00.000Z",
-  },
-  {
-    id: "sched-102",
-    title: "Setup Gathering Perusahaan BCA",
-    start: "2026-07-22",
-    status: "booked",
-    tanggal_acara: "2026-07-22",
-    jam_mulai: "10:00",
-    jam_selesai: "15:00",
-    lokasi: "BCA Learning Institute, Sentul",
-    catatan: "Tema dekorasi full banking blue & corporate clean.",
-    pegawaiId: {
-      nama: "Brian",
-    },
-    ticketId: "tkt-99902", // Mendukung format string direct ID maupun object
-    createdAt: "2026-07-16T10:30:00.000Z",
-  },
-];
 
-export default function EventCalendar() {
-  const [events, setEvents] = useState(MOCK_EVENTS);
-  const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [selectedEventData, setSelectedEventData] = useState<any>(null);
+interface Props {
+  open: boolean;
+  onClose: () => void;
+  data: any;
+}
 
-  // Handler ketika salah satu event/jadwal di kalender diklik
-  const handleEventClick = (info: any) => {
-    // Cari data object original berdasarkan ID dari event yang diklik
-    const originalData = events.find((e) => e.id === info.event.id);
-    if (originalData) {
-      setSelectedEventData(originalData);
-      setDetailModalOpen(true);
+/* =========================================================
+   COMPONENT
+========================================================= */
+
+export default function DetailJadwalModal({
+  open,
+  onClose,
+  data
+}: Props) {
+  // State untuk mengontrol TicketDetailModal
+  const [ticketModalOpen, setTicketModalOpen] = useState(false);
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+
+  if (!open || !data) return null;
+
+  /* =====================================================
+     STATUS STYLE
+  ===================================================== */
+
+  const statusMap: any = {
+    available: {
+      label: "Available",
+      className: `
+        bg-emerald-50
+        border-emerald-200
+        text-emerald-700
+      `,
+    },
+    booked: {
+      label: "Booked",
+      className: `
+        bg-amber-50
+        border-amber-200
+        text-amber-700
+      `,
+    },
+    ongoing: {
+      label: "Ongoing",
+      className: `
+        bg-blue-50
+        border-blue-200
+        text-blue-700
+      `,
+    },
+    done: {
+      label: "Done",
+      className: `
+        bg-slate-100
+        border-slate-200
+        text-slate-700
+      `,
+    },
+  };
+
+  const currentStatus =
+    statusMap[data.status] ||
+    statusMap.available;
+
+  /* =====================================================
+     FORMAT DATE
+  ===================================================== */
+
+  const formattedDate =
+    data.tanggal_acara
+      ? new Date(data.tanggal_acara)
+        .toLocaleDateString(
+          "id-ID",
+          {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }
+        )
+      : "-";
+
+  /* =====================================================
+     RESOLVE DETAIL ACARA
+     (fallback ke DetailTicket jika data jadwal
+     tidak membawa field ini secara langsung)
+  ===================================================== */
+
+  const namaAcara =
+    data.nama_acara ||
+    data.title ||
+    data.ticketId?.detail?.nama_acara ||
+    data.ticketId?.layananId?.nama ||
+    "-";
+
+  const lokasiAcara =
+    data.lokasi ||
+    data.ticketId?.detail?.lokasi ||
+    "-";
+
+  const jamAcara =
+    data.jam_mulai && data.jam_selesai
+      ? `${data.jam_mulai} - ${data.jam_selesai}`
+      : data.ticketId?.detail?.jam_mulai &&
+        data.ticketId?.detail?.jam_selesai
+      ? `${data.ticketId.detail.jam_mulai} - ${data.ticketId.detail.jam_selesai}`
+      : "-";
+
+  const catatanAcara =
+    data.catatan ||
+    data.ticketId?.detail?.catatan ||
+    "Belum ada catatan";
+
+  // Mengambil ID ticket dari data jadwal
+  const ticketId = data.ticketId?._id || data.ticketId || null;
+
+  const handleOpenTicketDetail = () => {
+    if (ticketId) {
+      setSelectedTicketId(ticketId);
+      setTicketModalOpen(true);
     }
   };
 
+  /* =====================================================
+     UI
+  ===================================================== */
+
   return (
-    <div className="p-6 space-y-6 bg-slate-50 min-h-screen">
-      {/* HEADER */}
-      <div className="flex items-center gap-3">
-        <div className="p-3 bg-black text-white rounded-2xl">
-          <Calendar size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Jadwal Acara</h1>
-          <p className="text-sm text-slate-500">
-            Klik pada salah satu jadwal di kalender untuk melihat detail lengkap dan tiket terkait.
-          </p>
-        </div>
-      </div>
+    <>
+      <BaseModal
+        open={open}
+        onClose={onClose}
+        maxWidth="max-w-4xl"
+      >
+        {/* =====================================================
+            HEADER
+        ===================================================== */}
 
-      {/* CALENDAR CONTAINER */}
-      <div className="bg-white border border-slate-200 rounded-[30px] p-6 shadow-sm">
-        <FullCalendar
-          plugins={[dayGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          events={events}
-          eventClick={handleEventClick}
-          height="auto"
-          locale="id"
-          headerToolbar={{
-            left: "prev,next today",
-            center: "title",
-            right: "dayGridMonth,dayGridWeek",
-          }}
-          eventClassNames={(arg) => {
-            // custom style warna bubble event sesuai status
-            const status = arg.event.extendedProps.status;
-            if (status === "ongoing") return "!bg-blue-500 !border-blue-600 text-white cursor-pointer rounded-lg px-2 py-0.5";
-            if (status === "booked") return "!bg-amber-500 !border-amber-600 text-white cursor-pointer rounded-lg px-2 py-0.5";
-            if (status === "done") return "!bg-slate-500 !border-slate-600 text-white cursor-pointer rounded-lg px-2 py-0.5";
-            return "!bg-emerald-500 !border-emerald-600 text-white cursor-pointer rounded-lg px-2 py-0.5";
-          }}
-        />
-      </div>
+        <div className="
+          px-8
+          py-7
+          border-b
+          border-slate-200
+          flex
+          items-start
+          justify-between
+        ">
+          <div>
+            <div className="
+              flex
+              items-center
+              gap-3
+              flex-wrap
+            ">
+              <h2 className="
+                text-[38px]
+                leading-none
+                font-bold
+                tracking-tight
+                text-[#0F172A]
+              ">
+                Detail{" "}
+                <span className="text-[#C9AE63]">
+                  jadwal
+                </span>
+              </h2>
+            </div>
 
-      {/* INTEGRASI DETAIL JADWAL MODAL */}
-      <DetailJadwalModal
-        open={detailModalOpen}
+            <p className="
+              text-slate-500
+              text-sm
+              mt-3
+            ">
+              Informasi lengkap jadwal acara dan penugasan
+            </p>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="
+              w-12
+              h-12
+              rounded-2xl
+              border
+              border-slate-200
+              flex
+              items-center
+              justify-center
+              text-slate-500
+              hover:bg-slate-100
+              transition
+            "
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* =====================================================
+            BODY
+        ===================================================== */}
+
+        <div className="
+          px-8
+          py-8
+          space-y-7
+          overflow-y-auto
+        ">
+          {/* =====================================================
+              DETAIL ACARA
+          ===================================================== */}
+
+          <Section title="Detail Acara">
+            <div className="
+              grid
+              grid-cols-1
+              md:grid-cols-2
+              gap-5
+            ">
+              <FieldCard
+                icon={<ClipboardList size={18} />}
+                label="Nama Acara"
+                value={namaAcara}
+              />
+
+              <FieldCard
+                icon={<MapPin size={18} />}
+                label="Lokasi"
+                value={lokasiAcara}
+              />
+
+              <FieldCard
+                icon={<CalendarDays size={18} />}
+                label="Tanggal Acara"
+                value={formattedDate}
+              />
+
+              <FieldCard
+                icon={<Clock3 size={18} />}
+                label="Jam Acara"
+                value={jamAcara}
+              />
+
+              <div className="md:col-span-2">
+                <FieldCard
+                  icon={<FileText size={18} />}
+                  label="Catatan"
+                  value={catatanAcara}
+                  multiline
+                />
+              </div>
+
+              {/* ACTION BUTTON UNTUK LIHAT TICKET */}
+              {ticketId && (
+                <div className="md:col-span-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleOpenTicketDetail}
+                    className="
+                      inline-flex
+                      items-center
+                      gap-2
+                      px-5
+                      py-3
+                      rounded-xl
+                      bg-[#111827]
+                      text-white
+                      text-sm
+                      font-semibold
+                      hover:bg-black
+                      transition-all
+                      shadow-sm
+                    "
+                  >
+                    <Ticket size={16} />
+                    Lihat Detail Ticket
+                  </button>
+                </div>
+              )}
+            </div>
+          </Section>
+
+          {/* =====================================================
+              PENUGASAN
+          ===================================================== */}
+
+          <Section title="Penugasan">
+            <div className="
+              grid
+              grid-cols-1
+              md:grid-cols-2
+              gap-5
+            ">
+              <FieldCard
+                icon={<User2 size={18} />}
+                label="Pegawai"
+                value={data.pegawaiId?.nama || "-"}
+              />
+            </div>
+          </Section>
+
+          {/* =====================================================
+              TIMESTAMP
+          ===================================================== */}
+
+          <div className="
+            rounded-[30px]
+            border
+            border-blue-200
+            bg-blue-50
+            p-5
+            flex
+            items-start
+            gap-4
+          ">
+            <div className="
+              w-11
+              h-11
+              rounded-2xl
+              bg-blue-100
+              flex
+              items-center
+              justify-center
+              text-blue-700
+              shrink-0
+            ">
+              <Clock3 size={20} />
+            </div>
+
+            <div>
+              <h4 className="
+                text-sm
+                font-semibold
+                text-blue-900
+              ">
+                Informasi Jadwal
+              </h4>
+
+              <p className="
+                text-sm
+                text-blue-700
+                mt-1
+                leading-relaxed
+              ">
+                Dibuat pada{" "}
+                {data.createdAt
+                  ? new Date(data.createdAt).toLocaleString("id-ID")
+                  : "-"}
+              </p>
+            </div>
+          </div>
+        </div>
+      </BaseModal>
+
+      {/* =====================================================
+          TICKET DETAIL MODAL INTEGRATION
+      ===================================================== */}
+      <TicketDetailModal
+        open={ticketModalOpen}
+        ticketId={selectedTicketId}
         onClose={() => {
-          setDetailModalOpen(false);
-          setSelectedEventData(null);
+          setTicketModalOpen(false);
+          setSelectedTicketId(null);
         }}
-        data={selectedEventData}
       />
+    </>
+  );
+}
+
+/* =========================================================
+   SECTION
+========================================================= */
+
+function Section({ title, children }: any) {
+  return (
+    <div className="
+      border
+      border-slate-200
+      rounded-[30px]
+      p-6
+      bg-white
+      space-y-5
+    ">
+      <h3 className="
+        text-xl
+        font-bold
+        text-[#0F172A]
+      ">
+        {title}
+      </h3>
+      {children}
+    </div>
+  );
+}
+
+/* =========================================================
+   FIELD CARD
+========================================================= */
+
+function FieldCard({
+  label,
+  value,
+  icon,
+  multiline = false,
+}: any) {
+  return (
+    <div className="
+      border
+      border-slate-200
+      rounded-2xl
+      p-5
+      bg-slate-50/70
+      space-y-3
+    ">
+      <div className="
+        flex
+        items-center
+        gap-2
+        text-slate-500
+      ">
+        {icon}
+        <span className="
+          text-sm
+          font-medium
+        ">
+          {label}
+        </span>
+      </div>
+
+      <div className={`
+        text-[15px]
+        font-semibold
+        text-slate-900
+        ${multiline ? "leading-relaxed whitespace-pre-wrap" : ""}
+      `}>
+        {value}
+      </div>
     </div>
   );
 }
