@@ -1,771 +1,124 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useState } from "react";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import { Calendar } from "lucide-react";
 
-import toast from "react-hot-toast";
-
-import {
-  Eye,
-  Pencil,
-  Trash2,
-} from "lucide-react";
-
-import TableWrapper from "@/components/table/TableWrapper";
-import JadwalCalendar from "@/components/jadwal/JadwalCalendar";
-import JadwalFormModal from "@/components/form/JadwalFormModal";
 import DetailJadwalModal from "@/components/modal/DetailJadwalModal";
-import TicketDetailModal from "@/components/modal/TicketDetailModal";
 
-import {
-  createJadwal,
-  updateJadwal,
-  deleteJadwal,
-} from "@/services/jadwal.service";
-
-import {
-  getPegawai,
-} from "@/services/pegawai.service";
-
-import {
-  useJadwal,
-} from "@/hooks/useJadwal";
-
-export default function JadwalPage() {
-
-  /* =====================================================
-     TODAY
-  ===================================================== */
-
-  const today =
-    new Date()
-      .toISOString()
-      .split("T")[0];
-
-  /* =====================================================
-     STATE
-  ===================================================== */
-
-  const [view, setView] =
-    useState<"list" | "grid">(
-      "list"
-    );
-
-  const [mode, setMode] =
-    useState<"table" | "calendar">(
-      "calendar"
-    );
-  
-  const [detailId, setDetailId] =
-    useState<string | null>(
-      null
-    );
-
-  const [query, setQuery] =
-    useState({
-
-      page: 1,
-
-      limit: 10,
-
-      search: "",
-
-      start: today,
-
-      end: "2099-12-31",
-
-      status: "",
-    });
-
-  const [openForm, setOpenForm] =
-    useState(false);
-
-  const [openDetail, setOpenDetail] =
-    useState(false);
-
-  const [selected, setSelected] =
-    useState<any>(null);
-
-  const [pegawai, setPegawai] =
-    useState<any[]>([]);
-
-  const [submitLoading, setSubmitLoading] =
-    useState(false);
-
-  /* =====================================================
-     DATA
-  ===================================================== */
-
-  const {
-    data = [],
-    loading,
-    refetch,
-  } = useJadwal(query);
-
-  /* =====================================================
-     FETCH PEGAWAI
-  ===================================================== */
-
-  const fetchPegawai =
-    async () => {
-
-      try {
-
-        const res =
-          await getPegawai({});
-
-        setPegawai(
-
-          res?.data?.data ||
-
-          res?.data ||
-
-          []
-        );
-
-      } catch (err) {
-
-        console.error(err);
-
-        toast.error(
-          "Gagal memuat data pegawai"
-        );
-      }
-    };
-
-  /* =====================================================
-     EFFECT
-  ===================================================== */
-
-  useEffect(() => {
-
-    fetchPegawai();
-
-  }, []);
-
-  /* =====================================================
-     SUBMIT
-  ===================================================== */
-
-  const handleSubmit =
-    async (form: any) => {
-
-      try {
-
-        setSubmitLoading(true);
-
-        if (selected?._id) {
-
-          await updateJadwal(
-            selected._id,
-            form
-          );
-
-          toast.success(
-            "Jadwal berhasil diperbarui"
-          );
-
-        } else {
-
-          await createJadwal(
-            form
-          );
-
-          toast.success(
-            "Jadwal berhasil dibuat"
-          );
-        }
-
-        setOpenForm(false);
-
-        setSelected(null);
-
-        refetch();
-
-      } catch (err: any) {
-
-        console.error(err);
-
-        toast.error(
-
-          err?.response?.data?.message ||
-
-          "Gagal menyimpan jadwal"
-        );
-
-      } finally {
-
-        setSubmitLoading(false);
-      }
-    };
-
-  /* =====================================================
-     DELETE
-  ===================================================== */
-
-  const handleDelete =
-    async (row: any) => {
-
-      toast((t) => (
-
-        <div className="w-[300px]">
-
-          {/* TITLE */}
-          <p className="
-            font-semibold
-            text-sm
-          ">
-            Hapus Jadwal?
-          </p>
-
-          {/* DESC */}
-          <p className="
-            text-sm
-            text-gray-500
-            mt-1
-          ">
-            Jadwal tidak dapat dikembalikan
-          </p>
-
-          {/* ACTION */}
-          <div className="
-            flex
-            justify-end
-            gap-2
-            mt-4
-          ">
-
-            {/* CANCEL */}
-            <button
-              onClick={() =>
-                toast.dismiss(t.id)
-              }
-              className="
-                px-3
-                py-2
-                rounded-xl
-                border
-                text-sm
-                hover:bg-gray-50
-              "
-            >
-              Batal
-            </button>
-
-            {/* DELETE */}
-            <button
-              onClick={async () => {
-
-                toast.dismiss(t.id);
-
-                try {
-
-                  await deleteJadwal(
-                    row._id
-                  );
-
-                  toast.success(
-                    "Jadwal berhasil dihapus"
-                  );
-
-                  refetch();
-
-                } catch (err: any) {
-
-                  console.error(err);
-
-                  toast.error(
-
-                    err?.response?.data?.message ||
-
-                    "Gagal menghapus jadwal"
-                  );
-                }
-              }}
-              className="
-                px-3
-                py-2
-                rounded-xl
-                bg-red-500
-                text-white
-                text-sm
-                hover:bg-red-600
-              "
-            >
-              Hapus
-            </button>
-
-          </div>
-
-        </div>
-
-      ), {
-        duration: 10000,
-      });
-    };
-
-  /* =====================================================
-     STATUS BADGE
-  ===================================================== */
-
-  const getStatusBadge =
-    (status: string) => {
-
-      const map: any = {
-
-        available:
-          "bg-emerald-50 text-emerald-700 border border-emerald-200",
-
-        booked:
-          "bg-amber-50 text-amber-700 border border-amber-200",
-
-        ongoing:
-          "bg-blue-50 text-blue-700 border border-blue-200",
-
-        done:
-          "bg-slate-100 text-slate-700 border border-slate-200",
-      };
-
-      return (
-
-        map[status] ||
-
-        "bg-gray-100 text-gray-700 border"
-      );
-    };
-
-  /* =====================================================
-     UI
-  ===================================================== */
+/* =========================================================
+   MOCK DATA JADWAL (Contoh struktur data API)
+========================================================= */
+const MOCK_EVENTS = [
+  {
+    id: "sched-101",
+    title: "Dekorasi Wedding Raisa & Hamish",
+    start: "2026-07-20", // format YYYY-MM-DD
+    status: "ongoing",
+    tanggal_acara: "2026-07-20",
+    jam_mulai: "08:00",
+    jam_selesai: "17:00",
+    lokasi: "Grand Ballroom Mulia Hotel, Jakarta",
+    catatan: "Harap bawa cadangan lampu LED sorot warna warm white.",
+    pegawaiId: {
+      nama: "Kaisar Simatupang",
+    },
+    ticketId: {
+      _id: "tkt-99901",
+      detail: {
+        nama_acara: "Dekorasi Wedding Raisa & Hamish",
+        lokasi: "Grand Ballroom Mulia Hotel, Jakarta",
+        jam_mulai: "08:00",
+        jam_selesai: "17:00",
+        catatan: "Harap bawa cadangan lampu LED sorot warna warm white.",
+      },
+    },
+    createdAt: "2026-07-15T09:00:00.000Z",
+  },
+  {
+    id: "sched-102",
+    title: "Setup Gathering Perusahaan BCA",
+    start: "2026-07-22",
+    status: "booked",
+    tanggal_acara: "2026-07-22",
+    jam_mulai: "10:00",
+    jam_selesai: "15:00",
+    lokasi: "BCA Learning Institute, Sentul",
+    catatan: "Tema dekorasi full banking blue & corporate clean.",
+    pegawaiId: {
+      nama: "Brian",
+    },
+    ticketId: "tkt-99902", // Mendukung format string direct ID maupun object
+    createdAt: "2026-07-16T10:30:00.000Z",
+  },
+];
+
+export default function EventCalendar() {
+  const [events, setEvents] = useState(MOCK_EVENTS);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [selectedEventData, setSelectedEventData] = useState<any>(null);
+
+  // Handler ketika salah satu event/jadwal di kalender diklik
+  const handleEventClick = (info: any) => {
+    // Cari data object original berdasarkan ID dari event yang diklik
+    const originalData = events.find((e) => e.id === info.event.id);
+    if (originalData) {
+      setSelectedEventData(originalData);
+      setDetailModalOpen(true);
+    }
+  };
 
   return (
-
-    <div className="
-      p-6
-      space-y-5
-    ">
-
-      {/* =====================================================
-          HEADER
-      ===================================================== */}
-
-      <div className="
-        flex
-        items-center
-        justify-between
-        gap-5
-        flex-wrap
-      ">
-
-        <div>
-
-          <h1 className="
-            text-3xl
-            font-bold
-            tracking-tight
-            text-[#0F172A]
-          ">
-            Kelola Jadwal
-          </h1>
-
-          <p className="
-            text-sm
-            text-slate-500
-            mt-2
-          ">
-            Kelola jadwal acara dan penugasan pegawai
-          </p>
-
+    <div className="p-6 space-y-6 bg-slate-50 min-h-screen">
+      {/* HEADER */}
+      <div className="flex items-center gap-3">
+        <div className="p-3 bg-black text-white rounded-2xl">
+          <Calendar size={24} />
         </div>
-
-        <button
-          onClick={() => {
-
-            setSelected(null);
-
-            setOpenForm(true);
-          }}
-          className="
-            h-12
-            px-5
-            rounded-2xl
-            bg-[#0F172A]
-            text-white
-            text-sm
-            font-semibold
-            hover:opacity-90
-            transition
-          "
-        >
-          + Tambah Jadwal
-        </button>
-
-      </div>
-
-      {/* =====================================================
-          MODE SWITCH
-      ===================================================== */}
-
-      <div className="flex gap-2">
-
-        <button
-          onClick={() =>
-            setMode("table")
-          }
-          className={`
-            h-11
-            px-5
-            rounded-2xl
-            text-sm
-            font-semibold
-            transition
-
-            ${
-              mode === "table"
-
-                ? `
-                  bg-[#0F172A]
-                  text-white
-                `
-
-                : `
-                  border
-                  border-slate-200
-                  bg-white
-                  text-slate-700
-                `
-            }
-          `}
-        >
-          Table
-        </button>
-
-        <button
-          onClick={() =>
-            setMode("calendar")
-          }
-          className={`
-            h-11
-            px-5
-            rounded-2xl
-            text-sm
-            font-semibold
-            transition
-
-            ${
-              mode === "calendar"
-
-                ? `
-                  bg-[#0F172A]
-                  text-white
-                `
-
-                : `
-                  border
-                  border-slate-200
-                  bg-white
-                  text-slate-700
-                `
-            }
-          `}
-        >
-          Calendar
-        </button>
-
-      </div>
-
-      {/* =====================================================
-          CONTENT
-      ===================================================== */}
-
-      {
-
-        mode === "table"
-
-          ? (
-
-            <TableWrapper
-
-              /* ================= VIEW ================= */
-
-              view={view}
-
-              setView={setView}
-
-              /* ================= FILTER ================= */
-
-              filterContent={
-
-                <div className="
-                  space-y-5
-                ">
-
-                  {/* STATUS */}
-                  <div className="
-                    space-y-2
-                  ">
-
-                    <label className="
-                      text-xs
-                      font-semibold
-                      uppercase
-                      tracking-wider
-                      text-slate-500
-                    ">
-                      Status Jadwal
-                    </label>
-
-                    <select
-                      value={query.status}
-                      onChange={(e) =>
-                        setQuery((prev) => ({
-
-                          ...prev,
-
-                          status:
-                            e.target.value,
-
-                          page: 1,
-                        }))
-                      }
-                      className="
-                        w-full
-                        h-12
-                        rounded-2xl
-                        border
-                        border-slate-200
-                        bg-white
-                        px-4
-                        text-sm
-                        outline-none
-                        transition-all
-                        focus:border-slate-400
-                      "
-                    >
-
-                      <option value="">
-                        Semua Status
-                      </option>
-
-                      <option value="available">
-                        Available
-                      </option>
-
-                      <option value="booked">
-                        Booked
-                      </option>
-
-                      <option value="ongoing">
-                        Ongoing
-                      </option>
-
-                      <option value="done">
-                        Done
-                      </option>
-
-                    </select>
-
-                  </div>
-
-                </div>
-              }
-
-              data={data}
-
-              total={data.length}
-
-              query={query}
-
-              setQuery={setQuery}
-
-              /* ================= COLUMNS ================= */
-
-              columns={[
-
-                {
-                  label: "Tanggal",
-                  key: "tanggal_acara",
-                },
-
-                {
-                  label: "Pegawai",
-                  key: "pegawaiId.nama",
-                },
-
-                {
-                  label: "Lokasi",
-                  key: "lokasi",
-                },
-
-                // {
-                //   label: "Status",
-
-                //   key: "status",
-
-                //   render: (row: any) => (
-
-                //     <div className={`
-                //       h-9
-                //       px-4
-                //       rounded-2xl
-                //       inline-flex
-                //       items-center
-                //       justify-center
-                //       text-xs
-                //       font-semibold
-                //       border
-                //       ${getStatusBadge(
-                //         row.status
-                //       )}
-                //     `}>
-
-                //       {row.status}
-
-                //     </div>
-                //   ),
-                // },
-
-              ]}
-
-              /* ================= ACTION ================= */
-
-              actions={[
-
-                {
-                  icon: (
-                    <Eye size={17} />
-                  ),
-
-                  className: `
-                    bg-gray-100
-                    text-gray-700
-                    hover:bg-gray-200
-                  `,
-
-                  onClick: (row) => {
-
-                    setSelected(row);
-
-                    setOpenDetail(true);
-                  },
-                },
-
-                {
-                  icon: (
-                    <Pencil size={17} />
-                  ),
-
-                  className: `
-                    bg-yellow-100
-                    text-yellow-700
-                    hover:bg-yellow-200
-                  `,
-
-                  onClick: (row) => {
-
-                    setSelected(row);
-
-                    setOpenForm(true);
-                  },
-                },
-
-                {
-                  icon: (
-                    <Trash2 size={17} />
-                  ),
-
-                  className: `
-                    bg-red-100
-                    text-red-700
-                    hover:bg-red-200
-                  `,
-
-                  onClick: handleDelete,
-                },
-
-              ]}
-
-            />
-
-          )
-
-          : (
-
-            <JadwalCalendar
-
-              data={data}
-
-              refetch={refetch}
-
-              onSelect={(row: any) => {
-
-                setSelected(row);
-
-                setOpenDetail(true);
-              }}
-            />
-          )
-      }
-
-      {/* =====================================================
-          LOADING
-      ===================================================== */}
-
-      {
-
-        loading && (
-
-          <p className="
-            text-sm
-            text-slate-500
-          ">
-            Loading...
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Jadwal Acara</h1>
+          <p className="text-sm text-slate-500">
+            Klik pada salah satu jadwal di kalender untuk melihat detail lengkap dan tiket terkait.
           </p>
-        )
-      }
+        </div>
+      </div>
 
-      {/* =====================================================
-          FORM
-      ===================================================== */}
+      {/* CALENDAR CONTAINER */}
+      <div className="bg-white border border-slate-200 rounded-[30px] p-6 shadow-sm">
+        <FullCalendar
+          plugins={[dayGridPlugin, interactionPlugin]}
+          initialView="dayGridMonth"
+          events={events}
+          eventClick={handleEventClick}
+          height="auto"
+          locale="id"
+          headerToolbar={{
+            left: "prev,next today",
+            center: "title",
+            right: "dayGridMonth,dayGridWeek",
+          }}
+          eventClassNames={(arg) => {
+            // custom style warna bubble event sesuai status
+            const status = arg.event.extendedProps.status;
+            if (status === "ongoing") return "!bg-blue-500 !border-blue-600 text-white cursor-pointer rounded-lg px-2 py-0.5";
+            if (status === "booked") return "!bg-amber-500 !border-amber-600 text-white cursor-pointer rounded-lg px-2 py-0.5";
+            if (status === "done") return "!bg-slate-500 !border-slate-600 text-white cursor-pointer rounded-lg px-2 py-0.5";
+            return "!bg-emerald-500 !border-emerald-600 text-white cursor-pointer rounded-lg px-2 py-0.5";
+          }}
+        />
+      </div>
 
-      <JadwalFormModal
-
-        open={openForm}
-
-        pegawaiList={pegawai}
-
-        loading={submitLoading}
-
+      {/* INTEGRASI DETAIL JADWAL MODAL */}
+      <DetailJadwalModal
+        open={detailModalOpen}
         onClose={() => {
-
-          setOpenForm(false);
-
-          setSelected(null);
+          setDetailModalOpen(false);
+          setSelectedEventData(null);
         }}
-
-        onSubmit={handleSubmit}
-
-        initialData={selected}
+        data={selectedEventData}
       />
-
-      {/* =====================================================
-          DETAIL
-      ===================================================== */}
-
-      <TicketDetailModal
-
-        open={openDetail}
-        ticketId={detailId}
-        onClose={() => {
-
-          setOpenDetail(false);
-
-          setSelected(null);
-        }}
-      />
-
     </div>
   );
 }
