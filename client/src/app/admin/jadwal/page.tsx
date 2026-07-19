@@ -17,6 +17,7 @@ import TableWrapper from "@/components/table/TableWrapper";
 import JadwalCalendar from "@/components/jadwal/JadwalCalendar";
 import JadwalFormModal from "@/components/form/JadwalFormModal";
 import DetailJadwalModal from "@/components/modal/DetailJadwalModal";
+import TicketDetailModal from "@/components/modal/TicketDetailModal";
 
 import {
   createJadwal,
@@ -55,6 +56,11 @@ export default function JadwalPage() {
   const [mode, setMode] =
     useState<"table" | "calendar">(
       "calendar"
+    );
+  
+  const [detailId, setDetailId] =
+    useState<string | null>(
+      null
     );
 
   const [query, setQuery] =
@@ -748,12 +754,10 @@ export default function JadwalPage() {
           DETAIL
       ===================================================== */}
 
-      <DetailJadwalModal
+      <TicketDetailModal
 
         open={openDetail}
-
-        data={selected}
-
+        ticketId={detailId}
         onClose={() => {
 
           setOpenDetail(false);
