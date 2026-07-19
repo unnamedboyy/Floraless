@@ -688,6 +688,16 @@ export default function TicketDetailModal({
 
                   <Field
                     icon={
+                      <Camera size={18} />
+                    }
+                    label="Layanan"
+                    value={
+                      layanan?.nama
+                    }
+                  />
+
+                  <Field
+                    icon={
                       <Wallet size={18} />
                     }
                     label="Harga"
